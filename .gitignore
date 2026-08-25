@@ -9,6 +9,7 @@ out
 *.log
 .DS_Store
 .vercel
+tsconfig.tsbuildinfo
 
 # Real RSA keypairs from scripts/generate-license-keypair.sh — never committed.
 /keys
