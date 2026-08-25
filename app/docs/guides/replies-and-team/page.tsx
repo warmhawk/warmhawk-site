@@ -37,7 +37,7 @@ const faqItems = [
 
 export default function RepliesAndTeamPage() {
   return (
-    <div className="wrap py-16">
+    <div className="py-16">
       <div className="label text-rust mb-5">Docs / Guides / Replies &amp; team</div>
       <h1 className="font-display text-4xl md:text-[48px] leading-tight font-semibold mb-6 max-w-3xl">
         Every reply gets read, one way or another.

@@ -37,7 +37,7 @@ const faqItems = [
 
 export default function LicenseActivationPage() {
   return (
-    <div className="wrap py-16">
+    <div className="py-16">
       <div className="label text-rust mb-5">Docs / License activation</div>
       <h1 className="font-display text-4xl md:text-[48px] leading-tight font-semibold mb-6 max-w-3xl">
         License activation, and why it locks out slowly, not instantly.
@@ -63,7 +63,7 @@ export default function LicenseActivationPage() {
 {`curl -fsSL https://warmhawk.com/install-dashboard | bash -s -- \\
   --license whk_live_a1b2c3d4e5f6 \\
   --domain app.yourcompany.com \\
-  --core-engine-url https://api.yourcompany.com/api \\
+  --core-engine-url https://api.yourcompany.com \\
   --owner-email you@yourcompany.com`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">

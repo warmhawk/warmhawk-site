@@ -64,14 +64,23 @@ function getTransporter(): Transporter {
  *  Launch section, "Stripe checkout confirmation email contains a single copy-pasteable command,
  *  license key already embedded as a flag." The domain isn't known yet at issuance time (it's only
  *  chosen when the customer actually runs the installer), so this hands them a template with a
- *  placeholder to fill in rather than a real `--domain` value. */
-function buildInstallCommand(licenseToken: string): string {
-  return `curl -fsSL https://warmhawk.com/install | bash -s -- --license ${licenseToken} --domain <your-domain>`;
+ *  placeholder to fill in rather than a real `--domain` value.
+ *
+ *  Bug fix (install-flow build pass): `/api/install` (the route this command actually curls)
+ *  requires `--owner-email` — both product installers need it up front to provision the dashboard
+ *  owner's invite (see warmhawk-enterprise-operator/scripts/install.sh's required flags), and
+ *  `LicensePayload` (lib/license.ts) carries no email field to fall back on, so there is no way to
+ *  derive it later. Previously this command omitted `--owner-email` entirely, which would have
+ *  made every emailed install command fail validation the moment `/api/install` existed. Unlike
+ *  `--domain`, the owner's email IS already known at issuance time (it's the same address this
+ *  email is being sent to), so it's embedded as a real value here, not a placeholder. */
+function buildInstallCommand(licenseToken: string, ownerEmail: string): string {
+  return `curl -fsSL https://warmhawk.com/install | bash -s -- --license ${licenseToken} --domain <your-domain> --owner-email ${ownerEmail}`;
 }
 
 class SmtpEmailSender implements EmailSender {
   async sendLicenseEmail(input: LicenseEmailInput): Promise<void> {
-    const installCommand = buildInstallCommand(input.licenseToken);
+    const installCommand = buildInstallCommand(input.licenseToken, input.toEmail);
 
     if (!smtpConfigured()) {
       // Pre-launch fallback, matching invite-email.ts's convention in warmhawk-enterprise-operator

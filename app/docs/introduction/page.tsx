@@ -13,7 +13,7 @@ export const metadata: Metadata = pageSeo({
 
 export default function DocsIntroductionPage() {
   return (
-    <div className="wrap py-16">
+    <div className="py-16">
       <div className="label text-rust mb-5">Docs / Get started / Introduction</div>
       <h1 className="font-display text-4xl md:text-[48px] leading-tight font-semibold mb-6 max-w-3xl">
         WarmHawk, in one page.

@@ -37,7 +37,7 @@ const faqItems = [
 
 export default function CampaignsAiContentQualityPage() {
   return (
-    <div className="wrap py-16">
+    <div className="py-16">
       <div className="label text-rust mb-5">Docs / Guides / Campaigns, AI &amp; content quality</div>
       <h1 className="font-display text-4xl md:text-[48px] leading-tight font-semibold mb-6 max-w-3xl">
         Two content fields, one job each.

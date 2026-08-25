@@ -1,5 +1,6 @@
-# CI — self-contained (no shared/external reusable-workflow dependency). This repo goes public
-# at go-live, so its CI must not point at any private, internally-owned template repo.
+# CI — self-contained (no shared/external reusable-workflow dependency). This repo is
+# permanently private (decided 2026-08-25, superseding an earlier assumption that it would go
+# public at go-live) — self-contained CI here is a simplicity choice, not a public-repo requirement.
 #
 # main -> stage -> master branch-promotion model: warmhawk-site is the one WarmHawk repo with a
 # real live deploy step to gate (see deploy.yml) — main is the only branch accepting direct

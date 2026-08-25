@@ -122,8 +122,9 @@ actually shipped.
 ## 🔁 CI/CD
 
 Self-contained workflows in `.github/workflows/` — no external reusable-workflow dependency
-(this repo goes public at go-live, so it must not depend on any private, internally-owned
-template repo). `deploy.yml` additionally triggers a Coolify-managed host directly via webhook,
+(this repo is permanently private — decided 2026-08-25, superseding an earlier assumption that
+it would go public at go-live — so keeping CI self-contained here is a simplicity choice, not a
+public-repo requirement). `deploy.yml` additionally triggers a Coolify-managed host directly via webhook,
 since this is the one WarmHawk repo whose deploy is operated centrally. This repo is meant to
 adopt the full `main -> stage -> master` promotion model once it's a real git repo — see
 `ci.yml`'s header comment.

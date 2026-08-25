@@ -25,7 +25,24 @@ export function CheckoutTabs({ initialTier }: { initialTier: TierKey }) {
 
   return (
     <div className="grid md:grid-cols-[1fr_320px] gap-10 items-start">
-      <div>
+      {/*
+        Bug fix, second half (mobile horizontal-scroll regression on
+        /checkout): a bare `<div>` grid item defaults to `min-width: auto`,
+        whose automatic minimum size is its content's min-content width. At
+        a mobile viewport (below `md`, so this `grid` has no explicit
+        columns and falls back to one auto-sized track), the tablist's
+        buttons — even after fixing their own `whitespace-normal` above —
+        still contribute a wide min-content, and CSS Grid's default
+        `min-width: auto` on this item let that widen the whole grid track
+        (and with it the page) past the viewport: the classic "grid
+        blowout" — the browser expands the track to fit content rather
+        than shrinking the content, unlike flexbox's more forgiving
+        default. `min-w-0` overrides the default so this item — and
+        everything grid-track-sized off it — actually respects the
+        available width, which is what finally lets the tablist's
+        flex-shrink + the buttons' `whitespace-normal` engage as intended.
+      */}
+      <div className="min-w-0">
         <div role="tablist" aria-label="Checkout tier" className="flex gap-2 border-b border-border mb-8">
           <TabButton active={active === 'tier1'} onClick={() => setActive('tier1')} id="tier-1">
             Tier 1 — Self-Hosted Pro
@@ -87,6 +104,16 @@ function TabButton({
   id: string;
   children: ReactNode;
 }) {
+  // Bug fix (mobile horizontal-scroll regression, same family as the
+  // Nav.tsx CTA fix): a plain <button>'s browser-default UA stylesheet
+  // forces its label onto one line, and this tablist row (`flex gap-2`,
+  // no `flex-wrap`) doesn't otherwise allow it to reflow. At a 390px
+  // viewport, "Tier 2 — Enterprise DFY" alone pushed the row 6px past the
+  // viewport width, producing a page-wide horizontal scrollbar on
+  // /checkout. `whitespace-normal` lets the label wrap onto a second line
+  // when space is tight; `text-center` keeps a wrapped two-line label
+  // readable. At normal widths there's room for one line, so this is a
+  // no-op visually.
   return (
     <button
       type="button"
@@ -94,7 +121,7 @@ function TabButton({
       id={id}
       aria-selected={active}
       onClick={onClick}
-      className={`px-4 py-3 text-[14.5px] font-semibold border-b-2 -mb-px transition-colors ${
+      className={`px-4 py-3 text-[14.5px] font-semibold border-b-2 -mb-px transition-colors whitespace-normal text-center ${
         active ? 'border-rust text-rust' : 'border-transparent text-ink-muted hover:text-ink'
       }`}
     >

@@ -37,7 +37,7 @@ const faqItems = [
 
 export default function BackupsRedisDurabilityPage() {
   return (
-    <div className="wrap py-16">
+    <div className="py-16">
       <div className="label text-rust mb-5">Docs / Self-hosting / Backups &amp; Redis durability</div>
       <h1 className="font-display text-4xl md:text-[48px] leading-tight font-semibold mb-6 max-w-3xl">
         A backup you&rsquo;ve never restored is a guess, not a plan.

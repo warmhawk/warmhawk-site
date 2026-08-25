@@ -19,7 +19,10 @@ export function pageSeo({ title, description, path, noIndex }: PageSeoInput): Me
   const fullTitle = path === '/' ? title : `${title} | ${siteConfig.name}`;
 
   return {
-    title: fullTitle,
+    // `{ absolute }` opts out of the root layout's `title.template` (`%s | WarmHawk`) — fullTitle
+    // above already appends the site name itself, so applying the template on top of it produced
+    // a doubled/tripled suffix (e.g. "Introduction | WarmHawk | WarmHawk").
+    title: { absolute: fullTitle },
     description,
     alternates: {
       canonical: url,

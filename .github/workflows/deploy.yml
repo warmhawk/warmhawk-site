@@ -3,9 +3,10 @@
 # like this: neither has a vendor-operated production target (customers deploy those themselves
 # via install.sh).
 #
-# This repo goes public at go-live, so this workflow is self-contained (no private, internally-
-# owned reusable-deploy dependency) — it triggers Coolify directly via webhook and polls for
-# health, both with plain curl.
+# This repo is permanently private (decided 2026-08-25, superseding an earlier assumption that it
+# would go public at go-live) — this workflow stays self-contained (no private, internally-owned
+# reusable-deploy dependency) as a simplicity choice, not a public-repo requirement. It triggers
+# Coolify directly via webhook and polls for health, both with plain curl.
 #
 # push(master) only happens via a merged stage -> master PR in the three-branch model this repo
 # adopts (see ci.yml) — that PR's pull_request(master) CI run already re-verified the merge ref

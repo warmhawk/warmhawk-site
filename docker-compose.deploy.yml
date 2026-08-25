@@ -1,0 +1,45 @@
+# Deploy compose file for warmhawk-site — NOT used for local dev (that's
+# `npm run dev`, no Docker involved at all). Pulls the prebuilt image
+# Woodpecker's build-push workflow already built and pushed to
+# ghcr.io/warmhawk/warmhawk-site:<git-sha> — no rebuild on deploy. Deployed
+# via plain `docker compose -p warmhawk-site up -d` (the "own repo,
+# git-pull" pattern — see jitterflow-core-app/docker/docker-compose.deploy.yml
+# for the original of this shape, and its docs/ for why: no PaaS control
+# plane since Coolify's decommission on 2026-08-25).
+#
+# Single stateless service, no database/cache of its own — this app has no
+# persistent state, so unlike jitterflow's deploy compose file there's
+# nothing here that needs an `external: true` volume/network to survive a
+# redeploy. CONTAINER_PREFIX still exists as a knob (matches the fleet-wide
+# convention) even though there's only ever one container to prefix.
+services:
+  web:
+    container_name: ${CONTAINER_PREFIX:?CONTAINER_PREFIX is required}-web
+    image: ghcr.io/warmhawk/warmhawk-site:${IMAGE_TAG:?IMAGE_TAG is required}
+    restart: unless-stopped
+    environment:
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:?STRIPE_SECRET_KEY is required}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:?STRIPE_WEBHOOK_SECRET is required}
+      STRIPE_PRICE_SELF_HOSTED_PRO_MONTHLY: ${STRIPE_PRICE_SELF_HOSTED_PRO_MONTHLY:?STRIPE_PRICE_SELF_HOSTED_PRO_MONTHLY is required}
+      STRIPE_PRICE_SELF_HOSTED_PRO_ANNUAL: ${STRIPE_PRICE_SELF_HOSTED_PRO_ANNUAL:?STRIPE_PRICE_SELF_HOSTED_PRO_ANNUAL is required}
+      STRIPE_PRICE_TIER_2: ${STRIPE_PRICE_TIER_2:?STRIPE_PRICE_TIER_2 is required}
+      LICENSE_SIGNING_PRIVATE_KEY: ${LICENSE_SIGNING_PRIVATE_KEY:?LICENSE_SIGNING_PRIVATE_KEY is required}
+      SMTP_HOST: ${SMTP_HOST:-smtp.resend.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-resend}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:?SMTP_PASSWORD is required}
+      SMTP_FROM: ${SMTP_FROM:-WarmHawk <billing@warmhawk.com>}
+      STATUS_KUMA_BASE_URL: ${STATUS_KUMA_BASE_URL:-}
+      STATUS_KUMA_SLUG: ${STATUS_KUMA_SLUG:-}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://warmhawk.com}
+      NEXT_PUBLIC_CORE_ENGINE_PUBLIC_API_URL: ${NEXT_PUBLIC_CORE_ENGINE_PUBLIC_API_URL:-https://api.warmhawk.com}
+      ENABLE_VS_INSTANTLY: ${ENABLE_VS_INSTANTLY:-}
+      SEED_PLACEMENT_LIVE_IN_PRODUCTION: ${SEED_PLACEMENT_LIVE_IN_PRODUCTION:-}
+    ports:
+      - '127.0.0.1:${HOST_PORT:-4600}:4600'
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:4600/']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
