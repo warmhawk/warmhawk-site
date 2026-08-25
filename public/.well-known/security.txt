@@ -1,0 +1,9 @@
+Contact: mailto:security@warmhawk.com
+Expires: 2027-08-21T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://warmhawk.com/.well-known/security.txt
+Policy: https://warmhawk.com/security
+
+# WarmHawk coordinated-disclosure contact, per RFC 9116.
+# See https://warmhawk.com/security for scope, response-time commitment,
+# and safe-harbor language for good-faith researchers.

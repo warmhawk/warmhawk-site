@@ -1,0 +1,14 @@
+# Not a git repo yet (built local-disk-only per instructions), but this
+# file is here for when warmhawk-site is bootstrapped into a real repo.
+node_modules
+.next
+out
+.env
+.env.local
+.env*.local
+*.log
+.DS_Store
+.vercel
+
+# Real RSA keypairs from scripts/generate-license-keypair.sh — never committed.
+/keys
