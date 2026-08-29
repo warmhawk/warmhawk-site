@@ -24,7 +24,8 @@ const faqItems = [
       'This almost always means the Stripe webhook that issues the license hasn&rsquo;t reached WarmHawk yet — a delayed or failed webhook delivery, not a problem with your payment. Check Stripe webhook delivery status before assuming anything is broken on your server.',
   },
   {
-    question: 'My subscription lapsed a few hours ago but the dashboard still works — is that a bug?',
+    question:
+      'My subscription lapsed a few hours ago but the dashboard still works — is that a bug?',
     answer:
       'No, that&rsquo;s by design. LicenseGate re-validates against the license&rsquo;s embedded expiry once a day, not continuously, so there&rsquo;s a bounded grace window rather than an instant, jarring lockout the moment a payment fails.',
   },
@@ -44,45 +45,50 @@ export default function LicenseActivationPage() {
       </h1>
       <p className="text-lg leading-relaxed text-ink-muted max-w-2xl mb-8">
         Activation is meant to be invisible &mdash; a license flows in from Stripe, through
-        install.sh, straight into the dashboard, with no manual paste-in step. This page covers
-        what to check when that path doesn&rsquo;t look right.
+        install.sh, straight into the dashboard, with no manual paste-in step. This page covers what
+        to check when that path doesn&rsquo;t look right.
       </p>
       <AnswerBlock>
         This page explains how WarmHawk license activation works end to end: the license passed via
         --license during install, no separate dashboard paste-in step, what &ldquo;invalid&rdquo; or
-        &ldquo;expired&rdquo; errors mean, how the dashboard&rsquo;s daily re-validation check works,
-        and what to do if a real payment succeeded but the dashboard still shows unlicensed.
+        &ldquo;expired&rdquo; errors mean, how the dashboard&rsquo;s daily re-validation check
+        works, and what to do if a real payment succeeded but the dashboard still shows unlicensed.
       </AnswerBlock>
 
-      <h2 className="font-display text-2xl font-semibold mb-4">How activation is supposed to work</h2>
+      <h2 className="font-display text-2xl font-semibold mb-4">
+        How activation is supposed to work
+      </h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         Your license key is issued the moment your Stripe checkout completes, and you pass it
         directly into the install command:
       </p>
       <CodeBlock label="License passed at install time">
-{`curl -fsSL https://warmhawk.com/install-dashboard | bash -s -- \\
+        {`curl -fsSL https://warmhawk.com/install-dashboard | bash -s -- \\
   --license whk_live_a1b2c3d4e5f6 \\
   --domain app.yourcompany.com \\
   --core-engine-url https://api.yourcompany.com \\
   --owner-email you@yourcompany.com`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
-        install.sh writes that key into your instance&rsquo;s <code className="font-mono">.env</code> and
-        the dashboard&rsquo;s activation flow reads it from there on first boot &mdash; there is no
-        separate &ldquo;paste your license here&rdquo; screen anywhere in the product. If activation
-        looks broken, the license itself, or the path it took to get here, is what to check.
+        install.sh writes that key into your instance&rsquo;s{' '}
+        <code className="font-mono">.env</code> and the dashboard&rsquo;s activation flow reads it
+        from there on first boot &mdash; there is no separate &ldquo;paste your license here&rdquo;
+        screen anywhere in the product. If activation looks broken, the license itself, or the path
+        it took to get here, is what to check.
       </p>
 
-      <h2 className="font-display text-2xl font-semibold mb-4">What &ldquo;invalid&rdquo; and &ldquo;expired&rdquo; actually mean</h2>
+      <h2 className="font-display text-2xl font-semibold mb-4">
+        What &ldquo;invalid&rdquo; and &ldquo;expired&rdquo; actually mean
+      </h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         The dashboard&rsquo;s <code className="font-mono">LicenseGate</code> distinguishes two
         failure states, and they point at different problems:
       </p>
       <ul className="list-disc pl-6 space-y-3 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
         <li>
-          <strong className="text-ink">License invalid</strong> &mdash; the key&rsquo;s RSA signature
-          doesn&rsquo;t verify. This usually means the key was mistyped, truncated when copied, or
-          belongs to a different product/environment (a{' '}
+          <strong className="text-ink">License invalid</strong> &mdash; the key&rsquo;s RSA
+          signature doesn&rsquo;t verify. This usually means the key was mistyped, truncated when
+          copied, or belongs to a different product/environment (a{' '}
           <code className="font-mono">whk_test_</code> key against a production instance, for
           example). Double-check the exact string against what Stripe/your confirmation email sent.
         </li>
@@ -94,7 +100,9 @@ export default function LicenseActivationPage() {
         </li>
       </ul>
 
-      <h2 className="font-display text-2xl font-semibold mb-4">How LicenseGate&rsquo;s daily re-validation works</h2>
+      <h2 className="font-display text-2xl font-semibold mb-4">
+        How LicenseGate&rsquo;s daily re-validation works
+      </h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         Every license has an expiry embedded in it at issuance, tied to the current Stripe billing
         period. <code className="font-mono">LicenseGate</code> checks the current time against that
@@ -109,7 +117,9 @@ export default function LicenseActivationPage() {
         ending.
       </p>
 
-      <h2 className="font-display text-2xl font-semibold mb-4">Paid, but the dashboard still shows unlicensed</h2>
+      <h2 className="font-display text-2xl font-semibold mb-4">
+        Paid, but the dashboard still shows unlicensed
+      </h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         This is almost never a payment problem &mdash; it&rsquo;s a webhook delivery problem. Your
         Stripe checkout succeeding and your license actually reaching your instance are two separate
@@ -122,8 +132,8 @@ export default function LicenseActivationPage() {
           the Stripe Customer Portal.
         </li>
         <li>
-          Check whether the webhook that issues the license was delivered and processed
-          successfully &mdash; see{' '}
+          Check whether the webhook that issues the license was delivered and processed successfully
+          &mdash; see{' '}
           <Link href="/docs/stripe-webhooks" className="text-rust font-semibold">
             Stripe checkout &amp; webhooks
           </Link>{' '}

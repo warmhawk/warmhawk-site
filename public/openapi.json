@@ -4,8 +4,15 @@
     "title": "WarmHawk API",
     "version": "1.0.0",
     "description": "The real, current shape of warmhawk-core-engine's /v1 API and its one unauthenticated /public endpoint, transcribed field-by-field from https://warmhawk.com/docs/api-reference/*. WarmHawk is self-hosted per customer — there is no single production host, so every server URL below is a placeholder for whatever domain a customer's own install.sh run bound (e.g. api.yourcompany.com). Outbound webhooks (WarmHawk calling a customer's own URL when something happens) are planned, not implemented — poll GET /v1/replies, GET /v1/queue/status, or GET /v1/domains/{id}/placement-sample instead.",
-    "contact": { "name": "WarmHawk support", "email": "support@warmhawk.com", "url": "https://warmhawk.com" },
-    "license": { "name": "Business Source License (Apache 2.0 after 4 years)", "url": "https://warmhawk.com/legal/terms" }
+    "contact": {
+      "name": "WarmHawk support",
+      "email": "support@warmhawk.com",
+      "url": "https://warmhawk.com"
+    },
+    "license": {
+      "name": "Business Source License (Apache 2.0 after 4 years)",
+      "url": "https://warmhawk.com/legal/terms"
+    }
   },
   "externalDocs": {
     "description": "Full prose API reference, guides, and quickstart",
@@ -15,22 +22,44 @@
     {
       "url": "https://{instance}/v1",
       "description": "Your own WarmHawk install's authenticated API.",
-      "variables": { "instance": { "default": "your-instance", "description": "The domain install.sh bound the API to, e.g. api.yourcompany.com." } }
+      "variables": {
+        "instance": {
+          "default": "your-instance",
+          "description": "The domain install.sh bound the API to, e.g. api.yourcompany.com."
+        }
+      }
     },
     {
       "url": "https://{instance}",
       "description": "Your own WarmHawk install's public, unauthenticated endpoints (no /v1 prefix).",
-      "variables": { "instance": { "default": "your-instance", "description": "The domain install.sh bound the API to, e.g. api.yourcompany.com." } }
+      "variables": {
+        "instance": {
+          "default": "your-instance",
+          "description": "The domain install.sh bound the API to, e.g. api.yourcompany.com."
+        }
+      }
     }
   ],
   "tags": [
-    { "name": "Auth", "description": "Engine-level login, separate from the Tier 1/2 dashboard's own login." },
+    {
+      "name": "Auth",
+      "description": "Engine-level login, separate from the Tier 1/2 dashboard's own login."
+    },
     { "name": "Mailboxes", "description": "Mailbox CRUD plus Google/Microsoft OAuth connect." },
-    { "name": "Leads", "description": "Single create, CSV bulk import, unauthenticated webhook ingest, GDPR erasure." },
+    {
+      "name": "Leads",
+      "description": "Single create, CSV bulk import, unauthenticated webhook ingest, GDPR erasure."
+    },
     { "name": "Campaigns", "description": "Campaign lifecycle: create, launch, pause, archive." },
     { "name": "Queue", "description": "Send-queue status and pause/resume." },
-    { "name": "Domains", "description": "Sending-domain CRUD, SPF/DKIM/DMARC + blocklist checks, seed-inbox placement sampling." },
-    { "name": "Public", "description": "Unauthenticated endpoints, reachable with no bearer token." }
+    {
+      "name": "Domains",
+      "description": "Sending-domain CRUD, SPF/DKIM/DMARC + blocklist checks, seed-inbox placement sampling."
+    },
+    {
+      "name": "Public",
+      "description": "Unauthenticated endpoints, reachable with no bearer token."
+    }
   ],
   "components": {
     "securitySchemes": {
@@ -72,10 +101,32 @@
         "responses": {
           "200": {
             "description": "Authenticated",
-            "content": { "application/json": { "schema": { "type": "object", "properties": { "token": { "type": "string" } } } } }
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "properties": { "token": { "type": "string" } } }
+              }
+            }
           },
-          "401": { "description": "Invalid credentials — constant response shape whether the account exists or not, to avoid user enumeration.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
-          "429": { "description": "Account locked from repeated failures. Body includes retryAfterMs.", "content": { "application/json": { "schema": { "type": "object", "properties": { "error": { "type": "string" }, "retryAfterMs": { "type": "integer" } } } } } }
+          "401": {
+            "description": "Invalid credentials — constant response shape whether the account exists or not, to avoid user enumeration.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          },
+          "429": {
+            "description": "Account locked from repeated failures. Body includes retryAfterMs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string" },
+                    "retryAfterMs": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -106,7 +157,11 @@
                   "imapHost": { "type": "string" },
                   "imapPort": { "type": "integer" },
                   "authUsername": { "type": "string" },
-                  "authPassword": { "type": "string", "format": "password", "description": "Encrypted at rest, never returned in any response." }
+                  "authPassword": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "Encrypted at rest, never returned in any response."
+                  }
                 }
               }
             }
@@ -118,19 +173,34 @@
       }
     },
     "/mailboxes/{id}": {
-      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+      ],
       "patch": {
         "tags": ["Mailboxes"],
         "summary": "Update a mailbox's status or dailyCap",
         "requestBody": {
-          "content": { "application/json": { "schema": { "type": "object", "properties": { "status": { "type": "string" }, "dailyCap": { "type": "integer" } } } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "status": { "type": "string" }, "dailyCap": { "type": "integer" } }
+              }
+            }
+          }
         },
-        "responses": { "200": { "description": "Updated" }, "404": { "description": "Mailbox not found" } }
+        "responses": {
+          "200": { "description": "Updated" },
+          "404": { "description": "Mailbox not found" }
+        }
       },
       "delete": {
         "tags": ["Mailboxes"],
         "summary": "Disconnect a mailbox",
-        "responses": { "204": { "description": "Disconnected" }, "404": { "description": "Mailbox not found" } }
+        "responses": {
+          "204": { "description": "Disconnected" },
+          "404": { "description": "Mailbox not found" }
+        }
       }
     },
     "/oauth/{provider}/authorize": {
@@ -139,10 +209,23 @@
         "summary": "Redirect to the provider's OAuth consent screen",
         "security": [],
         "parameters": [
-          { "name": "provider", "in": "path", "required": true, "schema": { "type": "string", "enum": ["google", "microsoft"] } },
-          { "name": "mailboxId", "in": "query", "required": true, "schema": { "type": "string" }, "description": "Must already exist — create the mailbox first, without authPassword." }
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "enum": ["google", "microsoft"] }
+          },
+          {
+            "name": "mailboxId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Must already exist — create the mailbox first, without authPassword."
+          }
         ],
-        "responses": { "302": { "description": "Browser redirect to the provider's consent screen" } }
+        "responses": {
+          "302": { "description": "Browser redirect to the provider's consent screen" }
+        }
       }
     },
     "/oauth/{provider}/callback": {
@@ -152,7 +235,12 @@
         "description": "Public — no bearer token, verified by the signed state param instead.",
         "security": [],
         "parameters": [
-          { "name": "provider", "in": "path", "required": true, "schema": { "type": "string", "enum": ["google", "microsoft"] } },
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "enum": ["google", "microsoft"] }
+          },
           { "name": "code", "in": "query", "required": true, "schema": { "type": "string" } },
           { "name": "state", "in": "query", "required": true, "schema": { "type": "string" } }
         ],
@@ -163,8 +251,25 @@
       "get": {
         "tags": ["Leads"],
         "summary": "List leads, optionally scoped to a campaign",
-        "parameters": [{ "name": "campaignId", "in": "query", "required": false, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "object", "properties": { "leads": { "type": "array", "items": { "type": "object" } }, "total": { "type": "integer" } } } } } } }
+        "parameters": [
+          { "name": "campaignId", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "leads": { "type": "array", "items": { "type": "object" } },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "post": {
         "tags": ["Leads"],
@@ -188,7 +293,10 @@
             }
           }
         },
-        "responses": { "201": { "description": "Created" }, "409": { "description": "Suppressed or duplicate lead" } }
+        "responses": {
+          "201": { "description": "Created" },
+          "409": { "description": "Suppressed or duplicate lead" }
+        }
       }
     },
     "/leads/webhook": {
@@ -216,7 +324,9 @@
             }
           }
         },
-        "responses": { "200": { "description": "Ingested, or silently skipped if suppressed/duplicate" } }
+        "responses": {
+          "200": { "description": "Ingested, or silently skipped if suppressed/duplicate" }
+        }
       }
     },
     "/leads/import": {
@@ -247,7 +357,9 @@
         "tags": ["Leads"],
         "summary": "Manually suppress a lead",
         "description": "Adds the lead to the suppression list and flips its status.",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
         "responses": { "200": { "description": "Suppressed" } }
       }
     },
@@ -258,7 +370,15 @@
         "description": "Anonymizes PII across every campaign, preserves aggregate counts.",
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "type": "object", "required": ["email"], "properties": { "email": { "type": "string", "format": "email" } } } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": { "email": { "type": "string", "format": "email" } }
+              }
+            }
+          }
         },
         "responses": { "200": { "description": "Erased" } }
       }
@@ -267,8 +387,13 @@
       "delete": {
         "tags": ["Leads"],
         "summary": "Hard delete one lead row",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "responses": { "204": { "description": "Deleted" }, "404": { "description": "Lead not found" } }
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "204": { "description": "Deleted" },
+          "404": { "description": "Lead not found" }
+        }
       }
     },
     "/campaigns": {
@@ -291,10 +416,20 @@
                 "required": ["name", "aiPromptTemplate"],
                 "properties": {
                   "name": { "type": "string" },
-                  "aiPromptTemplate": { "type": "string", "description": "Mustache-placeholder AI instructions, e.g. \"Write a 2-sentence opener to {{firstName}} at {{company}}.\"" },
+                  "aiPromptTemplate": {
+                    "type": "string",
+                    "description": "Mustache-placeholder AI instructions, e.g. \"Write a 2-sentence opener to {{firstName}} at {{company}}.\""
+                  },
                   "template": { "type": "string", "description": "Spintax-capable fallback body." },
-                  "aiProvider": { "type": "string", "enum": ["GEMINI", "CLAUDE"], "description": "BYOK — your own Gemini or Claude API key." },
-                  "unsubscribeUrlTemplate": { "type": "string", "description": "Required before the campaign can launch." }
+                  "aiProvider": {
+                    "type": "string",
+                    "enum": ["GEMINI", "CLAUDE"],
+                    "description": "BYOK — your own Gemini or Claude API key."
+                  },
+                  "unsubscribeUrlTemplate": {
+                    "type": "string",
+                    "description": "Required before the campaign can launch."
+                  }
                 }
               }
             }
@@ -304,11 +439,16 @@
       }
     },
     "/campaigns/{id}": {
-      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+      "parameters": [
+        { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+      ],
       "get": {
         "tags": ["Campaigns"],
         "summary": "Fetch one campaign",
-        "responses": { "200": { "description": "OK" }, "404": { "description": "Campaign not found" } }
+        "responses": {
+          "200": { "description": "OK" },
+          "404": { "description": "Campaign not found" }
+        }
       },
       "patch": {
         "tags": ["Campaigns"],
@@ -327,10 +467,14 @@
       "post": {
         "tags": ["Campaigns"],
         "summary": "Launch a campaign",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
         "responses": {
           "200": { "description": "status set to ACTIVE" },
-          "422": { "description": "unsubscribeUrlTemplate is missing, or the campaign is pausedForBounceRate" }
+          "422": {
+            "description": "unsubscribeUrlTemplate is missing, or the campaign is pausedForBounceRate"
+          }
         }
       }
     },
@@ -338,7 +482,9 @@
       "post": {
         "tags": ["Campaigns"],
         "summary": "Pause a campaign",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
         "responses": { "200": { "description": "status set to PAUSED" } }
       }
     },
@@ -365,7 +511,11 @@
                       }
                     },
                     "isPaused": { "type": "boolean" },
-                    "jobs": { "type": "array", "items": { "type": "object" }, "description": "Up to 50 waiting/active/delayed jobs." },
+                    "jobs": {
+                      "type": "array",
+                      "items": { "type": "object" },
+                      "description": "Up to 50 waiting/active/delayed jobs."
+                    },
                     "throttling": {
                       "type": "object",
                       "properties": {
@@ -388,7 +538,15 @@
         "description": "Real BullMQ pause/resume, not cosmetic.",
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "type": "object", "required": ["paused"], "properties": { "paused": { "type": "boolean" } } } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["paused"],
+                "properties": { "paused": { "type": "boolean" } }
+              }
+            }
+          }
         },
         "responses": { "200": { "description": "Queue state updated" } }
       }
@@ -404,7 +562,18 @@
         "summary": "Register a sending domain",
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "type": "object", "required": ["domainName"], "properties": { "domainName": { "type": "string" }, "redirectUrl": { "type": "string" } } } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["domainName"],
+                "properties": {
+                  "domainName": { "type": "string" },
+                  "redirectUrl": { "type": "string" }
+                }
+              }
+            }
+          }
         },
         "responses": { "201": { "description": "Created" } }
       }
@@ -413,9 +582,15 @@
       "patch": {
         "tags": ["Domains"],
         "summary": "Update a domain's redirectUrl",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
         "requestBody": {
-          "content": { "application/json": { "schema": { "type": "object", "properties": { "redirectUrl": { "type": "string" } } } } }
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "redirectUrl": { "type": "string" } } }
+            }
+          }
         },
         "responses": { "200": { "description": "Updated" } }
       }
@@ -426,8 +601,20 @@
         "summary": "SPF/DKIM/DMARC + blocklist check",
         "description": "Keyed by domain NAME, not id — every other domain route is id-keyed.",
         "parameters": [
-          { "name": "domain", "in": "path", "required": true, "schema": { "type": "string" }, "description": "The domain name itself, e.g. yourcompany.com." },
-          { "name": "selector", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Non-default DKIM selector, if not using the standard one." }
+          {
+            "name": "domain",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "The domain name itself, e.g. yourcompany.com."
+          },
+          {
+            "name": "selector",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Non-default DKIM selector, if not using the standard one."
+          }
         ],
         "responses": { "200": { "description": "Check result" } }
       }
@@ -437,7 +624,9 @@
         "tags": ["Domains"],
         "summary": "Seed-inbox placement sampling rollup",
         "description": "Keyed by id. Explicitly labeled as sampling, not exhaustive testing.",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
         "responses": { "200": { "description": "Placement sample rollup" } }
       }
     },
@@ -450,13 +639,23 @@
       }
     },
     "/public/domain-check": {
-      "servers": [{ "url": "https://{instance}", "variables": { "instance": { "default": "your-instance" } } }],
+      "servers": [
+        { "url": "https://{instance}", "variables": { "instance": { "default": "your-instance" } } }
+      ],
       "get": {
         "tags": ["Public"],
         "summary": "Free, unauthenticated SPF/DKIM/DMARC + List-Unsubscribe + blocklist check",
         "description": "The exact endpoint behind https://warmhawk.com/tools/domain-check. Response shape verified against warmhawk-site's own client (components/DomainCheckTool.tsx), which types this contract directly against apps/api/src/routes/publicDomainCheck.ts. spf/dkim/dmarc are bare 'PASS'|'FAIL' strings with no per-check detail — dnsChecks.ts's checkSpf/checkDkim/checkDmarc don't produce one. listUnsubscribeCheck is a plain explanatory string, not a checkable status, because RFC 8058 headers live on a sent message, not something resolvable from DNS for a bare domain.",
         "security": [],
-        "parameters": [{ "name": "domain", "in": "query", "required": true, "schema": { "type": "string" }, "example": "acme-outreach.com" }],
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "acme-outreach.com"
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -469,10 +668,24 @@
                     "spf": { "type": "string", "enum": ["PASS", "FAIL"] },
                     "dkim": { "type": "string", "enum": ["PASS", "FAIL"] },
                     "dmarc": { "type": "string", "enum": ["PASS", "FAIL"] },
-                    "blocklists": { "type": "object", "additionalProperties": { "type": "string", "enum": ["PASS", "FAIL"] }, "description": "Per-DNSBL-source map, e.g. { \"spamhausZen\": \"PASS\" }." },
-                    "listUnsubscribeCheck": { "type": "string", "description": "Plain-language explanation, not a PASS/FAIL status." }
+                    "blocklists": {
+                      "type": "object",
+                      "additionalProperties": { "type": "string", "enum": ["PASS", "FAIL"] },
+                      "description": "Per-DNSBL-source map, e.g. { \"spamhausZen\": \"PASS\" }."
+                    },
+                    "listUnsubscribeCheck": {
+                      "type": "string",
+                      "description": "Plain-language explanation, not a PASS/FAIL status."
+                    }
                   },
-                  "required": ["domain", "spf", "dkim", "dmarc", "blocklists", "listUnsubscribeCheck"]
+                  "required": [
+                    "domain",
+                    "spf",
+                    "dkim",
+                    "dmarc",
+                    "blocklists",
+                    "listUnsubscribeCheck"
+                  ]
                 }
               }
             }

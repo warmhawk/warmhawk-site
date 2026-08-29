@@ -23,9 +23,10 @@ describe('DocsIntroductionPage (app/docs/introduction/page.tsx)', () => {
       expect(screen.getByText(tier.price)).toBeInTheDocument();
     }
 
-    expect(
-      screen.getByRole('link', { name: 'the pricing comparison' }),
-    ).toHaveAttribute('href', '/compare/pricing');
+    expect(screen.getByRole('link', { name: 'the pricing comparison' })).toHaveAttribute(
+      'href',
+      '/compare/pricing',
+    );
   });
 
   it('links to the docs quickstart, guides, self-hosting, and API reference next-step pages', () => {

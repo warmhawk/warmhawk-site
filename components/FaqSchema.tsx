@@ -29,7 +29,9 @@ export function FaqSection({
       <div className="wrap py-16 md:py-[88px]">
         <div className="max-w-xl mb-11">
           <p className="label text-rust mb-3">{eyebrow}</p>
-          <h2 className="font-display text-[28px] md:text-[34px] font-semibold leading-tight">{title}</h2>
+          <h2 className="font-display text-[28px] md:text-[34px] font-semibold leading-tight">
+            {title}
+          </h2>
         </div>
         <div className="border-t border-border">
           {items.map((item, i) => (
@@ -40,7 +42,9 @@ export function FaqSection({
                   +
                 </span>
               </summary>
-              <p className="pb-5 px-0.5 text-[15px] leading-relaxed text-ink-muted max-w-[70ch]">{item.answer}</p>
+              <p className="pb-5 px-0.5 text-[15px] leading-relaxed text-ink-muted max-w-[70ch]">
+                {item.answer}
+              </p>
             </details>
           ))}
         </div>

@@ -78,6 +78,10 @@ describe('getBreadcrumbTrail', () => {
 
   it('every intermediate crumb resolves to a real path (Home and Docs are always present together)', () => {
     const trail = getBreadcrumbTrail(docsFlatOrder[docsFlatOrder.length - 1]!.href);
-    expect(trail.map((c) => c.path)).toEqual(['/', '/docs', docsFlatOrder[docsFlatOrder.length - 1]!.href]);
+    expect(trail.map((c) => c.path)).toEqual([
+      '/',
+      '/docs',
+      docsFlatOrder[docsFlatOrder.length - 1]!.href,
+    ]);
   });
 });

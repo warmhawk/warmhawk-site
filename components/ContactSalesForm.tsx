@@ -58,7 +58,9 @@ export function ContactSalesForm() {
   if (state === 'success') {
     return (
       <div className="card bg-cream-elevated p-7 text-center">
-        <div className="font-display text-xl font-semibold mb-2">Thanks — we&rsquo;ll be in touch.</div>
+        <div className="font-display text-xl font-semibold mb-2">
+          Thanks — we&rsquo;ll be in touch.
+        </div>
         <p className="text-sm text-ink-muted">
           A founder reads every Enterprise DFY inquiry personally and follows up same business day.
           In the meantime, feel free to email{' '}
@@ -74,8 +76,8 @@ export function ContactSalesForm() {
   return (
     <form onSubmit={handleSubmit} className="card p-7 flex flex-col gap-4">
       <p className="text-sm leading-relaxed text-ink-muted mb-1">
-        Tier 2 is a custom-scoped engagement — DNS, migration, dedicated IPs, and deployment
-        handled by WarmHawk&rsquo;s founder, then an ongoing retainer. Tell us about your setup and
+        Tier 2 is a custom-scoped engagement — DNS, migration, dedicated IPs, and deployment handled
+        by WarmHawk&rsquo;s founder, then an ongoing retainer. Tell us about your setup and
         we&rsquo;ll follow up to schedule a call. This does not charge a card.
       </p>
       <div className="grid sm:grid-cols-2 gap-4">

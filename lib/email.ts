@@ -105,7 +105,7 @@ class SmtpEmailSender implements EmailSender {
         '',
         installCommand,
         '',
-        "Questions? Reply to this email or reach us at support@warmhawk.com.",
+        'Questions? Reply to this email or reach us at support@warmhawk.com.',
       ].join('\n'),
     });
   }

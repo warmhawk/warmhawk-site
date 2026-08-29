@@ -113,7 +113,10 @@ describe.skipIf(!canRunLiveWebhookTest)(
         subjectContains: 'Your WarmHawk install command',
         timeoutMs: 30000,
       });
-      expect(email, `No license email arrived at ${RESEND_TEST_RECIPIENT} within 30s`).not.toBeNull();
+      expect(
+        email,
+        `No license email arrived at ${RESEND_TEST_RECIPIENT} within 30s`,
+      ).not.toBeNull();
 
       // lib/email.ts's buildInstallCommand() shape: `curl -fsSL https://warmhawk.com/install |
       // bash -s -- --license <token> --domain <your-domain> --owner-email <email>`.

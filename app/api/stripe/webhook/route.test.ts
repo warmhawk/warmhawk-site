@@ -37,7 +37,10 @@ vi.mock('@/lib/email', () => ({
   },
 }));
 
-function webhookRequest(body: string, headers: Record<string, string> = { 'stripe-signature': 'sig_test' }) {
+function webhookRequest(
+  body: string,
+  headers: Record<string, string> = { 'stripe-signature': 'sig_test' },
+) {
   return new NextRequest('http://localhost/api/stripe/webhook', {
     method: 'POST',
     headers,
@@ -134,7 +137,9 @@ describe('POST /api/stripe/webhook', () => {
   });
 
   it('resolves the annual expiry from invoice metadata (propagated via subscription_data, not Checkout Session metadata)', async () => {
-    constructEventMock.mockReturnValue(invoicePaidEvent({ metadata: { billingInterval: 'annual' } }));
+    constructEventMock.mockReturnValue(
+      invoicePaidEvent({ metadata: { billingInterval: 'annual' } }),
+    );
 
     await POST(webhookRequest('{}'));
 

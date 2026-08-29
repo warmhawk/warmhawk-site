@@ -88,16 +88,16 @@ export default function FaqAndChangelogPage() {
         Questions worth answering up front, and what actually shipped.
       </h1>
       <p className="text-lg leading-relaxed text-ink-muted max-w-2xl mb-8">
-        WarmHawk is self-hosted, so most of what goes wrong is something you can see and fix on
-        your own server in a few minutes. This page rounds up the questions that come up before
-        someone even starts, and what each of the three repos has actually shipped so far.
+        WarmHawk is self-hosted, so most of what goes wrong is something you can see and fix on your
+        own server in a few minutes. This page rounds up the questions that come up before someone
+        even starts, and what each of the three repos has actually shipped so far.
       </p>
       <AnswerBlock>
-        This page answers the most common orientation questions about WarmHawk&rsquo;s docs and
-        API, then summarizes each repo&rsquo;s real CHANGELOG.md. All three repos are pre-1.0
-        today — every entry below is still under each repo&rsquo;s own &ldquo;Unreleased&rdquo;
-        heading, not a tagged release, and this page doesn&rsquo;t invent version numbers or dates
-        that don&rsquo;t exist yet.
+        This page answers the most common orientation questions about WarmHawk&rsquo;s docs and API,
+        then summarizes each repo&rsquo;s real CHANGELOG.md. All three repos are pre-1.0 today —
+        every entry below is still under each repo&rsquo;s own &ldquo;Unreleased&rdquo; heading, not
+        a tagged release, and this page doesn&rsquo;t invent version numbers or dates that
+        don&rsquo;t exist yet.
       </AnswerBlock>
 
       <FaqSection items={faqItems} title="Questions worth answering up front" />
@@ -106,10 +106,10 @@ export default function FaqAndChangelogPage() {
         <h2 className="font-display text-2xl md:text-[30px] font-semibold mb-3">Changelog</h2>
         <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-8">
           This site doesn&rsquo;t own the product changelog. Each package ships and maintains its
-          own <code className="font-mono text-sm">CHANGELOG.md</code>, versioned alongside its
-          code — summarized here, linked to the real file. None of the three has cut a tagged
-          release yet, so there are no version numbers to show; what follows is each repo&rsquo;s
-          current <code className="font-mono text-sm">[Unreleased]</code> section.
+          own <code className="font-mono text-sm">CHANGELOG.md</code>, versioned alongside its code
+          — summarized here, linked to the real file. None of the three has cut a tagged release
+          yet, so there are no version numbers to show; what follows is each repo&rsquo;s current{' '}
+          <code className="font-mono text-sm">[Unreleased]</code> section.
         </p>
         <div className="space-y-6 max-w-3xl">
           {changelog.map((entry) => (

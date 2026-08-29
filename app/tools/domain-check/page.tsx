@@ -68,8 +68,8 @@ export default function DomainCheckPage() {
           <p className="text-base leading-relaxed text-ink-muted">
             As of November 2025,{' '}
             <StatCite source="Gmail/Yahoo bulk-sender requirements, 2024-2026">
-              Gmail escalated its non-compliant bulk-sender enforcement from throttling to
-              permanent rejection for senders missing one-click unsubscribe headers
+              Gmail escalated its non-compliant bulk-sender enforcement from throttling to permanent
+              rejection for senders missing one-click unsubscribe headers
             </StatCite>
             . A domain that passed this same check a year ago can silently fail it today.
           </p>

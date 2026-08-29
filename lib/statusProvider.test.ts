@@ -103,7 +103,9 @@ describe('getStatusChecks', () => {
       {
         ok: true,
         json: () =>
-          Promise.resolve({ publicGroupList: [{ monitorList: [{ id: 1, name: 'Some other monitor' }] }] }),
+          Promise.resolve({
+            publicGroupList: [{ monitorList: [{ id: 1, name: 'Some other monitor' }] }],
+          }),
       } as Response,
       { ok: true, json: () => Promise.resolve({ heartbeatList: {} }) } as Response,
     ]);
@@ -131,7 +133,9 @@ describe('getStatusChecks', () => {
                 { status: 1, time: '2026-08-22T00:01:00Z', msg: 'OK', ping: 42 },
               ],
               // Monitor 2 (Stripe webhook): currently down.
-              '2': [{ status: 0, time: '2026-08-22T00:01:00Z', msg: 'Connection refused', ping: null }],
+              '2': [
+                { status: 0, time: '2026-08-22T00:01:00Z', msg: 'Connection refused', ping: null },
+              ],
             },
           }),
       } as Response,

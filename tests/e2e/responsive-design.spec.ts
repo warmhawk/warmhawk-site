@@ -28,8 +28,16 @@ import { test, expect, type Page } from '@playwright/test';
 const VIEWPORTS = [
   { name: 'Phone — Galaxy S8 (Android, narrow)', width: 360, height: 740 },
   { name: 'Phone — iPhone 14', width: 390, height: 844 },
-  { name: 'Tablet portrait — iPad Mini (exactly the old `md` breakpoint)', width: 768, height: 1024 },
-  { name: 'Tablet landscape / small laptop — iPad (exactly the `lg` breakpoint)', width: 1024, height: 768 },
+  {
+    name: 'Tablet portrait — iPad Mini (exactly the old `md` breakpoint)',
+    width: 768,
+    height: 1024,
+  },
+  {
+    name: 'Tablet landscape / small laptop — iPad (exactly the `lg` breakpoint)',
+    width: 1024,
+    height: 768,
+  },
   { name: 'Laptop', width: 1280, height: 800 },
   { name: 'Desktop', width: 1920, height: 1080 },
 ];
@@ -91,7 +99,9 @@ test.describe('Nav breakpoint regression: hamburger below `lg`, full link row at
     await expect(page.locator('div.hidden.lg\\:flex')).toBeHidden();
   });
 
-  test('at 1024px (`lg`) the desktop link row shows and the hamburger toggle is hidden', async ({ page }) => {
+  test('at 1024px (`lg`) the desktop link row shows and the hamburger toggle is hidden', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1024, height: 800 });
     await page.goto('/');
     await expect(page.locator('div.hidden.lg\\:flex')).toBeVisible();
@@ -150,7 +160,9 @@ test.describe('Docs sidebar: collapsed accordion below `md`, always-expanded at 
     await expect(otherLink).toBeVisible();
   });
 
-  test('at `md` and above, the full doc nav is visible with no accordion to expand', async ({ page }) => {
+  test('at `md` and above, the full doc nav is visible with no accordion to expand', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1024, height: 900 });
     await page.goto('/docs/introduction');
 
@@ -176,7 +188,9 @@ test.describe('Form inputs stay at/above 16px (below that, iOS Safari auto-zooms
     expect(count).toBeGreaterThan(0);
 
     for (let i = 0; i < count; i++) {
-      const fontSize = await fields.nth(i).evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+      const fontSize = await fields
+        .nth(i)
+        .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
       expect(fontSize, `contact-sales field #${i} font-size`).toBeGreaterThanOrEqual(16);
     }
   });

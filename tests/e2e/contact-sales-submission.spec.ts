@@ -14,7 +14,9 @@ import { test, expect } from '@playwright/test';
  * boundary is stubbed.
  */
 test.describe('Contact-sales form (Tier 2) submission', () => {
-  test('fills in every field and shows the success card on a successful submission', async ({ page }) => {
+  test('fills in every field and shows the success card on a successful submission', async ({
+    page,
+  }) => {
     let capturedBody: unknown;
     await page.route('**/api/contact-sales', async (route) => {
       capturedBody = JSON.parse(route.request().postData() ?? '{}');
@@ -31,7 +33,9 @@ test.describe('Contact-sales form (Tier 2) submission', () => {
     await page.getByLabel('Your name').fill('Alex Rivera');
     await page.getByLabel('Work email').fill('alex@acme-outreach.test');
     await page.getByLabel('Approx. client domains / mailboxes').fill('24 domains, 60 mailboxes');
-    await page.getByLabel('Anything else we should know').fill('Migrating off Instantly next quarter.');
+    await page
+      .getByLabel('Anything else we should know')
+      .fill('Migrating off Instantly next quarter.');
 
     await page.getByRole('button', { name: 'Request a call' }).click();
 
@@ -47,12 +51,15 @@ test.describe('Contact-sales form (Tier 2) submission', () => {
     });
   });
 
-  test('shows the server-provided error message and keeps the form up on a failed submission', async ({ page }) => {
+  test('shows the server-provided error message and keeps the form up on a failed submission', async ({
+    page,
+  }) => {
     await page.route('**/api/contact-sales', async (route) => {
       await route.fulfill({
         status: 502,
         json: {
-          error: 'Could not submit your request right now. Email hello@warmhawk.com directly and we’ll follow up.',
+          error:
+            'Could not submit your request right now. Email hello@warmhawk.com directly and we’ll follow up.',
         },
       });
     });
@@ -66,7 +73,9 @@ test.describe('Contact-sales form (Tier 2) submission', () => {
     await page.getByRole('button', { name: 'Request a call' }).click();
 
     await expect(
-      page.getByText(/could not submit your request right now\. email hello@warmhawk\.com directly/i),
+      page.getByText(
+        /could not submit your request right now\. email hello@warmhawk\.com directly/i,
+      ),
     ).toBeVisible();
     // The form stays up (not swapped for the success card) so the visitor can retry.
     await expect(page.getByLabel('Company')).toHaveValue('Acme Outreach Agency');

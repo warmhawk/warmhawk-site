@@ -8,7 +8,7 @@ import { getStatusChecks } from '@/lib/statusProvider';
 export const metadata: Metadata = pageSeo({
   title: 'Status',
   description:
-    "What WarmHawk operates centrally (the marketing site and Stripe license issuance) versus what runs on your own self-hosted instance, monitored by your own bundled Uptime Kuma and OTEL export.",
+    'What WarmHawk operates centrally (the marketing site and Stripe license issuance) versus what runs on your own self-hosted instance, monitored by your own bundled Uptime Kuma and OTEL export.',
   path: '/status',
 });
 
@@ -33,10 +33,10 @@ export default async function StatusPage() {
           </h1>
           <AnswerBlock>
             WarmHawk centrally operates exactly two things: this marketing site and the Stripe
-            webhook that issues licenses. Your self-hosted instance &mdash; containers, nginx,
-            TLS, Postgres &mdash; is entirely yours to run, which is the whole point of a
-            self-hosted product. You get your own bundled Uptime Kuma and a free OTEL export
-            endpoint to monitor it yourself.
+            webhook that issues licenses. Your self-hosted instance &mdash; containers, nginx, TLS,
+            Postgres &mdash; is entirely yours to run, which is the whole point of a self-hosted
+            product. You get your own bundled Uptime Kuma and a free OTEL export endpoint to monitor
+            it yourself.
           </AnswerBlock>
         </div>
       </div>
@@ -98,8 +98,8 @@ export default async function StatusPage() {
               self-hosted deployment. Your containers, your nginx, your TLS certificate, your
               Postgres database &mdash; none of it runs on WarmHawk-controlled infrastructure, so
               there is no central status WarmHawk could honestly report on your behalf. That
-              separation is the entire point of a self-hosted product: your instance&rsquo;s
-              uptime is exactly as good as the server you run it on, not tied to WarmHawk&rsquo;s.
+              separation is the entire point of a self-hosted product: your instance&rsquo;s uptime
+              is exactly as good as the server you run it on, not tied to WarmHawk&rsquo;s.
             </p>
             <p className="text-base leading-relaxed text-ink-muted mb-4">
               Instead, every install gets its own visibility built in, on by default:
@@ -111,8 +111,8 @@ export default async function StatusPage() {
                   <strong className="text-ink">A bundled Uptime Kuma instance</strong>, installed
                   automatically by{' '}
                   <code className="text-[13px] bg-cream px-1.5 py-0.5 rounded">install.sh</code>,
-                  giving you real-time, 1-minute-interval health checks across every service on
-                  your own instance &mdash; visible only to you.
+                  giving you real-time, 1-minute-interval health checks across every service on your
+                  own instance &mdash; visible only to you.
                 </span>
               </li>
               <li className="flex gap-3">

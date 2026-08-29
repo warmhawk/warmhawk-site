@@ -46,6 +46,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ url: portalSession.url });
   } catch (error) {
     console.error('Stripe Customer Portal session creation failed', error);
-    return NextResponse.json({ error: 'Unable to open billing portal right now.' }, { status: 502 });
+    return NextResponse.json(
+      { error: 'Unable to open billing portal right now.' },
+      { status: 502 },
+    );
   }
 }

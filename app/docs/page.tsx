@@ -57,16 +57,16 @@ export default function DocsIndexPage() {
       </h1>
       <p className="text-lg leading-relaxed text-ink-muted max-w-2xl mb-8">
         WarmHawk is self-hosted &mdash; your own containers, your own nginx, your own TLS
-        certificate, your own Postgres. That means most of what goes wrong is something you can
-        see and fix on your own server in a few minutes, without waiting on a support queue.
+        certificate, your own Postgres. That means most of what goes wrong is something you can see
+        and fix on your own server in a few minutes, without waiting on a support queue.
       </p>
       <AnswerBlock>
         This page indexes all of WarmHawk&rsquo;s documentation: getting started, guides for
-        day-to-day operation (mailboxes, leads, campaigns, sending safety, replies),
-        self-hosting (architecture, backups, TLS/observability), the full API reference, and a
-        reference section (guardrails, FAQ &amp; changelog) — plus an operations appendix for
-        install/update/billing troubleshooting. Start with Introduction if you&rsquo;re new, or
-        jump straight to the page that answers what you&rsquo;re stuck on.
+        day-to-day operation (mailboxes, leads, campaigns, sending safety, replies), self-hosting
+        (architecture, backups, TLS/observability), the full API reference, and a reference section
+        (guardrails, FAQ &amp; changelog) — plus an operations appendix for install/update/billing
+        troubleshooting. Start with Introduction if you&rsquo;re new, or jump straight to the page
+        that answers what you&rsquo;re stuck on.
       </AnswerBlock>
 
       <div className="mt-14">

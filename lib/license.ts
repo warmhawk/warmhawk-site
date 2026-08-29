@@ -143,8 +143,7 @@ export function tierForPriceId(priceId: string | undefined): LicenseTier {
  *  handler — test/CI code must use an obviously-fake shape instead (see e.g.
  *  warmhawk-core-engine's `generateTestLicenseKey`). */
 export function generateLicenseKey(): string {
-  const random =
-    Math.random().toString(36).slice(2, 14) + Math.random().toString(36).slice(2, 14);
+  const random = Math.random().toString(36).slice(2, 14) + Math.random().toString(36).slice(2, 14);
   return `whk_live_${random}`;
 }
 

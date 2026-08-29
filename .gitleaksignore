@@ -1,0 +1,53 @@
+# Known-historical findings only — the current tree is clean (verified
+# 2026-08-29, see docker/Dockerfile.web and the app/docs/** pages below).
+# `gitleaks detect` walks every commit in history, so an already-pushed
+# commit keeps tripping a rule forever even after the next commit fixes it
+# forward — baselining here is this repo's chosen fix, matching the
+# convention already established in jitterflow-core-app's own
+# .gitleaksignore. Never add a fingerprint for a CURRENT file here — fix
+# the leak instead.
+#
+# All 26 below are commit 3bddb31441e509d59ca9c8870a4ea3abf2650674 (already
+# on origin/main by the time this was caught), the commit that added the
+# /docs section. Re-derive with `gitleaks detect --source . --redact
+# --report-format json` if this ever needs doing again — matches by
+# file+rule+line, commit SHA is the only part that moves.
+
+# Not a real secret — docker/Dockerfile.web's own build-time ARG default
+# (never read by `next build`, see that file's comment) used to be literally
+# named "sk_test_placeholder", which is real-Stripe-key-shaped enough to
+# match gitleaks'/trivy's stripe-access-token regex. Fixed forward in the
+# current tree to a value with no sk_test_/sk_live_ prefix at all.
+3bddb31441e509d59ca9c8870a4ea3abf2650674:docker/Dockerfile.web:stripe-access-token:27
+
+# Not real secrets — every one of these is a documentation code sample
+# showing `Authorization: Bearer YOUR_API_KEY`, the literal placeholder
+# token name used throughout app/docs/**. gitleaks' generic curl-auth-header
+# rule matches on entropy alone and can't tell "YOUR_API_KEY" from a real
+# token. Left as-is rather than reworded — it's the standard, human-readable
+# placeholder convention for API docs and reads correctly to a developer.
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/connecting-mailboxes/page.tsx:curl-auth-header:59
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/connecting-mailboxes/page.tsx:curl-auth-header:83
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/connecting-mailboxes/page.tsx:curl-auth-header:111
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/connecting-mailboxes/page.tsx:curl-auth-header:138
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/connecting-mailboxes/page.tsx:curl-auth-header:141
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/connecting-mailboxes/page.tsx:curl-auth-header:147
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/replies-and-team/page.tsx:curl-auth-header:67
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/replies-and-team/page.tsx:curl-auth-header:71
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/leads-and-enrichment/page.tsx:curl-auth-header:66
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/leads-and-enrichment/page.tsx:curl-auth-header:96
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/leads-and-enrichment/page.tsx:curl-auth-header:143
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/sending-safely-and-domain-health/page.tsx:curl-auth-header:60
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/sending-safely-and-domain-health/page.tsx:curl-auth-header:89
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/sending-safely-and-domain-health/page.tsx:curl-auth-header:110
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/sending-safely-and-domain-health/page.tsx:curl-auth-header:129
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/quickstart/page.tsx:curl-auth-header:75
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/quickstart/page.tsx:curl-auth-header:91
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/quickstart/page.tsx:curl-auth-header:135
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/quickstart/page.tsx:curl-auth-header:162
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/quickstart/page.tsx:curl-auth-header:187
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/quickstart/page.tsx:curl-auth-header:197
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/campaigns-ai-and-content-quality/page.tsx:curl-auth-header:60
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/campaigns-ai-and-content-quality/page.tsx:curl-auth-header:107
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/campaigns-ai-and-content-quality/page.tsx:curl-auth-header:135
+3bddb31441e509d59ca9c8870a4ea3abf2650674:app/docs/guides/campaigns-ai-and-content-quality/page.tsx:curl-auth-header:152

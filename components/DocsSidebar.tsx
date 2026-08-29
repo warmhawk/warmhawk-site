@@ -24,7 +24,9 @@ import { docsSections } from '@/lib/docsNav';
  */
 export function DocsSidebar() {
   const pathname = usePathname();
-  const currentLink = docsSections.flatMap((section) => section.links).find((link) => link.href === pathname);
+  const currentLink = docsSections
+    .flatMap((section) => section.links)
+    .find((link) => link.href === pathname);
 
   const sections = (
     <nav>
@@ -59,9 +61,7 @@ export function DocsSidebar() {
   return (
     <aside className="w-full md:w-[240px] flex-none md:sticky md:top-8 md:max-h-[calc(100vh-4rem)] md:overflow-y-auto pb-6 md:pb-10">
       <details className="md:hidden group mb-2 rounded-xl border border-border bg-paper">
-        <summary
-          className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none marker:content-none [&::-webkit-details-marker]:hidden font-semibold text-sm text-ink"
-        >
+        <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none marker:content-none [&::-webkit-details-marker]:hidden font-semibold text-sm text-ink">
           <span>{currentLink ? currentLink.title : 'Docs menu'}</span>
           <svg
             className="h-3.5 w-3.5 flex-none text-ink-muted transition-transform group-open:rotate-180"

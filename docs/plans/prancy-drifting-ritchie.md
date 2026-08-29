@@ -8,13 +8,14 @@
 
 Approach confirmed: **warmhawk-site brings its own nginx+certbot sidecar**, binding 80/443 directly, with a cert issued via **plain HTTP-01** (`certbot/certbot` + webroot challenge — same image/method core-engine uses). All application activation happens through the user's own Woodpecker deploy run, never a direct SSH session by the agent (per the permanent no-direct-prod-app-deploys rule).
 
-**Ordering dependency:** jitterflow-stage's cutover to 2082/2083 (`ks-platform-infra`/`jitterflow-core-app` changes, already made) must be live on SaaS-Stage *before* warmhawk-site's nginx sidecar first tries to bind 80/443 there — otherwise the two containers collide on the same host-network ports. See Section 4.
+**Ordering dependency:** jitterflow-stage's cutover to 2082/2083 (`ks-platform-infra`/`jitterflow-core-app` changes, already made) must be live on SaaS-Stage _before_ warmhawk-site's nginx sidecar first tries to bind 80/443 there — otherwise the two containers collide on the same host-network ports. See Section 4.
 
 ---
 
 ## 1. `warmhawk-site` repo changes
 
 ### `docker-compose.deploy.yml`
+
 Add two services alongside the existing `web` (left untouched):
 
 - **`nginx`** — `build: { context: ./nginx }`, `ports: ['80:80', '443:443']` (no fallback — this box has no other claimant on these ports), `environment: { WARMHAWK_SITE_DOMAIN }`, mounts `certbot_conf:/etc/letsencrypt:ro` and `certbot_www:/var/www/certbot:ro`, `depends_on: [web]`. No custom `networks:` block — reaches `web` via the implicit default bridge's service-name DNS (`web:4600`), same as today.
@@ -22,12 +23,15 @@ Add two services alongside the existing `web` (left untouched):
 - New top-level volumes `certbot_conf` and `certbot_www` (the latter is the ACME webroot both nginx and certbot need to share).
 
 ### `nginx/Dockerfile` (new)
+
 Same shape as core-engine's: `FROM nginx:1.27-alpine`, copy `nginx.conf.template` into `/etc/nginx/templates/`, `rm -f /etc/nginx/conf.d/default.conf`.
 
 ### `nginx/nginx.conf.template` (new)
+
 Single upstream (`web:4600` — this app has no per-route API split like core-engine). HTTP `server` block includes `location /.well-known/acme-challenge/ { root /var/www/certbot; }` (matched before anything else) so Let's Encrypt's validation request actually resolves, then falls through to the usual redirect-to-HTTPS for everything else. A **commented-out** `listen 443 ssl` block behind the marker `# --- Enabled by scripts/deploy-nginx-setup.sh's enable_tls_template() once a cert exists ---`, flipped only after a real cert exists (nginx validates `ssl_certificate` paths at config-load time — same reason core-engine's template ships this way). Include `proxy_set_header X-Forwarded-Proto` (core-engine's template omits it, but Next.js needs it for correct absolute-URL generation).
 
 ### `scripts/deploy-nginx-setup.sh` (new)
+
 Invoked on the box before `docker compose up -d` (via `preUpCommands`, see Section 2). Flags: `--domain --project-name --compose-file`, plus a `--skip-certbot` escape hatch for the e2e test. No port-detection logic at all — unlike core-engine's install.sh, this box has exactly one thing on it wanting 80/443, so there's nothing to fall back from.
 
 1. **Issue/renew via HTTP-01, idempotently:** `docker compose ... run --rm certbot certbot certonly --webroot -w /var/www/certbot -d "$DOMAIN" --non-interactive --agree-tos -m admin@warmhawk.com --keep-until-expiring`. `--keep-until-expiring` makes repeated calls no-ops when the cert is still valid. Check `certbot certificates -d "$DOMAIN"` first to tell first-issuance from renewal: **fail the script (non-zero exit, blocks the deploy)** if there's no existing cert and issuance fails; **warn and continue** if a cert already exists and only renewal failed (the 12h-loop container gets another shot, and blocking a routine code deploy over a transient hiccup is disproportionate).
@@ -37,6 +41,7 @@ Invoked on the box before `docker compose up -d` (via `preUpCommands`, see Secti
 **Known risk, not a blocker:** if `stage.warmhawk.com`'s Cloudflare DNS record is proxied (it should be, for the WAF/CDN benefit) and the zone has "Always Use HTTPS" or a similar redirect rule active, the plain-HTTP ACME validation request could get redirected before it ever reaches nginx's `/.well-known/acme-challenge/` location, failing issuance. This is the exact same risk any real self-hosted customer behind Cloudflare would hit — core-engine's install.sh doesn't special-case it either. If the first real issuance fails this way, the fix is a Cloudflare Configuration Rule exempting `/.well-known/acme-challenge/*` from the redirect — not a code change here.
 
 ### `tests/e2e-nginx/test-cert-issuance.sh` (new, replaces the port-fallback test)
+
 No more port-fallback to test (nothing to fall back from). Instead: bring up `nginx`+`web` locally via `docker compose`, run `deploy-nginx-setup.sh --skip-certbot`, and assert (a) nginx serves a file placed under the webroot at `/.well-known/acme-challenge/test-token` — proving the mount + location block actually work end to end, and (b) `enable_tls_template()` flips the marker correctly and the rebuilt nginx image loads the resulting config without error (`nginx -t`). Real HTTP-01 issuance against a live ACME server stays out of scope locally (same reasoning as before) — that's exercised for real by the first live stage deploy, and any breakage there surfaces via the existing `verify-stage` Playwright run against `https://stage.warmhawk.com`.
 
 ---
@@ -63,7 +68,7 @@ Unchanged in shape from the original plan — this machinery (getting `preUpComm
 Drastically smaller than the original DNS-01 version — no Origin Rule, no API token on the box at all for warmhawk-site.
 
 - **Confirm the `A` record**: `stage.warmhawk.com` → `95.217.208.54`, proxied. (If it doesn't already exist, create it — one API call or a dashboard click; doesn't need its own script given there's nothing else to make idempotent alongside it.)
-- No Cloudflare Origin Rule needed for warmhawk-site — it owns 80/443 directly, so Cloudflare's default proxied routing (edge port → same origin port) already lands in the right place. (Compare `jitterflow-core-app`'s stage box, which *does* need one now — see `ks-platform-infra/scripts/setup-cloudflare-jitterflow-stage-origin.sh` — because it moved off its default ports and warmhawk-site didn't.)
+- No Cloudflare Origin Rule needed for warmhawk-site — it owns 80/443 directly, so Cloudflare's default proxied routing (edge port → same origin port) already lands in the right place. (Compare `jitterflow-core-app`'s stage box, which _does_ need one now — see `ks-platform-infra/scripts/setup-cloudflare-jitterflow-stage-origin.sh` — because it moved off its default ports and warmhawk-site didn't.)
 - No credential file to provision on the box — `certbot/certbot` needs no Cloudflare token, unlike the DNS-01 plugin image the original plan used.
 
 ---

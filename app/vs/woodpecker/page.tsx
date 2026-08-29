@@ -126,11 +126,11 @@ export default function WoodpeckerComparisonPage() {
             Sequential rotation treats every mailbox the same. They&rsquo;re not.
           </h2>
           <AnswerBlock>
-            Woodpecker rotates sends across mailboxes in a fixed sequence, so every mailbox gets
-            hit at the same pace regardless of its age, warmup status, or remaining daily
-            capacity. WarmHawk&rsquo;s enqueuer.ts does weighted, least-recently-used,
-            capacity-aware rotation instead &mdash; sends go to whichever mailbox has the room and
-            the standing to take them safely, not just next in line.
+            Woodpecker rotates sends across mailboxes in a fixed sequence, so every mailbox gets hit
+            at the same pace regardless of its age, warmup status, or remaining daily capacity.
+            WarmHawk&rsquo;s enqueuer.ts does weighted, least-recently-used, capacity-aware rotation
+            instead &mdash; sends go to whichever mailbox has the room and the standing to take them
+            safely, not just next in line.
           </AnswerBlock>
           <div className="max-w-3xl mx-auto space-y-4 text-[15px] leading-relaxed text-ink-muted">
             <p>
@@ -140,15 +140,15 @@ export default function WoodpeckerComparisonPage() {
                 Woodpecker users describe rotation as sequential rather than weighted, with no
                 accounting for a given mailbox&rsquo;s current capacity or warmup progress
               </StatCite>
-              , which means a fragile mailbox and a battle-tested one get identical treatment
-              purely because of queue order.
+              , which means a fragile mailbox and a battle-tested one get identical treatment purely
+              because of queue order.
             </p>
             <p>
               enqueuer.ts tracks how recently each mailbox sent, how much daily capacity it has
               left, and how it&rsquo;s been performing, then picks the best candidate for the next
-              send &mdash; every time, automatically. A newer or lower-capacity mailbox
-              naturally gets fewer, better-timed sends instead of being forced through the same
-              cadence as everything else in the pool, which is the opposite of{' '}
+              send &mdash; every time, automatically. A newer or lower-capacity mailbox naturally
+              gets fewer, better-timed sends instead of being forced through the same cadence as
+              everything else in the pool, which is the opposite of{' '}
               <StatCite source="User reviews">
                 a fixed rotation order that can&rsquo;t adjust when one mailbox is clearly in worse
                 shape than the rest of the pool
@@ -182,10 +182,10 @@ export default function WoodpeckerComparisonPage() {
           </p>
           <p>
             WarmHawk doesn&rsquo;t try to win that race &mdash; it steps out of it. Bring your own
-            Gemini or Claude key, and WarmHawk calls it directly on your behalf for
-            personalization. You&rsquo;re always on whichever model you chose to pay for, at your
-            provider&rsquo;s own rate, with nothing routed through a shared gateway that adds
-            latency, cost, or a WarmHawk markup.
+            Gemini or Claude key, and WarmHawk calls it directly on your behalf for personalization.
+            You&rsquo;re always on whichever model you chose to pay for, at your provider&rsquo;s
+            own rate, with nothing routed through a shared gateway that adds latency, cost, or a
+            WarmHawk markup.
           </p>
         </div>
       </div>
@@ -213,8 +213,8 @@ export default function WoodpeckerComparisonPage() {
             </StatCite>
             . WarmHawk treats rotation and personalization as one problem: write the best message
             you can with the model you chose, then let queue logic decide the safest mailbox and
-            moment to send it from &mdash; automatically, every time, without a dashboard setting
-            to babysit.
+            moment to send it from &mdash; automatically, every time, without a dashboard setting to
+            babysit.
           </p>
         </div>
       </div>
@@ -246,10 +246,7 @@ export default function WoodpeckerComparisonPage() {
             <Link href="/checkout?tier=1" className="btn btn-primary">
               Start Tier 1 &mdash; $199/mo
             </Link>
-            <Link
-              href="/docs/quickstart"
-              className="btn btn-on-dark"
-            >
+            <Link href="/docs/quickstart" className="btn btn-on-dark">
               Get the free engine
             </Link>
           </div>

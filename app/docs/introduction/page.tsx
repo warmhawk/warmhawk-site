@@ -27,20 +27,20 @@ export default function DocsIntroductionPage() {
       <AnswerBlock>
         WarmHawk is self-hosted cold-email infrastructure: your own containers, your own Postgres,
         your own nginx and TLS certificate, sending through mailboxes you connect. It ships as a
-        free open-core API (Tier 0), a licensed operator dashboard on top of that same engine
-        (Tier 1, $199/mo), or a fully managed deployment WarmHawk operates for you (Tier 2, $1,500
-        + $300/mo). Every tier runs the identical sending engine &mdash; what changes is who
-        operates the dashboard layer and who carries deployment/support.
+        free open-core API (Tier 0), a licensed operator dashboard on top of that same engine (Tier
+        1, $199/mo), or a fully managed deployment WarmHawk operates for you (Tier 2, $1,500 +
+        $300/mo). Every tier runs the identical sending engine &mdash; what changes is who operates
+        the dashboard layer and who carries deployment/support.
       </AnswerBlock>
 
       <h2 className="font-display text-2xl font-semibold mb-4">What actually ships</h2>
       <ul className="list-disc pl-6 space-y-2 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
         <li>
           A Fastify API (<code className="font-mono">warmhawk-core-engine</code>) with mailbox
-          connections (SMTP/IMAP or Google/Microsoft OAuth), lead import (single, CSV, or
-          webhook), campaigns with native spintax variation and BYOK AI personalization, a
-          jittered/capacity-aware send queue, and domain health checks (SPF/DKIM/DMARC +
-          blocklist monitoring).
+          connections (SMTP/IMAP or Google/Microsoft OAuth), lead import (single, CSV, or webhook),
+          campaigns with native spintax variation and BYOK AI personalization, a
+          jittered/capacity-aware send queue, and domain health checks (SPF/DKIM/DMARC + blocklist
+          monitoring).
         </li>
         <li>
           Guardrails enforced structurally, not just documented: CAN-SPAM auto-injection, RFC 8058
@@ -49,10 +49,10 @@ export default function DocsIntroductionPage() {
           before a bad list damages a domain&rsquo;s reputation.
         </li>
         <li>
-          On Tier 1/2, a licensed operator dashboard (<code className="font-mono">
-            warmhawk-enterprise-operator
-          </code>) with a live queue inspector, domain health alerts, a Unified Reply Inbox, team
-          management, and 2FA &mdash; bundled Uptime Kuma and native OTEL export on by default.
+          On Tier 1/2, a licensed operator dashboard (
+          <code className="font-mono">warmhawk-enterprise-operator</code>) with a live queue
+          inspector, domain health alerts, a Unified Reply Inbox, team management, and 2FA &mdash;
+          bundled Uptime Kuma and native OTEL export on by default.
         </li>
       </ul>
 
@@ -68,7 +68,11 @@ export default function DocsIntroductionPage() {
         ))}
       </div>
       <p className="text-sm text-ink-muted max-w-2xl mb-14">
-        Full breakdown of every feature, tier by tier: <Link href="/compare/pricing" className="text-rust font-semibold">the pricing comparison</Link>.
+        Full breakdown of every feature, tier by tier:{' '}
+        <Link href="/compare/pricing" className="text-rust font-semibold">
+          the pricing comparison
+        </Link>
+        .
       </p>
 
       <div className="card bg-cream-elevated p-7 max-w-2xl">

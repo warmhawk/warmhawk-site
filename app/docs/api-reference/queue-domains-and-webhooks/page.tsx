@@ -12,28 +12,42 @@ export const metadata: Metadata = pageSeo({
 });
 
 const queueRoutes = [
-  { route: 'GET /v1/queue/status', desc: 'Returns { counts, isPaused, jobs, throttling: { cadenceFloorSeconds: 480, jitterSeconds } }.' },
-  { route: 'POST /v1/queue/pause', desc: 'Body: { paused: boolean }. Real BullMQ pause/resume, not cosmetic.' },
+  {
+    route: 'GET /v1/queue/status',
+    desc: 'Returns { counts, isPaused, jobs, throttling: { cadenceFloorSeconds: 480, jitterSeconds } }.',
+  },
+  {
+    route: 'POST /v1/queue/pause',
+    desc: 'Body: { paused: boolean }. Real BullMQ pause/resume, not cosmetic.',
+  },
 ];
 
 const domainRoutes = [
   { route: 'GET /v1/domains', desc: 'List every sending domain on the account.' },
   { route: 'POST /v1/domains', desc: 'Create. Body: { domainName, redirectUrl? }.' },
   { route: 'PATCH /v1/domains/:id', desc: 'Update redirectUrl.' },
-  { route: 'POST /v1/domains/:domain/check', desc: 'Keyed by domain NAME, not id. Unified SPF/DKIM/DMARC + blocklist check. Optional ?selector= for a non-default DKIM selector.' },
-  { route: 'GET /v1/domains/:id/placement-sample', desc: 'Keyed by id. Seed-inbox placement sampling rollup — explicitly labeled as sampling, not exhaustive testing.' },
+  {
+    route: 'POST /v1/domains/:domain/check',
+    desc: 'Keyed by domain NAME, not id. Unified SPF/DKIM/DMARC + blocklist check. Optional ?selector= for a non-default DKIM selector.',
+  },
+  {
+    route: 'GET /v1/domains/:id/placement-sample',
+    desc: 'Keyed by id. Seed-inbox placement sampling rollup — explicitly labeled as sampling, not exhaustive testing.',
+  },
 ];
 
 export default function ApiReferenceQueueDomainsWebhooksPage() {
   return (
     <div className="py-16">
-      <div className="label text-rust mb-5">Docs / API reference / Queue, domains &amp; webhooks</div>
+      <div className="label text-rust mb-5">
+        Docs / API reference / Queue, domains &amp; webhooks
+      </div>
       <h1 className="font-display text-4xl md:text-[48px] leading-tight font-semibold mb-6 max-w-3xl">
         Queue, domains &amp; webhooks.
       </h1>
       <p className="text-lg leading-relaxed text-ink-muted max-w-2xl mb-8">
-        The send queue, domain health checks, and &mdash; explicitly &mdash; what outbound
-        webhooks exist today (none) versus what&rsquo;s planned.
+        The send queue, domain health checks, and &mdash; explicitly &mdash; what outbound webhooks
+        exist today (none) versus what&rsquo;s planned.
       </p>
       <AnswerBlock>
         GET /v1/queue/status reports real BullMQ counts, pause state, and throttling
@@ -49,21 +63,27 @@ export default function ApiReferenceQueueDomainsWebhooksPage() {
           <thead>
             <tr>
               <th className="label text-left p-4 text-ink-muted font-semibold">Route</th>
-              <th className="label text-left p-4 text-ink-muted font-semibold border-l border-border">What it does</th>
+              <th className="label text-left p-4 text-ink-muted font-semibold border-l border-border">
+                What it does
+              </th>
             </tr>
           </thead>
           <tbody>
             {queueRoutes.map((row) => (
               <tr key={row.route}>
-                <td className="p-4 border-t border-border align-top font-mono text-[13px]">{row.route}</td>
-                <td className="p-4 border-t border-l border-border align-top text-ink-muted">{row.desc}</td>
+                <td className="p-4 border-t border-border align-top font-mono text-[13px]">
+                  {row.route}
+                </td>
+                <td className="p-4 border-t border-l border-border align-top text-ink-muted">
+                  {row.desc}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <CodeBlock label="GET /v1/queue/status — response shape">
-{`{
+        {`{
   "counts": { "waiting": 3, "active": 1, "delayed": 12, "completed": 240, "failed": 2 },
   "isPaused": false,
   "jobs": [ /* up to 50 waiting/active/delayed jobs */ ],
@@ -77,14 +97,20 @@ export default function ApiReferenceQueueDomainsWebhooksPage() {
           <thead>
             <tr>
               <th className="label text-left p-4 text-ink-muted font-semibold">Route</th>
-              <th className="label text-left p-4 text-ink-muted font-semibold border-l border-border">What it does</th>
+              <th className="label text-left p-4 text-ink-muted font-semibold border-l border-border">
+                What it does
+              </th>
             </tr>
           </thead>
           <tbody>
             {domainRoutes.map((row) => (
               <tr key={row.route}>
-                <td className="p-4 border-t border-border align-top font-mono text-[13px]">{row.route}</td>
-                <td className="p-4 border-t border-l border-border align-top text-ink-muted">{row.desc}</td>
+                <td className="p-4 border-t border-border align-top font-mono text-[13px]">
+                  {row.route}
+                </td>
+                <td className="p-4 border-t border-l border-border align-top text-ink-muted">
+                  {row.desc}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -96,7 +122,10 @@ export default function ApiReferenceQueueDomainsWebhooksPage() {
         sampling uses the domain <strong className="text-ink">id</strong> (
         <code className="font-mono">GET /v1/domains/dom_a1b2c3/placement-sample</code>) — every
         other domain route in this table is id-keyed. Full walkthrough with response bodies:{' '}
-        <Link href="/docs/guides/sending-safely-and-domain-health" className="text-rust font-semibold">
+        <Link
+          href="/docs/guides/sending-safely-and-domain-health"
+          className="text-rust font-semibold"
+        >
           Sending safely &amp; domain health
         </Link>
         .
@@ -106,11 +135,12 @@ export default function ApiReferenceQueueDomainsWebhooksPage() {
       <div className="card bg-cream-elevated p-6 max-w-2xl mb-10 border-l-2 border-pending">
         <div className="label text-pending mb-2">Planned, not built</div>
         <p className="text-[14.5px] leading-relaxed text-ink-muted">
-          No outbound webhook system exists in <code className="font-mono">warmhawk-core-engine</code> today
-          &mdash; there is no route to register a callback URL and no event dispatcher that calls
-          it. If you need to react to a WarmHawk event today (a new reply, a send completing,
-          a domain going unhealthy), poll the relevant <code className="font-mono">GET</code> route
-          instead: <code className="font-mono">GET /v1/replies</code>,{' '}
+          No outbound webhook system exists in{' '}
+          <code className="font-mono">warmhawk-core-engine</code> today &mdash; there is no route to
+          register a callback URL and no event dispatcher that calls it. If you need to react to a
+          WarmHawk event today (a new reply, a send completing, a domain going unhealthy), poll the
+          relevant <code className="font-mono">GET</code> route instead:{' '}
+          <code className="font-mono">GET /v1/replies</code>,{' '}
           <code className="font-mono">GET /v1/queue/status</code>, or{' '}
           <code className="font-mono">GET /v1/domains/:id/placement-sample</code>. This section
           exists to say so plainly rather than leave the gap undocumented.

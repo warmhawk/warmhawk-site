@@ -73,7 +73,7 @@ describe('public/openapi.json', () => {
     expect(spec.components.securitySchemes.bearerAuth.scheme).toBe('bearer');
   });
 
-  it('documents the free public domain-check tool endpoint, matching DomainCheckTool.tsx\'s response contract', () => {
+  it("documents the free public domain-check tool endpoint, matching DomainCheckTool.tsx's response contract", () => {
     const spec = JSON.parse(raw);
     const schema =
       spec.paths['/public/domain-check'].get.responses['200'].content['application/json'].schema;
@@ -90,7 +90,7 @@ describe('public/openapi.json', () => {
     expect(spec.info.description).toContain('planned, not implemented');
   });
 
-  it('is at least referenced by the site\'s own docs navigation data (api-reference section exists)', () => {
+  it("is at least referenced by the site's own docs navigation data (api-reference section exists)", () => {
     const apiRefSection = docsSections.find((s) => s.label === 'API reference');
     expect(apiRefSection).toBeDefined();
     expect(apiRefSection!.links.length).toBeGreaterThan(0);

@@ -62,11 +62,11 @@ export default function StripeWebhooksPage() {
       </p>
       <ul className="list-disc pl-6 space-y-3 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
         <li>
-          <strong className="text-ink">invoice.paid</strong> &mdash; issues a new RSA-signed
-          license key with an expiry set to the current billing period, and sends you the
-          confirmation email containing your install command with that license embedded. Fires
-          for your very first invoice and every renewal after that, so this is the only event
-          WarmHawk needs to keep your license current.
+          <strong className="text-ink">invoice.paid</strong> &mdash; issues a new RSA-signed license
+          key with an expiry set to the current billing period, and sends you the confirmation email
+          containing your install command with that license embedded. Fires for your very first
+          invoice and every renewal after that, so this is the only event WarmHawk needs to keep
+          your license current.
         </li>
         <li>
           <strong className="text-ink">invoice.payment_failed</strong> &mdash; does not revoke
@@ -81,16 +81,18 @@ export default function StripeWebhooksPage() {
         </li>
       </ul>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
-        This is a deliberate design choice: WarmHawk never has to reach into your running instance to
-        turn it off. See{' '}
+        This is a deliberate design choice: WarmHawk never has to reach into your running instance
+        to turn it off. See{' '}
         <Link href="/docs/license-activation" className="text-rust font-semibold">
           license activation troubleshooting
         </Link>{' '}
-        for how the dashboard&rsquo;s side of this &mdash; the daily <code className="font-mono">LicenseGate</code> re-check
-        &mdash; actually enforces it.
+        for how the dashboard&rsquo;s side of this &mdash; the daily{' '}
+        <code className="font-mono">LicenseGate</code> re-check &mdash; actually enforces it.
       </p>
 
-      <h2 className="font-display text-2xl font-semibold mb-4">Paid, but never got the install command email</h2>
+      <h2 className="font-display text-2xl font-semibold mb-4">
+        Paid, but never got the install command email
+      </h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         The install command &mdash; with your license key embedded &mdash; is sent by the same
         webhook flow that issues the license. If checkout succeeded but the email never arrived:
@@ -111,7 +113,9 @@ export default function StripeWebhooksPage() {
         </li>
       </ol>
 
-      <h2 className="font-display text-2xl font-semibold mb-4">Updating payment method or cancelling</h2>
+      <h2 className="font-display text-2xl font-semibold mb-4">
+        Updating payment method or cancelling
+      </h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         You don&rsquo;t need a support ticket for routine billing changes. The Stripe Customer
         Portal &mdash; linked in your original receipt email &mdash; lets you self-serve:
@@ -123,16 +127,19 @@ export default function StripeWebhooksPage() {
         <li>Cancel your subscription outright</li>
       </ul>
       <CodeBlock label="Can't find the portal link? Ask support to resend it">
-{`# Email support@warmhawk.com with your Stripe customer email —
+        {`# Email support@warmhawk.com with your Stripe customer email —
 # we'll send a fresh Customer Portal link, no ticket investigation required.`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-6 mb-14">
-        Remember that cancelling doesn&rsquo;t cut your instance off immediately &mdash; your license
-        already carries an expiry through the end of the period you paid for, and the dashboard
-        checks against that once a day rather than instantly.
+        Remember that cancelling doesn&rsquo;t cut your instance off immediately &mdash; your
+        license already carries an expiry through the end of the period you paid for, and the
+        dashboard checks against that once a day rather than instantly.
       </p>
 
-      <FaqSection items={faqItems} title="Stripe checkout & webhooks: questions worth answering up front" />
+      <FaqSection
+        items={faqItems}
+        title="Stripe checkout & webhooks: questions worth answering up front"
+      />
     </div>
   );
 }

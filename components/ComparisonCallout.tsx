@@ -14,12 +14,12 @@ export function ComparisonCallout() {
       </h3>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-3xl">
         Instantly, Smartlead, Lemlist, Woodpecker, and every other cold-email SaaS reviewed run
-        shared multi-tenant servers — every customer&rsquo;s data and sending infrastructure sits
-        on the vendor&rsquo;s own shared boxes, with &ldquo;dedicated IP&rdquo; add-ons (where
-        offered at all) only isolating the sending IP, not the application, database, or proxy
-        layer underneath it. No competitor in this space publishes a self-hosted or per-customer
-        container option. WarmHawk gives every Tier 0/Tier 1 account its own complete package —
-        own containers, own database, own nginx, own TLS certificate, own Docker network — nothing
+        shared multi-tenant servers — every customer&rsquo;s data and sending infrastructure sits on
+        the vendor&rsquo;s own shared boxes, with &ldquo;dedicated IP&rdquo; add-ons (where offered
+        at all) only isolating the sending IP, not the application, database, or proxy layer
+        underneath it. No competitor in this space publishes a self-hosted or per-customer container
+        option. WarmHawk gives every Tier 0/Tier 1 account its own complete package — own
+        containers, own database, own nginx, own TLS certificate, own Docker network — nothing
         shared with any other customer or with WarmHawk itself. That&rsquo;s not &ldquo;different
         pricing,&rdquo; it&rsquo;s a genuine category difference.
         <span className="block mt-2 text-[13px]">

@@ -59,7 +59,9 @@ describe('CheckoutButtons', () => {
         expect.objectContaining({ method: 'POST', body: JSON.stringify({ interval: 'annual' }) }),
       );
     });
-    await waitFor(() => expect(window.location.href).toBe('https://checkout.stripe.com/session/abc'));
+    await waitFor(() =>
+      expect(window.location.href).toBe('https://checkout.stripe.com/session/abc'),
+    );
   });
 
   it('shows "Starting checkout…" and disables the button while the request is in flight', async () => {
@@ -95,7 +97,9 @@ describe('CheckoutButtons', () => {
     render(createElement(CheckoutButtons));
     fireEvent.click(screen.getByRole('button', { name: /start your install/i }));
 
-    expect(await screen.findByText('Stripe is not configured in this environment.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Stripe is not configured in this environment.'),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /start your install/i })).toBeEnabled();
   });
 

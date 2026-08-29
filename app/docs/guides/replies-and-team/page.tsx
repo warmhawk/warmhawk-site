@@ -49,10 +49,10 @@ export default function RepliesAndTeamPage() {
       </p>
       <AnswerBlock>
         WarmHawk polls IMAP for replies to sends still awaiting one, classifies each reply
-        (INTERESTED, NOT_INTERESTED, OUT_OF_OFFICE, AUTO_REPLY, OPT_OUT, UNCLASSIFIED) via your
-        BYOK AI key with a keyword-heuristic fallback, and automatically suppresses an OPT_OUT
-        lead. Team invite/remove with flat permissions lives in the Tier 1/2 operator dashboard,
-        not the open-core API.
+        (INTERESTED, NOT_INTERESTED, OUT_OF_OFFICE, AUTO_REPLY, OPT_OUT, UNCLASSIFIED) via your BYOK
+        AI key with a keyword-heuristic fallback, and automatically suppresses an OPT_OUT lead. Team
+        invite/remove with flat permissions lives in the Tier 1/2 operator dashboard, not the
+        open-core API.
       </AnswerBlock>
 
       <h2 className="font-display text-2xl font-semibold mb-4">How a reply gets classified</h2>
@@ -60,15 +60,15 @@ export default function RepliesAndTeamPage() {
         A reply row is created (internally, from the IMAP-polling pipeline) with the raw message
         content, then classified &mdash; by your connected AI key when one is configured, or by a
         resilient keyword-heuristic fallback when the AI call itself fails, so a provider outage
-        never silently drops a reply to <code className="font-mono">UNCLASSIFIED</code> and misses
-        a compliance-sensitive opt-out.
+        never silently drops a reply to <code className="font-mono">UNCLASSIFIED</code> and misses a
+        compliance-sensitive opt-out.
       </p>
       <CodeBlock label="GET /v1/replies — filterable, dashboard-facing">
-{`curl "https://app.yourcompany.com/v1/replies?classification=INTERESTED&campaignId=camp_g7h8i9" \\
+        {`curl "https://app.yourcompany.com/v1/replies?classification=INTERESTED&campaignId=camp_g7h8i9" \\
   -H "Authorization: Bearer YOUR_API_KEY"`}
       </CodeBlock>
       <CodeBlock label="PATCH /v1/replies/:id — re-classify by hand">
-{`curl -X PATCH https://app.yourcompany.com/v1/replies/rep_x1y2z3 \\
+        {`curl -X PATCH https://app.yourcompany.com/v1/replies/rep_x1y2z3 \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{ "classification": "INTERESTED" }'`}
@@ -76,19 +76,23 @@ export default function RepliesAndTeamPage() {
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
         Classification labels: <code className="font-mono">INTERESTED</code>,{' '}
         <code className="font-mono">NOT_INTERESTED</code>,{' '}
-        <code className="font-mono">OUT_OF_OFFICE</code>, <code className="font-mono">AUTO_REPLY</code>,{' '}
-        <code className="font-mono">OPT_OUT</code>, <code className="font-mono">UNCLASSIFIED</code>.
-        An <code className="font-mono">OPT_OUT</code> classification &mdash; from the AI or the
-        keyword fallback &mdash; adds the lead&rsquo;s email to the same suppression list a manual{' '}
+        <code className="font-mono">OUT_OF_OFFICE</code>,{' '}
+        <code className="font-mono">AUTO_REPLY</code>, <code className="font-mono">OPT_OUT</code>,{' '}
+        <code className="font-mono">UNCLASSIFIED</code>. An{' '}
+        <code className="font-mono">OPT_OUT</code> classification &mdash; from the AI or the keyword
+        fallback &mdash; adds the lead&rsquo;s email to the same suppression list a manual{' '}
         <code className="font-mono">POST /v1/leads/:id/suppress</code> uses, so it stops future
         sends immediately, not just on the next dashboard review.
       </p>
 
-      <h2 className="font-display text-2xl font-semibold mb-4">Team access (Tier 1/2, dashboard-side)</h2>
+      <h2 className="font-display text-2xl font-semibold mb-4">
+        Team access (Tier 1/2, dashboard-side)
+      </h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
-        Tier 0&rsquo;s open-core API has no team concept &mdash; <code className="font-mono">POST /v1/auth/login</code> authenticates
-        against a single-account <code className="font-mono">User</code> table on the engine
-        itself. Team invite/remove with flat, shared permissions is a{' '}
+        Tier 0&rsquo;s open-core API has no team concept &mdash;{' '}
+        <code className="font-mono">POST /v1/auth/login</code> authenticates against a
+        single-account <code className="font-mono">User</code> table on the engine itself. Team
+        invite/remove with flat, shared permissions is a{' '}
         <code className="font-mono">warmhawk-enterprise-operator</code> dashboard feature on Tier
         1/2: every invited teammate sees everything in that one account &mdash; it is not per-client
         data isolation between an agency&rsquo;s own separate clients (see{' '}
@@ -102,9 +106,9 @@ export default function RepliesAndTeamPage() {
       <div className="card bg-cream-elevated p-7 max-w-2xl">
         <p className="text-[15px] leading-relaxed text-ink-muted">
           Reply polling runs as an internal n8n workflow calling{' '}
-          <code className="font-mono">GET /replies/pending</code> and the IMAP fetch-reply
-          endpoint &mdash; both internal-only, guarded by a shared callback secret and reachable
-          only over the instance&rsquo;s internal Docker network, never exposed publicly. See{' '}
+          <code className="font-mono">GET /replies/pending</code> and the IMAP fetch-reply endpoint
+          &mdash; both internal-only, guarded by a shared callback secret and reachable only over
+          the instance&rsquo;s internal Docker network, never exposed publicly. See{' '}
           <Link href="/docs/self-hosting/architecture" className="text-rust font-semibold">
             Architecture
           </Link>{' '}

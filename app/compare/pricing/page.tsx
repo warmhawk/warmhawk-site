@@ -190,19 +190,20 @@ export default function PricingComparisonPage() {
             one flat fee covers unlimited users.
           </p>
           <p className="text-base leading-relaxed text-ink-muted mb-6">
-            WarmHawk has three tiers, and the split is deliberate: Tier 0 is a free, fully-functional
-            sending engine you run yourself. Tier 1 (Self-Hosted Pro) is $199/mo flat for the
-            operator dashboard and a founder-staffed support SLA on top of that same engine. Tier 2
-            (Enterprise DFY) is $1,500 one-time plus $300/mo for WarmHawk to deploy and operate it
-            for you. Billing for Tier 1 runs entirely through Stripe — Checkout to start, the Stripe
-            Customer Portal to manage cards, invoices, upgrades, and cancellations afterward.
+            WarmHawk has three tiers, and the split is deliberate: Tier 0 is a free,
+            fully-functional sending engine you run yourself. Tier 1 (Self-Hosted Pro) is $199/mo
+            flat for the operator dashboard and a founder-staffed support SLA on top of that same
+            engine. Tier 2 (Enterprise DFY) is $1,500 one-time plus $300/mo for WarmHawk to deploy
+            and operate it for you. Billing for Tier 1 runs entirely through Stripe — Checkout to
+            start, the Stripe Customer Portal to manage cards, invoices, upgrades, and cancellations
+            afterward.
           </p>
           <AnswerBlock>
-            WarmHawk has three tiers: Tier 0 is free and open, giving you the full sending engine via
-            API with no dashboard or SLA. Tier 1 is $199/mo flat for the operator dashboard, live
-            monitoring, and a founder support SLA — unlimited users and domains, no per-seat pricing.
-            Tier 2 is $1,500 + $300/mo for WarmHawk to deploy, migrate, and operate the same software
-            for you.
+            WarmHawk has three tiers: Tier 0 is free and open, giving you the full sending engine
+            via API with no dashboard or SLA. Tier 1 is $199/mo flat for the operator dashboard,
+            live monitoring, and a founder support SLA — unlimited users and domains, no per-seat
+            pricing. Tier 2 is $1,500 + $300/mo for WarmHawk to deploy, migrate, and operate the
+            same software for you.
           </AnswerBlock>
           <p className="text-base leading-relaxed text-ink-muted">
             Every tier runs the identical sending, queueing, and AI-personalization engine —{' '}
@@ -210,8 +211,8 @@ export default function PricingComparisonPage() {
               unlike Instantly, Smartlead, or Lemlist, where higher plans often mean different
               sending limits or feature gates on the core product
             </StatCite>
-            . What changes between WarmHawk&rsquo;s tiers is who operates the dashboard layer and who
-            carries the support and deployment burden — not what the engine itself can do.
+            . What changes between WarmHawk&rsquo;s tiers is who operates the dashboard layer and
+            who carries the support and deployment burden — not what the engine itself can do.
           </p>
         </div>
       </div>
@@ -274,14 +275,17 @@ export default function PricingComparisonPage() {
 
           <div className="card bg-cream mt-6 p-6 max-w-3xl mx-auto border-l-2 border-rust">
             <p className="text-sm leading-relaxed text-ink-muted">
-              <strong className="text-ink">A precision note on &ldquo;unlimited users.&rdquo;</strong>{' '}
+              <strong className="text-ink">
+                A precision note on &ldquo;unlimited users.&rdquo;
+              </strong>{' '}
               Unlimited users on Tier 1 and Tier 2 grants your whole team shared access to{' '}
-              <em>one account&rsquo;s</em> data, under flat permissions — everyone who&rsquo;s invited
-              sees everything in that account. It is not the same thing as per-end-client data
-              isolation between an agency&rsquo;s own separate clients. That kind of walled-off,
-              client-by-client isolation inside a single account is a tracked-but-unbuilt future item
-              today, not a shipped feature — if you need it now, run separate accounts per client
-              instead of relying on the permission system to separate them for you.
+              <em>one account&rsquo;s</em> data, under flat permissions — everyone who&rsquo;s
+              invited sees everything in that account. It is not the same thing as per-end-client
+              data isolation between an agency&rsquo;s own separate clients. That kind of
+              walled-off, client-by-client isolation inside a single account is a
+              tracked-but-unbuilt future item today, not a shipped feature — if you need it now, run
+              separate accounts per client instead of relying on the permission system to separate
+              them for you.
             </p>
           </div>
         </div>
@@ -296,8 +300,8 @@ export default function PricingComparisonPage() {
           <AnswerBlock>
             Tier 0 is free because WarmHawk operates nothing on your behalf at that tier — no
             dashboard, no SLA, no managed infrastructure, just code you run. Tier 1&rsquo;s $199/mo
-            buys the dashboard layer, a founder-staffed support SLA, and zero-per-seat pricing at any
-            team size. Tier 2&rsquo;s $1,500 + $300/mo buys WarmHawk&rsquo;s hours: doing the
+            buys the dashboard layer, a founder-staffed support SLA, and zero-per-seat pricing at
+            any team size. Tier 2&rsquo;s $1,500 + $300/mo buys WarmHawk&rsquo;s hours: doing the
             deployment and then operating it, ongoing.
           </AnswerBlock>
 
@@ -308,20 +312,20 @@ export default function PricingComparisonPage() {
             our side, no SLA clock ticking, no managed anything. That is the whole reason it costs
             $0 — not a crippled trial with a countdown, but a real, fully-functional sending and
             queueing engine, direct API access, CSV import, and BYOK AI personalization, with zero
-            commercial obligation attached. If you can run the API yourself, Tier 0 never expires and
-            never asks for a card.
+            commercial obligation attached. If you can run the API yourself, Tier 0 never expires
+            and never asks for a card.
           </p>
 
           <h3 className="font-display text-xl font-semibold mt-10 mb-3">Tier 1 — $199/mo</h3>
           <p className="text-base leading-relaxed text-ink-muted mb-4">
-            $199/mo is not really priced for &ldquo;software&rdquo; — it buys three specific things on
-            top of the free engine. First, the licensed operator dashboard itself: the queue
-            inspector, throttling controls, analytics, and domain health alerts that turn the API into
-            something you can actually run day to day without reading logs. Second, a founder-staffed
-            support SLA — 1 business day standard, 4 hours on anything critical.{' '}
+            $199/mo is not really priced for &ldquo;software&rdquo; — it buys three specific things
+            on top of the free engine. First, the licensed operator dashboard itself: the queue
+            inspector, throttling controls, analytics, and domain health alerts that turn the API
+            into something you can actually run day to day without reading logs. Second, a
+            founder-staffed support SLA — 1 business day standard, 4 hours on anything critical.{' '}
             <StatCite source="G2/Reddit">
-              That SLA is precisely the thing competitors lose reviews over — support tickets that sit
-              for days during a deliverability emergency
+              That SLA is precisely the thing competitors lose reviews over — support tickets that
+              sit for days during a deliverability emergency
             </StatCite>
             . Third, pricing that does not grow with your team:{' '}
             <StatCite source="Cost analysis">
@@ -341,11 +345,11 @@ export default function PricingComparisonPage() {
             The $1,500 one-time fee is founder-hours: DNS configuration, dedicated IP setup,
             white-glove migration off whatever you were running before, and doing the deployment
             itself instead of walking you through install.sh. The $300/mo retainer after that buys
-            ongoing operational ownership of the deployment — someone on WarmHawk&rsquo;s side keeping
-            it patched, updated, and healthy so it is never your 2am problem. What Tier 2 does{' '}
-            <em>not</em> buy is a different product: the observability stack (bundled Uptime Kuma plus
-            native OTEL export) is identical on Tier 1 and Tier 2. Tier 2 is priced for WarmHawk&rsquo;s
-            time, not for extra features the dashboard is missing.
+            ongoing operational ownership of the deployment — someone on WarmHawk&rsquo;s side
+            keeping it patched, updated, and healthy so it is never your 2am problem. What Tier 2
+            does <em>not</em> buy is a different product: the observability stack (bundled Uptime
+            Kuma plus native OTEL export) is identical on Tier 1 and Tier 2. Tier 2 is priced for
+            WarmHawk&rsquo;s time, not for extra features the dashboard is missing.
           </p>
         </div>
       </div>
@@ -359,9 +363,10 @@ export default function PricingComparisonPage() {
             </h2>
             <AnswerBlock>
               Tier 1 billing runs on Stripe end to end: Stripe Checkout to start, and the Stripe
-              Customer Portal afterward to update a card, download invoices, toggle monthly ⇄ annual,
-              or cancel — no support ticket required for any of it. A 30-day money-back guarantee and
-              a discounted annual price ($1,990/yr) are both baked into the same setup.
+              Customer Portal afterward to update a card, download invoices, toggle monthly ⇄
+              annual, or cancel — no support ticket required for any of it. A 30-day money-back
+              guarantee and a discounted annual price ($1,990/yr) are both baked into the same
+              setup.
             </AnswerBlock>
             <p className="text-base leading-relaxed text-ink-muted mb-4">
               Starting a Tier 1 subscription goes through the monthly/annual checkout widget above —
@@ -372,11 +377,11 @@ export default function PricingComparisonPage() {
             </p>
             <p className="text-base leading-relaxed text-ink-muted mb-4">
               Annual billing is a second Stripe Price on the same product, not a separate plan —
-              $1,990/yr instead of $199 × 12 ($2,388), roughly two months free for prepaying, offered
-              as a toggle both at checkout and later inside the Customer Portal if you want to switch
-              direction after the fact. And Tier 1 carries a plain 30-day money-back guarantee: cancel
-              inside the first 30 days of your first charge and it is refunded in full, no retention
-              call, no justification required.
+              $1,990/yr instead of $199 × 12 ($2,388), roughly two months free for prepaying,
+              offered as a toggle both at checkout and later inside the Customer Portal if you want
+              to switch direction after the fact. And Tier 1 carries a plain 30-day money-back
+              guarantee: cancel inside the first 30 days of your first charge and it is refunded in
+              full, no retention call, no justification required.
             </p>
           </div>
         </div>
@@ -397,8 +402,8 @@ export default function PricingComparisonPage() {
               costs
             </StatCite>
             . WarmHawk&rsquo;s Tier 1 is flat: unlimited users and unlimited client domains for one
-            $199/mo fee, structurally, because there is no per-seat metering built into the product at
-            all — not a discount, a different architecture.
+            $199/mo fee, structurally, because there is no per-seat metering built into the product
+            at all — not a discount, a different architecture.
           </p>
           <p className="text-base leading-relaxed text-ink-muted mb-4">
             The same is true of send credits.{' '}
@@ -414,10 +419,10 @@ export default function PricingComparisonPage() {
             Put concretely: picture a 10-person agency team running client outreach. On a per-seat
             competitor, the bill is whatever the base plan costs, multiplied out or stacked with
             add-ons as each of those 10 people needs a login — the exact numbers vary by vendor and
-            plan tier, but the direction is consistent, and it moves with headcount. On WarmHawk, that
-            same 10-person team is still $199/mo, flat, on Tier 1 — the eleventh hire changes nothing
-            on the invoice. That gap is structural, not promotional: it is the difference between
-            software priced per seat and software priced per account.
+            plan tier, but the direction is consistent, and it moves with headcount. On WarmHawk,
+            that same 10-person team is still $199/mo, flat, on Tier 1 — the eleventh hire changes
+            nothing on the invoice. That gap is structural, not promotional: it is the difference
+            between software priced per seat and software priced per account.
           </p>
         </div>
       </div>
@@ -431,8 +436,8 @@ export default function PricingComparisonPage() {
             Pick the tier that matches how much you want to run yourself.
           </h2>
           <p className="text-lg text-slate-soft mb-9 max-w-xl mx-auto">
-            Run the engine yourself for $0, or get the dashboard, monitoring, and a founder-backed SLA
-            for $199/mo — 30-day money-back guarantee included.
+            Run the engine yourself for $0, or get the dashboard, monitoring, and a founder-backed
+            SLA for $199/mo — 30-day money-back guarantee included.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link href="/checkout?tier=1" className="btn btn-primary">

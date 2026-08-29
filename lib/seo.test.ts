@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { pageSeo, faqSchema, organizationSchema, softwareApplicationSchema, breadcrumbSchema } from './seo';
+import {
+  pageSeo,
+  faqSchema,
+  organizationSchema,
+  softwareApplicationSchema,
+  breadcrumbSchema,
+} from './seo';
 import { siteConfig } from './siteConfig';
 import { tiers } from './tierConfig';
 

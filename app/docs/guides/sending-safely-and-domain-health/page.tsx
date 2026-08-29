@@ -26,7 +26,7 @@ const faqItems = [
   {
     question: 'Is placement sampling the same thing as a warmup "heat score"?',
     answer:
-      "No, and WarmHawk is deliberate about the distinction. Placement sampling BCCs real campaign sends to a small, fixed set of seed inboxes you own and reports which folder each landed in — a real, first-party signal from an actual send, explicitly labeled as sampling across N seed inboxes, never marketed as exhaustive inbox-placement testing.",
+      'No, and WarmHawk is deliberate about the distinction. Placement sampling BCCs real campaign sends to a small, fixed set of seed inboxes you own and reports which folder each landed in — a real, first-party signal from an actual send, explicitly labeled as sampling across N seed inboxes, never marketed as exhaustive inbox-placement testing.',
   },
   {
     question: 'Is a domain health check keyed by domain id or domain name?',
@@ -50,17 +50,17 @@ export default function SendingSafelyDomainHealthPage() {
       <AnswerBlock>
         WarmHawk protects domain reputation structurally: the send queue enforces an 8-minute
         cadence floor plus jitter per mailbox, a bounce/complaint circuit breaker auto-pauses a
-        campaign once its rolling bounce rate crosses 5% on at least 20 sends, and
-        GET /v1/domains/:id/placement-sample reports real seed-inbox placement results — never a
+        campaign once its rolling bounce rate crosses 5% on at least 20 sends, and GET
+        /v1/domains/:id/placement-sample reports real seed-inbox placement results — never a
         self-reported score.
       </AnswerBlock>
 
       <h2 className="font-display text-2xl font-semibold mb-4">Queue: status and pause</h2>
       <CodeBlock label="GET /v1/queue/status">
-{`curl https://app.yourcompany.com/v1/queue/status -H "Authorization: Bearer YOUR_API_KEY"`}
+        {`curl https://app.yourcompany.com/v1/queue/status -H "Authorization: Bearer YOUR_API_KEY"`}
       </CodeBlock>
       <CodeBlock label="Response">
-{`{
+        {`{
   "counts": { "waiting": 3, "active": 1, "delayed": 12, "completed": 240, "failed": 2 },
   "isPaused": false,
   "jobs": [
@@ -78,15 +78,16 @@ export default function SendingSafelyDomainHealthPage() {
 }`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-4">
-        <code className="font-mono">cadenceFloorSeconds: 480</code> is the real, structural
-        8-minute minimum between two sends from the same mailbox; <code className="font-mono">jitterSeconds</code> is
-        the representative width of the randomized delay layered on top so sends don&rsquo;t land
-        on a suspiciously exact clock tick. <code className="font-mono">jobs</code> lists up to 50
-        waiting/active/delayed jobs; the queue is BullMQ-backed and real &mdash; pausing it is a
-        genuine Redis-level pause, not a cosmetic flag:
+        <code className="font-mono">cadenceFloorSeconds: 480</code> is the real, structural 8-minute
+        minimum between two sends from the same mailbox;{' '}
+        <code className="font-mono">jitterSeconds</code> is the representative width of the
+        randomized delay layered on top so sends don&rsquo;t land on a suspiciously exact clock
+        tick. <code className="font-mono">jobs</code> lists up to 50 waiting/active/delayed jobs;
+        the queue is BullMQ-backed and real &mdash; pausing it is a genuine Redis-level pause, not a
+        cosmetic flag:
       </p>
       <CodeBlock label="POST /v1/queue/pause">
-{`curl -X POST https://app.yourcompany.com/v1/queue/pause \\
+        {`curl -X POST https://app.yourcompany.com/v1/queue/pause \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{ "paused": true }'`}
@@ -96,18 +97,23 @@ export default function SendingSafelyDomainHealthPage() {
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         Evaluated from real <code className="font-mono">ExecutionLog</code> data, not a separate
         monitoring system: once a campaign/mailbox pair has at least 20 sends and its bounce rate
-        exceeds 5% (both configurable via a campaign&rsquo;s <code className="font-mono">bounceRateThreshold</code>),
-        it flips <code className="font-mono">pausedForBounceRate: true</code>. From that point,{' '}
+        exceeds 5% (both configurable via a campaign&rsquo;s{' '}
+        <code className="font-mono">bounceRateThreshold</code>), it flips{' '}
+        <code className="font-mono">pausedForBounceRate: true</code>. From that point,{' '}
         <code className="font-mono">POST /v1/campaigns/:id/launch</code> refuses with{' '}
         <code className="font-mono">422</code> until a human clears the flag via{' '}
-        <code className="font-mono">PATCH /v1/campaigns/:id {'{ "pausedForBounceRate": false }'}</code> &mdash;
-        deliberately not an automatic reset, since the underlying list-quality problem needs
+        <code className="font-mono">
+          PATCH /v1/campaigns/:id {'{ "pausedForBounceRate": false }'}
+        </code>{' '}
+        &mdash; deliberately not an automatic reset, since the underlying list-quality problem needs
         addressing first, not just waiting out.
       </p>
 
-      <h2 className="font-display text-2xl font-semibold mb-4">Domain checks: SPF/DKIM/DMARC + blocklists</h2>
+      <h2 className="font-display text-2xl font-semibold mb-4">
+        Domain checks: SPF/DKIM/DMARC + blocklists
+      </h2>
       <CodeBlock label="POST /v1/domains/:domain/check — keyed by domain NAME">
-{`curl -X POST https://app.yourcompany.com/v1/domains/yourcompany.com/check \\
+        {`curl -X POST https://app.yourcompany.com/v1/domains/yourcompany.com/check \\
   -H "Authorization: Bearer YOUR_API_KEY"`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
@@ -121,16 +127,17 @@ export default function SendingSafelyDomainHealthPage() {
       <h2 className="font-display text-2xl font-semibold mb-4">Seed-inbox placement sampling</h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         A small, fixed set of email accounts you own are BCC&rsquo;d on real campaign sends;
-        WarmHawk reports which folder each one landed in &mdash; inbox, spam, or promotions.
-        Manage the seed inboxes via <code className="font-mono">GET/POST/PATCH/DELETE /v1/seed-accounts</code>,
-        then pull the rollup per domain:
+        WarmHawk reports which folder each one landed in &mdash; inbox, spam, or promotions. Manage
+        the seed inboxes via{' '}
+        <code className="font-mono">GET/POST/PATCH/DELETE /v1/seed-accounts</code>, then pull the
+        rollup per domain:
       </p>
       <CodeBlock label="GET /v1/domains/:id/placement-sample — id-keyed">
-{`curl https://app.yourcompany.com/v1/domains/dom_a1b2c3/placement-sample \\
+        {`curl https://app.yourcompany.com/v1/domains/dom_a1b2c3/placement-sample \\
   -H "Authorization: Bearer YOUR_API_KEY"`}
       </CodeBlock>
       <CodeBlock label="Response">
-{`{
+        {`{
   "domainId": "dom_a1b2c3",
   "domainName": "yourcompany.com",
   "label": "Placement sampling across 4 seed inboxes — not full inbox-placement testing.",
@@ -154,14 +161,20 @@ export default function SendingSafelyDomainHealthPage() {
           Every structural guardrail on this page &mdash; the cadence floor, the circuit breaker,
           CAN-SPAM enforcement &mdash; is covered end to end, alongside CSV-injection defense and
           GDPR erasure, in{' '}
-          <Link href="/docs/reference/guardrails-and-compliance" className="text-rust font-semibold">
+          <Link
+            href="/docs/reference/guardrails-and-compliance"
+            className="text-rust font-semibold"
+          >
             Guardrails &amp; compliance
           </Link>
           .
         </p>
       </div>
 
-      <FaqSection items={faqItems} title="Sending safely & domain health: questions worth answering up front" />
+      <FaqSection
+        items={faqItems}
+        title="Sending safely & domain health: questions worth answering up front"
+      />
     </div>
   );
 }

@@ -43,7 +43,11 @@ export function CheckoutTabs({ initialTier }: { initialTier: TierKey }) {
         flex-shrink + the buttons' `whitespace-normal` engage as intended.
       */}
       <div className="min-w-0">
-        <div role="tablist" aria-label="Checkout tier" className="flex gap-2 border-b border-border mb-8">
+        <div
+          role="tablist"
+          aria-label="Checkout tier"
+          className="flex gap-2 border-b border-border mb-8"
+        >
           <TabButton active={active === 'tier1'} onClick={() => setActive('tier1')} id="tier-1">
             Tier 1 — Self-Hosted Pro
           </TabButton>

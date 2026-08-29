@@ -35,9 +35,7 @@ async function main() {
 
   const meta = await sharp(pngPath).metadata();
   if (meta.width !== WIDTH || meta.height !== HEIGHT) {
-    throw new Error(
-      `Generated PNG is ${meta.width}x${meta.height}, expected ${WIDTH}x${HEIGHT}`,
-    );
+    throw new Error(`Generated PNG is ${meta.width}x${meta.height}, expected ${WIDTH}x${HEIGHT}`);
   }
   if (meta.format !== 'png') {
     throw new Error(`Generated file is not a PNG (got ${meta.format})`);

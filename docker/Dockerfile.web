@@ -23,8 +23,12 @@ COPY . .
 # process.env.STRIPE_SECRET_KEY only when a route handler actually calls
 # it), so `next build`'s static analysis never needs a real key, but every
 # other build path in this repo already sets these defensively and this
-# should not be the one exception.
-ARG STRIPE_SECRET_KEY=sk_test_placeholder
+# should not be the one exception. Deliberately NOT shaped like a real
+# Stripe key (no sk_test_/sk_live_ prefix) — that shape is exactly what
+# trivy/gitleaks pattern-match on, and a value this build never reads
+# doesn't need to look like the real thing (confirmed live 2026-08-29,
+# dependency-scan + gitleaks both flagged the old sk_test_placeholder).
+ARG STRIPE_SECRET_KEY=build-placeholder-not-a-real-key
 ARG STRIPE_WEBHOOK_SECRET=whsec_placeholder
 ENV STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY
 ENV STRIPE_WEBHOOK_SECRET=$STRIPE_WEBHOOK_SECRET

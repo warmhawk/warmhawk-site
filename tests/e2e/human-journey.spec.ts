@@ -28,7 +28,10 @@ function trackConsole(page: Page, issues: string[]) {
 }
 
 test.describe('Human journey: homepage -> docs -> checkout -> vs -> legal', () => {
-  test('a visitor can browse the whole site without errors or dead ends', async ({ page, request }) => {
+  test('a visitor can browse the whole site without errors or dead ends', async ({
+    page,
+    request,
+  }) => {
     const consoleIssues: string[] = [];
     trackConsole(page, consoleIssues);
 
@@ -82,7 +85,9 @@ test.describe('Human journey: homepage -> docs -> checkout -> vs -> legal', () =
     const tier1Tab = page.getByRole('tab', { name: 'Tier 1 — Self-Hosted Pro' });
     const tier2Tab = page.getByRole('tab', { name: 'Tier 2 — Enterprise DFY' });
     await expect(tier1Tab).toHaveAttribute('aria-selected', 'true');
-    await expect(page.getByRole('button', { name: 'Start your install — Self-Hosted Pro' })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Start your install — Self-Hosted Pro' }),
+    ).toBeVisible();
 
     await tier2Tab.click();
     await expect(tier2Tab).toHaveAttribute('aria-selected', 'true');
@@ -114,8 +119,9 @@ test.describe('Human journey: homepage -> docs -> checkout -> vs -> legal', () =
     // violation (2 matches) — this longer phrase only appears once.
     await expect(page.getByText('This document is a draft, pending attorney review')).toBeVisible();
 
-    expect(consoleIssues, `Console errors/warnings captured during the journey:\n${consoleIssues.join('\n')}`).toEqual(
-      [],
-    );
+    expect(
+      consoleIssues,
+      `Console errors/warnings captured during the journey:\n${consoleIssues.join('\n')}`,
+    ).toEqual([]);
   });
 });

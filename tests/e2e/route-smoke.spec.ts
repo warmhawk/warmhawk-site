@@ -61,9 +61,10 @@ for (const { path, expectedStatus } of routes) {
     page.on('pageerror', (err) => pageErrors.push(err.message));
 
     const response = await page.goto(path);
-    expect(response?.status(), `${path} returned ${response?.status()}, expected ${expectedStatus}`).toBe(
-      expectedStatus,
-    );
+    expect(
+      response?.status(),
+      `${path} returned ${response?.status()}, expected ${expectedStatus}`,
+    ).toBe(expectedStatus);
 
     const title = await page.title();
     expect(title.trim().length, `${path} has an empty <title>`).toBeGreaterThan(0);

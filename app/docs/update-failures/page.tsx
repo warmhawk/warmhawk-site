@@ -61,36 +61,42 @@ export default function UpdateFailuresPage() {
       <ol className="list-decimal pl-6 space-y-2 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-6">
         <li>Pulls the latest image for your configured tag/channel</li>
         <li>Runs any pending database migrations</li>
-        <li>Performs a rolling <code className="font-mono">docker compose up -d</code> restart</li>
-        <li>Reuses your existing secrets and license from <code className="font-mono">.env</code> &mdash; no re-entry, no re-activation</li>
+        <li>
+          Performs a rolling <code className="font-mono">docker compose up -d</code> restart
+        </li>
+        <li>
+          Reuses your existing secrets and license from <code className="font-mono">.env</code>{' '}
+          &mdash; no re-entry, no re-activation
+        </li>
       </ol>
-      <CodeBlock label="Run an update">
-{`warmhawk update`}
-      </CodeBlock>
+      <CodeBlock label="Run an update">{`warmhawk update`}</CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
         No manual steps are expected on your end beyond running the command &mdash; if you see
         prompts you don&rsquo;t recognize, or the update hangs somewhere unexpected, that&rsquo;s
         worth investigating rather than dismissing.
       </p>
 
-      <h2 className="font-display text-2xl font-semibold mb-4">A migration fails partway through</h2>
+      <h2 className="font-display text-2xl font-semibold mb-4">
+        A migration fails partway through
+      </h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
-        Don&rsquo;t panic-restart the stack repeatedly &mdash; that&rsquo;s the fastest way to turn a
-        recoverable failed migration into a genuinely inconsistent schema. Instead, check exactly
+        Don&rsquo;t panic-restart the stack repeatedly &mdash; that&rsquo;s the fastest way to turn
+        a recoverable failed migration into a genuinely inconsistent schema. Instead, check exactly
         what the migration step logged:
       </p>
       <CodeBlock label="Check migration logs specifically">
-{`docker compose logs migrate`}
+        {`docker compose logs migrate`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-4">
-        Most migration failures are one of two shapes: a transient connection issue (Postgres wasn&rsquo;t
-        fully up yet when the migration ran &mdash; re-running the update usually clears this), or
-        an actual schema conflict (rare, and usually means a manual change was made to the database
-        outside of WarmHawk&rsquo;s own migrations at some point). If the logs show a real schema
-        error rather than a connection timeout, stop and take a backup before doing anything else:
+        Most migration failures are one of two shapes: a transient connection issue (Postgres
+        wasn&rsquo;t fully up yet when the migration ran &mdash; re-running the update usually
+        clears this), or an actual schema conflict (rare, and usually means a manual change was made
+        to the database outside of WarmHawk&rsquo;s own migrations at some point). If the logs show
+        a real schema error rather than a connection timeout, stop and take a backup before doing
+        anything else:
       </p>
       <CodeBlock label="Take a backup before touching a failed migration further">
-{`docker compose exec api /app/scripts/backup-postgres.sh`}
+        {`docker compose exec api /app/scripts/backup-postgres.sh`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
         Then email{' '}
@@ -108,7 +114,7 @@ export default function UpdateFailuresPage() {
         patch forward under pressure:
       </p>
       <CodeBlock label="Pin back to the previous tag and restart">
-{`# Edit .env: set the image tag back to the previous known-good version, e.g.
+        {`# Edit .env: set the image tag back to the previous known-good version, e.g.
 # WARMHAWK_IMAGE_TAG=v2.4.1
 
 docker compose pull
@@ -118,14 +124,19 @@ docker compose up -d`}
         This rolls back the application code without touching your database. If the update also ran
         a migration that the old code isn&rsquo;t compatible with, you may need a full data restore
         instead &mdash; see{' '}
-        <Link href="/docs/self-hosting/backups-and-redis-durability" className="text-rust font-semibold">
+        <Link
+          href="/docs/self-hosting/backups-and-redis-durability"
+          className="text-rust font-semibold"
+        >
           backups &amp; Redis durability
         </Link>{' '}
         for that procedure. This is exactly why taking a manual backup right before updating a
         production instance is worth the extra minute.
       </p>
 
-      <h2 className="font-display text-2xl font-semibold mb-4">Check the CHANGELOG before you update production</h2>
+      <h2 className="font-display text-2xl font-semibold mb-4">
+        Check the CHANGELOG before you update production
+      </h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         Before running <code className="font-mono">warmhawk update</code> against a production
         instance, read what actually changed between your current version and the new one. Each

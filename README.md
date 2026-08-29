@@ -14,21 +14,21 @@ logic lives here; that's `warmhawk-core-engine` and
 
 ## 🗂️ What's in this repo
 
-| Area | Where |
-|---|---|
-| Homepage ("Warm Signal" cream/rust design) | `app/page.tsx` |
-| Comparison pages | `app/vs/*` |
-| Pricing / feature matrix | `app/compare/pricing` |
-| Free public domain checker | `app/tools/domain-check` |
-| Docs / troubleshooting | `app/docs/*` |
-| Legal (draft, pending attorney review) | `app/legal/*` |
-| Security disclosure + `security.txt` | `app/security`, `public/.well-known/security.txt` |
-| Status page | `app/status` |
-| Stripe checkout / webhook / portal skeletons | `app/api/*` |
-| Shared design system | `components/*`, `lib/*`, `tailwind.config.ts` |
-| App-wide constants (name, URLs, support/security/hello/billing emails, nav) | `lib/siteConfig.ts` — the one file to edit when any of these change |
-| Docker build + deploy compose | `docker/Dockerfile.web`, `docker/docker-compose.deploy.yml` |
-| Env var templates | `.env/.env.example` (documented full list), `.env/.env.local` (docker e2e placeholders) |
+| Area                                                                        | Where                                                                                   |
+| --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Homepage ("Warm Signal" cream/rust design)                                  | `app/page.tsx`                                                                          |
+| Comparison pages                                                            | `app/vs/*`                                                                              |
+| Pricing / feature matrix                                                    | `app/compare/pricing`                                                                   |
+| Free public domain checker                                                  | `app/tools/domain-check`                                                                |
+| Docs / troubleshooting                                                      | `app/docs/*`                                                                            |
+| Legal (draft, pending attorney review)                                      | `app/legal/*`                                                                           |
+| Security disclosure + `security.txt`                                        | `app/security`, `public/.well-known/security.txt`                                       |
+| Status page                                                                 | `app/status`                                                                            |
+| Stripe checkout / webhook / portal skeletons                                | `app/api/*`                                                                             |
+| Shared design system                                                        | `components/*`, `lib/*`, `tailwind.config.ts`                                           |
+| App-wide constants (name, URLs, support/security/hello/billing emails, nav) | `lib/siteConfig.ts` — the one file to edit when any of these change                     |
+| Docker build + deploy compose                                               | `docker/Dockerfile.web`, `docker/docker-compose.deploy.yml`                             |
+| Env var templates                                                           | `.env/.env.example` (documented full list), `.env/.env.local` (docker e2e placeholders) |
 
 ---
 
@@ -67,10 +67,10 @@ None of these are called live from this repo's build or test tooling.
 > `warmhawk-enterprise-operator`'s `LicenseGate` only ever VERIFIES, holding
 > the matching public key — never the private one.
 
-| Variable | Lives in | Purpose |
-|---|---|---|
-| `LICENSE_SIGNING_PRIVATE_KEY` | **This repo only** | RSA private key, signs every issued license. Never leaves this deployment's secrets. |
-| `LICENSE_PUBLIC_KEY_PEM` | `warmhawk-enterprise-operator` | The matching public half — verifies offline, never signs. |
+| Variable                      | Lives in                       | Purpose                                                                              |
+| ----------------------------- | ------------------------------ | ------------------------------------------------------------------------------------ |
+| `LICENSE_SIGNING_PRIVATE_KEY` | **This repo only**             | RSA private key, signs every issued license. Never leaves this deployment's secrets. |
+| `LICENSE_PUBLIC_KEY_PEM`      | `warmhawk-enterprise-operator` | The matching public half — verifies offline, never signs.                            |
 
 This repo's `.env/.env.example` and `warmhawk-enterprise-operator`'s own `.env.example` both ship
 an **obviously test-only** keypair
@@ -126,13 +126,13 @@ actually shipped.
 
 ## 🧪 Testing
 
-| Tier | Command | What it hits |
-|---|---|---|
-| Unit | `npm run test:unit` | Mocked `@/lib/stripe`/`@/lib/email` — no network, ever. Matches plain `npm test`. |
-| Integration | `npm run test:integration` | **Real** Stripe TEST-mode API + real Resend send. Self-skips cleanly when secrets are absent. |
-| E2E (Docker) | `npm run test:e2e:docker` | Builds/runs this repo's own `docker/Dockerfile.web`, reuses the existing `tests/e2e/*.spec.ts` specs against it, always tears the container down. |
-| Human journeys | `npm run test:human` | A real, browser-driven Stripe checkout + license-email round trip against an already-deployed target. |
-| Load (k6) | `k6 run tests/load/stage.js` | Read-only marketing/docs page rendering only — never `/api/checkout/session`. |
+| Tier           | Command                      | What it hits                                                                                                                                      |
+| -------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit           | `npm run test:unit`          | Mocked `@/lib/stripe`/`@/lib/email` — no network, ever. Matches plain `npm test`.                                                                 |
+| Integration    | `npm run test:integration`   | **Real** Stripe TEST-mode API + real Resend send. Self-skips cleanly when secrets are absent.                                                     |
+| E2E (Docker)   | `npm run test:e2e:docker`    | Builds/runs this repo's own `docker/Dockerfile.web`, reuses the existing `tests/e2e/*.spec.ts` specs against it, always tears the container down. |
+| Human journeys | `npm run test:human`         | A real, browser-driven Stripe checkout + license-email round trip against an already-deployed target.                                             |
+| Load (k6)      | `k6 run tests/load/stage.js` | Read-only marketing/docs page rendering only — never `/api/checkout/session`.                                                                     |
 
 > **⚠️ Integration and human-journey tests deliberately override this repo's "no live external
 > network calls" build policy** (see `lib/stripe.ts`'s / `lib/email.ts`'s header comments — that

@@ -28,9 +28,7 @@ export function pageSeo({ title, description, path, noIndex }: PageSeoInput): Me
     alternates: {
       canonical: url,
     },
-    robots: noIndex
-      ? { index: false, follow: false }
-      : { index: true, follow: true },
+    robots: noIndex ? { index: false, follow: false } : { index: true, follow: true },
     openGraph: {
       title: fullTitle,
       description,
