@@ -22,3 +22,13 @@ paths = [
   '''^\.env/\.env\.example$''',
   '''^lib/license\.test\.ts$''',
 ]
+
+# CI's clone step fetches at --depth=1 (confirmed live 2026-08-29 by reading the clone step's own
+# log), so `gitleaks detect` only ever sees a single commit — there's no real git history to walk.
+# That makes a commit-SHA-keyed .gitleaksignore useless here: every finding gets attributed to
+# whatever the current tip commit happens to be, which changes on every push, so a baseline entry
+# can never match twice. A content-level allowlist is the only suppression that survives a push.
+[[allowlists]]
+description = "app/docs/** code samples use the literal placeholder token name YOUR_API_KEY, never a real credential. curl-auth-header matches on entropy alone and can't tell them apart from a real Bearer token."
+targetRules = ["curl-auth-header"]
+regexes = ['''YOUR_API_KEY''']
