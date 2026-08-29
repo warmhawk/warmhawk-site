@@ -94,7 +94,7 @@ class SmtpEmailSender implements EmailSender {
     }
 
     await getTransporter().sendMail({
-      from: process.env.SMTP_FROM || siteConfig.billingFrom,
+      from: process.env.SMTP_FROM || siteConfig.defaultFrom,
       to: input.toEmail,
       subject: 'Your WarmHawk install command',
       text: [
@@ -137,7 +137,7 @@ class SmtpEmailSender implements EmailSender {
     }
 
     await getTransporter().sendMail({
-      from: process.env.SMTP_FROM || siteConfig.billingFrom,
+      from: process.env.SMTP_FROM || siteConfig.defaultFrom,
       to: siteConfig.helloEmail,
       replyTo: input.email,
       subject,
