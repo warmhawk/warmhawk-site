@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { pageSeo } from '@/lib/seo';
+import { pageSeo, softwareApplicationSchema } from '@/lib/seo';
 import { FaqSection } from '@/components/FaqSchema';
 import { PricingTable } from '@/components/PricingTable';
 import { CompareTable } from '@/components/CompareTable';
@@ -134,6 +134,11 @@ function InstallCommand({ center = false }: { center?: boolean }) {
 export default function HomePage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema()) }}
+      />
       {/* HERO */}
       <div className="wrap pt-16 md:pt-[70px] pb-14">
         <div className="grid md:grid-cols-[1.05fr_.95fr] gap-10 md:gap-14 items-center">

@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const stripe = getStripeClient();
+    const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL ?? siteConfig.url;
 
     // Shape follows Stripe's documented Checkout Session creation API
     // (https://stripe.com/docs/api/checkout/sessions/create). `mode:
@@ -52,8 +53,14 @@ export async function POST(request: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${siteConfig.url}/compare/pricing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteConfig.url}/compare/pricing?checkout=cancelled`,
+      // Redirect targets, unlike siteConfig.url's other uses in this repo (sitemap/canonical/OG
+      // URLs, which must always be the real production domain regardless of what's serving the
+      // request) — these have to send the browser back to whichever environment the checkout
+      // actually started from, or a stage/local checkout bounces the visitor to production.
+      // NEXT_PUBLIC_SITE_URL is set per-environment in every .env* file for exactly this (was
+      // documented but unused until found via a stage/local human-journey test 2026-08-28).
+      success_url: `${siteOrigin}/compare/pricing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteOrigin}/compare/pricing?checkout=cancelled`,
       allow_promotion_codes: true,
       billing_address_collection: 'auto',
       // 30-day money-back guarantee (Monetization & Tiering Strategy) is a

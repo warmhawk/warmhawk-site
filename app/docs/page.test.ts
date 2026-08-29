@@ -56,4 +56,12 @@ describe('DocsIndexPage (app/docs/page.tsx)', () => {
       );
     }
   });
+
+  it('links to the machine-readable OpenAPI spec, for coding agents and API clients', () => {
+    render(createElement(DocsIndexPage));
+
+    expect(
+      screen.getByRole('link', { name: startsWithTitle('OpenAPI spec (openapi.json)') }),
+    ).toHaveAttribute('href', '/openapi.json');
+  });
 });

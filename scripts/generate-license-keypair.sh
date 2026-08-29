@@ -56,7 +56,7 @@ ever needing to compare the private key itself):
   $FINGERPRINT
 
 Next steps:
-  1. In warmhawk-site's deployment secrets (Coolify-managed env, NOT committed to .env.example),
+  1. In warmhawk-site's deployment secrets (a Woodpecker secret, NOT committed to .env/.env.example),
      set:
        LICENSE_SIGNING_PRIVATE_KEY="$PRIVATE_ESCAPED"
 
@@ -67,7 +67,7 @@ Next steps:
      safely stored in each deployment's secret manager — this script never stores them anywhere
      else, and they should not linger on disk longer than needed to copy them over.
 
-Both repos' .env.example files carry an OBVIOUSLY TEST-ONLY keypair (clearly commented as such)
+Both repos' .env.example files (.env/.env.example here) carry an OBVIOUSLY TEST-ONLY keypair (clearly commented as such)
 so local dev and CI can sign+verify a real token end-to-end without running this script first.
 Never reuse that test keypair in production — generate a fresh one with this script instead.
 EOF

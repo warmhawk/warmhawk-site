@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test';
 // `/vs/instantly` is the one deliberate exception: it real-404s via
 // `notFound()` unless `ENABLE_VS_INSTANTLY=true` is set (see
 // app/vs/instantly/page.tsx and lib/siteConfig.ts), and this repo's
-// `.env.local.docker` / the running container leave it unset on purpose —
+// `.env/.env.local` / the running container leave it unset on purpose —
 // see README.md's "`/vs/instantly` — do not publish yet" section. So this
 // route is asserted to 404, not 200 — a silent flip to 200 here would mean
 // the page shipped live without anyone updating this test, which is exactly

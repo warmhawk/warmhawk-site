@@ -74,6 +74,24 @@ export default function DocsIndexPage() {
         <DocGroup label="Guides" links={guides} />
         <DocGroup label="Self-hosting" links={selfHosting} />
         <DocGroup label="API reference" links={apiReference} />
+
+        <div className="mb-14">
+          <a
+            href="/openapi.json"
+            className="card bg-cream-elevated p-6 flex items-center justify-between gap-4 hover:border-rust transition-colors"
+          >
+            <div>
+              <div className="font-semibold text-base mb-1">OpenAPI spec (openapi.json)</div>
+              <div className="text-sm leading-relaxed text-ink-muted">
+                Machine-readable OpenAPI 3.0.3 description of every route documented above, for
+                coding agents and API clients — not a substitute for the prose reference, a
+                companion to it.
+              </div>
+            </div>
+            <span className="font-mono text-xs text-rust flex-none">/openapi.json &rarr;</span>
+          </a>
+        </div>
+
         <DocGroup label="Reference" links={reference} />
 
         <div className="mb-4">

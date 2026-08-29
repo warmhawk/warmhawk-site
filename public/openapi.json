@@ -1,0 +1,485 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "WarmHawk API",
+    "version": "1.0.0",
+    "description": "The real, current shape of warmhawk-core-engine's /v1 API and its one unauthenticated /public endpoint, transcribed field-by-field from https://warmhawk.com/docs/api-reference/*. WarmHawk is self-hosted per customer — there is no single production host, so every server URL below is a placeholder for whatever domain a customer's own install.sh run bound (e.g. api.yourcompany.com). Outbound webhooks (WarmHawk calling a customer's own URL when something happens) are planned, not implemented — poll GET /v1/replies, GET /v1/queue/status, or GET /v1/domains/{id}/placement-sample instead.",
+    "contact": { "name": "WarmHawk support", "email": "support@warmhawk.com", "url": "https://warmhawk.com" },
+    "license": { "name": "Business Source License (Apache 2.0 after 4 years)", "url": "https://warmhawk.com/legal/terms" }
+  },
+  "externalDocs": {
+    "description": "Full prose API reference, guides, and quickstart",
+    "url": "https://warmhawk.com/docs"
+  },
+  "servers": [
+    {
+      "url": "https://{instance}/v1",
+      "description": "Your own WarmHawk install's authenticated API.",
+      "variables": { "instance": { "default": "your-instance", "description": "The domain install.sh bound the API to, e.g. api.yourcompany.com." } }
+    },
+    {
+      "url": "https://{instance}",
+      "description": "Your own WarmHawk install's public, unauthenticated endpoints (no /v1 prefix).",
+      "variables": { "instance": { "default": "your-instance", "description": "The domain install.sh bound the API to, e.g. api.yourcompany.com." } }
+    }
+  ],
+  "tags": [
+    { "name": "Auth", "description": "Engine-level login, separate from the Tier 1/2 dashboard's own login." },
+    { "name": "Mailboxes", "description": "Mailbox CRUD plus Google/Microsoft OAuth connect." },
+    { "name": "Leads", "description": "Single create, CSV bulk import, unauthenticated webhook ingest, GDPR erasure." },
+    { "name": "Campaigns", "description": "Campaign lifecycle: create, launch, pause, archive." },
+    { "name": "Queue", "description": "Send-queue status and pause/resume." },
+    { "name": "Domains", "description": "Sending-domain CRUD, SPF/DKIM/DMARC + blocklist checks, seed-inbox placement sampling." },
+    { "name": "Public", "description": "Unauthenticated endpoints, reachable with no bearer token." }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Authorization: Bearer <token> obtained from POST /v1/auth/login. Required on every route except POST /v1/auth/login itself, the two /v1/oauth/* routes, and POST /v1/leads/webhook."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": { "error": { "type": "string" } }
+      }
+    }
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Log in and receive a bearer token",
+        "description": "Authenticates against the engine's own User table — separate from the Tier 1/2 dashboard's own login. Rate-limited (10/min) and brute-force locked out per account, both layers active at once.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "format": "password" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authenticated",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "token": { "type": "string" } } } } }
+          },
+          "401": { "description": "Invalid credentials — constant response shape whether the account exists or not, to avoid user enumeration.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "429": { "description": "Account locked from repeated failures. Body includes retryAfterMs.", "content": { "application/json": { "schema": { "type": "object", "properties": { "error": { "type": "string" }, "retryAfterMs": { "type": "integer" } } } } } }
+        }
+      }
+    },
+    "/mailboxes": {
+      "get": {
+        "tags": ["Mailboxes"],
+        "summary": "List every mailbox on the account",
+        "responses": { "200": { "description": "OK" } }
+      },
+      "post": {
+        "tags": ["Mailboxes"],
+        "summary": "Create a mailbox",
+        "description": "For Google Workspace / Microsoft 365, POST without authPassword, then complete the OAuth flow against the returned mailbox's id.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "domainId"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "domainId": { "type": "string", "description": "Create the Domain first." },
+                  "provider": { "type": "string", "description": "Defaults to SMTP_CUSTOM." },
+                  "dailyCap": { "type": "integer", "description": "Defaults to 25." },
+                  "smtpHost": { "type": "string" },
+                  "smtpPort": { "type": "integer" },
+                  "imapHost": { "type": "string" },
+                  "imapPort": { "type": "integer" },
+                  "authUsername": { "type": "string" },
+                  "authPassword": { "type": "string", "format": "password", "description": "Encrypted at rest, never returned in any response." }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created — credentials stripped from the returned row." }
+        }
+      }
+    },
+    "/mailboxes/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+      "patch": {
+        "tags": ["Mailboxes"],
+        "summary": "Update a mailbox's status or dailyCap",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "type": "object", "properties": { "status": { "type": "string" }, "dailyCap": { "type": "integer" } } } } }
+        },
+        "responses": { "200": { "description": "Updated" }, "404": { "description": "Mailbox not found" } }
+      },
+      "delete": {
+        "tags": ["Mailboxes"],
+        "summary": "Disconnect a mailbox",
+        "responses": { "204": { "description": "Disconnected" }, "404": { "description": "Mailbox not found" } }
+      }
+    },
+    "/oauth/{provider}/authorize": {
+      "get": {
+        "tags": ["Mailboxes"],
+        "summary": "Redirect to the provider's OAuth consent screen",
+        "security": [],
+        "parameters": [
+          { "name": "provider", "in": "path", "required": true, "schema": { "type": "string", "enum": ["google", "microsoft"] } },
+          { "name": "mailboxId", "in": "query", "required": true, "schema": { "type": "string" }, "description": "Must already exist — create the mailbox first, without authPassword." }
+        ],
+        "responses": { "302": { "description": "Browser redirect to the provider's consent screen" } }
+      }
+    },
+    "/oauth/{provider}/callback": {
+      "get": {
+        "tags": ["Mailboxes"],
+        "summary": "OAuth provider callback",
+        "description": "Public — no bearer token, verified by the signed state param instead.",
+        "security": [],
+        "parameters": [
+          { "name": "provider", "in": "path", "required": true, "schema": { "type": "string", "enum": ["google", "microsoft"] } },
+          { "name": "code", "in": "query", "required": true, "schema": { "type": "string" } },
+          { "name": "state", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "OAuth connection completed" } }
+      }
+    },
+    "/leads": {
+      "get": {
+        "tags": ["Leads"],
+        "summary": "List leads, optionally scoped to a campaign",
+        "parameters": [{ "name": "campaignId", "in": "query", "required": false, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "object", "properties": { "leads": { "type": "array", "items": { "type": "object" } }, "total": { "type": "integer" } } } } } } }
+      },
+      "post": {
+        "tags": ["Leads"],
+        "summary": "Create a single lead",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["campaignId", "email"],
+                "properties": {
+                  "campaignId": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "firstName": { "type": "string" },
+                  "lastName": { "type": "string" },
+                  "company": { "type": "string" },
+                  "customFields": { "type": "object", "additionalProperties": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created" }, "409": { "description": "Suppressed or duplicate lead" } }
+      }
+    },
+    "/leads/webhook": {
+      "post": {
+        "tags": ["Leads", "Public"],
+        "summary": "Unauthenticated lead-ingest webhook",
+        "description": "Rate-limited (30/min). Skips with 200, rather than erroring, on a suppressed or duplicate lead.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["campaignId", "email"],
+                "properties": {
+                  "campaignId": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "firstName": { "type": "string" },
+                  "lastName": { "type": "string" },
+                  "company": { "type": "string" },
+                  "customFields": { "type": "object", "additionalProperties": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Ingested, or silently skipped if suppressed/duplicate" } }
+      }
+    },
+    "/leads/import": {
+      "post": {
+        "tags": ["Leads"],
+        "summary": "Bulk CSV import",
+        "description": "Caps: 50,000 rows / 10MB.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["campaignId", "file"],
+                "properties": {
+                  "campaignId": { "type": "string" },
+                  "file": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Import accepted" } }
+      }
+    },
+    "/leads/{id}/suppress": {
+      "post": {
+        "tags": ["Leads"],
+        "summary": "Manually suppress a lead",
+        "description": "Adds the lead to the suppression list and flips its status.",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Suppressed" } }
+      }
+    },
+    "/leads/erase": {
+      "delete": {
+        "tags": ["Leads"],
+        "summary": "GDPR erasure by email",
+        "description": "Anonymizes PII across every campaign, preserves aggregate counts.",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "required": ["email"], "properties": { "email": { "type": "string", "format": "email" } } } } }
+        },
+        "responses": { "200": { "description": "Erased" } }
+      }
+    },
+    "/leads/{id}": {
+      "delete": {
+        "tags": ["Leads"],
+        "summary": "Hard delete one lead row",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "Deleted" }, "404": { "description": "Lead not found" } }
+      }
+    },
+    "/campaigns": {
+      "get": {
+        "tags": ["Campaigns"],
+        "summary": "List campaigns",
+        "description": "Each row includes leadsCount, sentCount, repliesCount, domainsCount, and lastActivityAt.",
+        "responses": { "200": { "description": "OK" } }
+      },
+      "post": {
+        "tags": ["Campaigns"],
+        "summary": "Create a campaign",
+        "description": "Returns the created row plus a computed contentQuality score.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "aiPromptTemplate"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "aiPromptTemplate": { "type": "string", "description": "Mustache-placeholder AI instructions, e.g. \"Write a 2-sentence opener to {{firstName}} at {{company}}.\"" },
+                  "template": { "type": "string", "description": "Spintax-capable fallback body." },
+                  "aiProvider": { "type": "string", "enum": ["GEMINI", "CLAUDE"], "description": "BYOK — your own Gemini or Claude API key." },
+                  "unsubscribeUrlTemplate": { "type": "string", "description": "Required before the campaign can launch." }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/campaigns/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+      "get": {
+        "tags": ["Campaigns"],
+        "summary": "Fetch one campaign",
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Campaign not found" } }
+      },
+      "patch": {
+        "tags": ["Campaigns"],
+        "summary": "Update a campaign",
+        "description": "Recomputes contentQuality when template changes.",
+        "responses": { "200": { "description": "Updated" } }
+      },
+      "delete": {
+        "tags": ["Campaigns"],
+        "summary": "Archive a campaign",
+        "description": "Archives (status: ARCHIVED) — does not hard-delete.",
+        "responses": { "200": { "description": "Archived" } }
+      }
+    },
+    "/campaigns/{id}/launch": {
+      "post": {
+        "tags": ["Campaigns"],
+        "summary": "Launch a campaign",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "status set to ACTIVE" },
+          "422": { "description": "unsubscribeUrlTemplate is missing, or the campaign is pausedForBounceRate" }
+        }
+      }
+    },
+    "/campaigns/{id}/pause": {
+      "post": {
+        "tags": ["Campaigns"],
+        "summary": "Pause a campaign",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "status set to PAUSED" } }
+      }
+    },
+    "/queue/status": {
+      "get": {
+        "tags": ["Queue"],
+        "summary": "Real-time send-queue status",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "counts": {
+                      "type": "object",
+                      "properties": {
+                        "waiting": { "type": "integer" },
+                        "active": { "type": "integer" },
+                        "delayed": { "type": "integer" },
+                        "completed": { "type": "integer" },
+                        "failed": { "type": "integer" }
+                      }
+                    },
+                    "isPaused": { "type": "boolean" },
+                    "jobs": { "type": "array", "items": { "type": "object" }, "description": "Up to 50 waiting/active/delayed jobs." },
+                    "throttling": {
+                      "type": "object",
+                      "properties": {
+                        "cadenceFloorSeconds": { "type": "integer", "example": 480 },
+                        "jitterSeconds": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/queue/pause": {
+      "post": {
+        "tags": ["Queue"],
+        "summary": "Pause or resume the send queue",
+        "description": "Real BullMQ pause/resume, not cosmetic.",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "required": ["paused"], "properties": { "paused": { "type": "boolean" } } } } }
+        },
+        "responses": { "200": { "description": "Queue state updated" } }
+      }
+    },
+    "/domains": {
+      "get": {
+        "tags": ["Domains"],
+        "summary": "List every sending domain on the account",
+        "responses": { "200": { "description": "OK" } }
+      },
+      "post": {
+        "tags": ["Domains"],
+        "summary": "Register a sending domain",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "required": ["domainName"], "properties": { "domainName": { "type": "string" }, "redirectUrl": { "type": "string" } } } } }
+        },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/domains/{id}": {
+      "patch": {
+        "tags": ["Domains"],
+        "summary": "Update a domain's redirectUrl",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "type": "object", "properties": { "redirectUrl": { "type": "string" } } } } }
+        },
+        "responses": { "200": { "description": "Updated" } }
+      }
+    },
+    "/domains/{domain}/check": {
+      "post": {
+        "tags": ["Domains"],
+        "summary": "SPF/DKIM/DMARC + blocklist check",
+        "description": "Keyed by domain NAME, not id — every other domain route is id-keyed.",
+        "parameters": [
+          { "name": "domain", "in": "path", "required": true, "schema": { "type": "string" }, "description": "The domain name itself, e.g. yourcompany.com." },
+          { "name": "selector", "in": "query", "required": false, "schema": { "type": "string" }, "description": "Non-default DKIM selector, if not using the standard one." }
+        ],
+        "responses": { "200": { "description": "Check result" } }
+      }
+    },
+    "/domains/{id}/placement-sample": {
+      "get": {
+        "tags": ["Domains"],
+        "summary": "Seed-inbox placement sampling rollup",
+        "description": "Keyed by id. Explicitly labeled as sampling, not exhaustive testing.",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Placement sample rollup" } }
+      }
+    },
+    "/replies": {
+      "get": {
+        "tags": ["Campaigns"],
+        "summary": "Poll for replies",
+        "description": "Referenced in the Queue/domains/webhooks reference as the polling substitute for a not-yet-built outbound webhook system. Field-level response shape isn't published in the prose docs yet — see the Replies & team guide for behavior.",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/public/domain-check": {
+      "servers": [{ "url": "https://{instance}", "variables": { "instance": { "default": "your-instance" } } }],
+      "get": {
+        "tags": ["Public"],
+        "summary": "Free, unauthenticated SPF/DKIM/DMARC + List-Unsubscribe + blocklist check",
+        "description": "The exact endpoint behind https://warmhawk.com/tools/domain-check. Response shape verified against warmhawk-site's own client (components/DomainCheckTool.tsx), which types this contract directly against apps/api/src/routes/publicDomainCheck.ts. spf/dkim/dmarc are bare 'PASS'|'FAIL' strings with no per-check detail — dnsChecks.ts's checkSpf/checkDkim/checkDmarc don't produce one. listUnsubscribeCheck is a plain explanatory string, not a checkable status, because RFC 8058 headers live on a sent message, not something resolvable from DNS for a bare domain.",
+        "security": [],
+        "parameters": [{ "name": "domain", "in": "query", "required": true, "schema": { "type": "string" }, "example": "acme-outreach.com" }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "domain": { "type": "string" },
+                    "spf": { "type": "string", "enum": ["PASS", "FAIL"] },
+                    "dkim": { "type": "string", "enum": ["PASS", "FAIL"] },
+                    "dmarc": { "type": "string", "enum": ["PASS", "FAIL"] },
+                    "blocklists": { "type": "object", "additionalProperties": { "type": "string", "enum": ["PASS", "FAIL"] }, "description": "Per-DNSBL-source map, e.g. { \"spamhausZen\": \"PASS\" }." },
+                    "listUnsubscribeCheck": { "type": "string", "description": "Plain-language explanation, not a PASS/FAIL status." }
+                  },
+                  "required": ["domain", "spf", "dkim", "dmarc", "blocklists", "listUnsubscribeCheck"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [{ "bearerAuth": [] }]
+}

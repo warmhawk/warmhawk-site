@@ -36,9 +36,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const stripe = getStripeClient();
+    // Same reasoning as app/api/checkout/session/route.ts's siteOrigin: a redirect target has to
+    // return the browser to whichever environment sent it to the portal, not always production.
+    const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL ?? siteConfig.url;
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
-      return_url: `${siteConfig.url}/compare/pricing`,
+      return_url: `${siteOrigin}/compare/pricing`,
     });
     return NextResponse.json({ url: portalSession.url });
   } catch (error) {

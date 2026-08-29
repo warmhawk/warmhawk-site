@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { DocsSidebar } from '@/components/DocsSidebar';
-import { getPrevNext } from '@/lib/docsNav';
+import { getPrevNext, getBreadcrumbTrail } from '@/lib/docsNav';
+import { breadcrumbSchema } from '@/lib/seo';
 
 /**
  * Two-column docs shell — sidebar nav + article content — matching the
@@ -26,9 +27,17 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
   }
 
   const { prev, next } = getPrevNext(pathname);
+  const breadcrumbTrail = getBreadcrumbTrail(pathname);
 
   return (
     <div className="wrap py-10 md:py-14 flex flex-col md:flex-row gap-8 md:gap-12">
+      {breadcrumbTrail.length > 0 && (
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema(breadcrumbTrail)) }}
+        />
+      )}
       <DocsSidebar />
       <div className="min-w-0 flex-1 border-t border-border pt-8 md:border-t-0 md:pt-0 md:border-l md:pl-12 md:border-border">
         {children}

@@ -26,6 +26,9 @@ logic lives here; that's `warmhawk-core-engine` and
 | Status page | `app/status` |
 | Stripe checkout / webhook / portal skeletons | `app/api/*` |
 | Shared design system | `components/*`, `lib/*`, `tailwind.config.ts` |
+| App-wide constants (name, URLs, support/security/hello/billing emails, nav) | `lib/siteConfig.ts` — the one file to edit when any of these change |
+| Docker build + deploy compose | `docker/Dockerfile.web`, `docker/docker-compose.deploy.yml` |
+| Env var templates | `.env/.env.example` (documented full list), `.env/.env.local` (docker e2e placeholders) |
 
 ---
 
@@ -33,25 +36,26 @@ logic lives here; that's `warmhawk-core-engine` and
 
 ```bash
 npm install
-npm run dev       # http://localhost:4402 by default (see package.json)
+npm run dev       # http://localhost:4800 by default (see package.json)
 npm run build     # production build
 npm run lint      # ESLint flat config
 npm run format    # Prettier
 npm run typecheck # tsc --noEmit
 ```
 
-> **⚠️ Port note:** this repo has no docker-compose services of its own —
-> it's a static-leaning marketing site with two thin Stripe API routes, not
-> a containerized app. `4402` is just the dev-server port picked to avoid
-> colliding with `outreach-infra` (3000/4000/5678), `jitterflow`
-> (5433/6380/4100/4101/4200/4300/4401), `gemini-gateway` (8080), and
-> `leadhound-engine` (9501) on this shared engineering machine.
+> **⚠️ Port note:** this repo owns its own registered block, **4800-4809**,
+> in the PC-wide local-dev port registry — `4800` (`npm run dev`) and `4801`
+> (`npm run test:e2e:docker`'s throwaway container, see
+> `scripts/e2e-docker-up.sh`). The old `4402` default silently collided with
+> `jitterflow-core-app`'s `webhook-echo` container (also `4402` by default) —
+> this repo previously claimed to avoid jitterflow's ports based on a stale,
+> incomplete list. Check the registry memory before picking a new port here.
 
 ---
 
 ## 🔑 Environment variables
 
-See `.env.example` for the full list (Stripe keys/price IDs, the license
+See `.env/.env.example` for the full list (Stripe keys/price IDs, the license
 RSA signing key, the core-engine public API URL for `/tools/domain-check`).
 None of these are called live from this repo's build or test tooling.
 
@@ -68,7 +72,8 @@ None of these are called live from this repo's build or test tooling.
 | `LICENSE_SIGNING_PRIVATE_KEY` | **This repo only** | RSA private key, signs every issued license. Never leaves this deployment's secrets. |
 | `LICENSE_PUBLIC_KEY_PEM` | `warmhawk-enterprise-operator` | The matching public half — verifies offline, never signs. |
 
-`.env.example` in both repos ships an **obviously test-only** keypair
+This repo's `.env/.env.example` and `warmhawk-enterprise-operator`'s own `.env.example` both ship
+an **obviously test-only** keypair
 (clearly marked, never use in production) so local dev / CI can sign and
 verify a real token end-to-end with zero setup. Run
 `scripts/generate-license-keypair.sh` once, at launch, to generate the real
@@ -119,12 +124,42 @@ actually shipped.
 
 ---
 
+## 🧪 Testing
+
+| Tier | Command | What it hits |
+|---|---|---|
+| Unit | `npm run test:unit` | Mocked `@/lib/stripe`/`@/lib/email` — no network, ever. Matches plain `npm test`. |
+| Integration | `npm run test:integration` | **Real** Stripe TEST-mode API + real Resend send. Self-skips cleanly when secrets are absent. |
+| E2E (Docker) | `npm run test:e2e:docker` | Builds/runs this repo's own `docker/Dockerfile.web`, reuses the existing `tests/e2e/*.spec.ts` specs against it, always tears the container down. |
+| Human journeys | `npm run test:human` | A real, browser-driven Stripe checkout + license-email round trip against an already-deployed target. |
+| Load (k6) | `k6 run tests/load/stage.js` | Read-only marketing/docs page rendering only — never `/api/checkout/session`. |
+
+> **⚠️ Integration and human-journey tests deliberately override this repo's "no live external
+> network calls" build policy** (see `lib/stripe.ts`'s / `lib/email.ts`'s header comments — that
+> policy still governs the plain `*.test.ts` unit suite only). They make real calls to Stripe's
+> real TEST-mode API and Resend's real API/SMTP relay, reading secrets from the env vars documented
+> in `.env/.env.example`. Until those secrets are provisioned as CI secrets, both tiers self-skip
+> cleanly rather than fail.
+
+**Human-journey target:** resolved from `HUMAN_ENV` (`local` | `stage` | `prod`, default `local`
+— see `tests/human-journeys/targets.ts`). There's no `HUMAN_ENV`-prefixed npm script for each
+target; just set the env var inline:
+
+```bash
+HUMAN_ENV=stage npm run test:human
+```
+
+`prod` is accepted by `targets.ts` but the real-purchase test itself hard-skips whenever
+`target.label === 'prod'` — a real checkout must never run automatically against the live site.
+
+---
+
 ## 🔁 CI/CD
 
-Self-contained workflows in `.github/workflows/` — no external reusable-workflow dependency
-(this repo is permanently private — decided 2026-08-25, superseding an earlier assumption that
-it would go public at go-live — so keeping CI self-contained here is a simplicity choice, not a
-public-repo requirement). `deploy.yml` additionally triggers a Coolify-managed host directly via webhook,
-since this is the one WarmHawk repo whose deploy is operated centrally. This repo is meant to
-adopt the full `main -> stage -> master` promotion model once it's a real git repo — see
-`ci.yml`'s header comment.
+No pipeline config lives in this repo — like every other KS-LLC-org repo, it runs on
+self-hosted Woodpecker, generated centrally from `ks-woodpecker-config`'s `repo-map.ts`
+(`warmhawk/warmhawk-site` entry). Push-to-`main` builds the image (`docker/Dockerfile.web`),
+pushes it to `ghcr.io/warmhawk/warmhawk-site`, and deploys via `docker/docker-compose.deploy.yml`
+(the "own repo, git-pull" pattern — pulls the pushed image, no on-box rebuild). This repo is
+permanently private (decided 2026-08-25, superseding an earlier assumption it would go public at
+go-live).

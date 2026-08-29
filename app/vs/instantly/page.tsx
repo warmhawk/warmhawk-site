@@ -45,7 +45,7 @@ const compareRows: CompareRow[] = [
 // prove a runtime fact), so it must be asserted by hand as a SECOND, independent flag. Setting
 // only one of the two is treated as a misconfiguration, not "on": it's logged loudly server-side
 // and rendered as an explicit misconfigured state rather than either the real page or a silent
-// 404, so an operator who half-enabled this by mistake finds out immediately. See .env.example
+// 404, so an operator who half-enabled this by mistake finds out immediately. See .env/.env.example
 // for the full rationale on both vars.
 function isFlagEnabled(value: string | undefined): boolean {
   return value === 'true' || value === '1';
@@ -62,7 +62,7 @@ function VsInstantlyMisconfigured() {
         <code className="font-mono">ENABLE_VS_INSTANTLY</code> is true, but{' '}
         <code className="font-mono">SEED_PLACEMENT_LIVE_IN_PRODUCTION</code> is not also true.
         Both environment variables are required together before this page will render — see{' '}
-        <code className="font-mono">.env.example</code> for what each one gates and why. This
+        <code className="font-mono">.env/.env.example</code> for what each one gates and why. This
         page stays hidden until both are explicitly set to <code className="font-mono">true</code> in
         this deployment&rsquo;s environment.
       </p>
@@ -124,7 +124,7 @@ export default function VsInstantlyPage() {
         'is not also true. This page\'s whole argument is real, production-verified seed-inbox ' +
         'placement sampling — rendering it without that second confirmation would make WarmHawk ' +
         'guilty of exactly the overclaiming this page criticizes Instantly for. Refusing to render ' +
-        'the real content; see .env.example for both required env vars.',
+        'the real content; see .env/.env.example for both required env vars.',
     );
     return <VsInstantlyMisconfigured />;
   }

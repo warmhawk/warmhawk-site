@@ -1,9 +1,9 @@
-# Not a git repo yet (built local-disk-only per instructions), but this
-# file is here for when warmhawk-site is bootstrapped into a real repo.
 node_modules
 .next
 out
-.env
+.env/.env.local
+.env/.env.stage
+.env/.env.prod
 .env.local
 .env*.local
 *.log
@@ -21,3 +21,4 @@ tsconfig.tsbuildinfo
 
 # Real RSA keypairs from scripts/generate-license-keypair.sh — never committed.
 /keys
+/keys-nonprod

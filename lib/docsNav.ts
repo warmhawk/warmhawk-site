@@ -161,3 +161,29 @@ export function getPrevNext(pathname: string): DocPrevNext {
     index >= 0 && index < docsFlatOrder.length - 1 ? (docsFlatOrder[index + 1] ?? null) : null;
   return { prev, next };
 }
+
+export interface BreadcrumbItem {
+  name: string;
+  path: string;
+}
+
+/**
+ * Home > Docs > <page title> trail for `breadcrumbSchema` (lib/seo.ts),
+ * computed from `docsFlatOrder` the same way `getPrevNext` is — one source
+ * of truth, no hand-added breadcrumb per article page. Deliberately stops
+ * at two levels deep rather than also naming the doc's section (Guides,
+ * API reference, etc.): those groupings have no page of their own, and
+ * Google's breadcrumb guidelines expect every non-final crumb to resolve to
+ * a real URL. Returns an empty trail for a pathname outside the docs
+ * reading order (e.g. the `/docs` index itself, which renders no article
+ * layout to attach a trail to).
+ */
+export function getBreadcrumbTrail(pathname: string): BreadcrumbItem[] {
+  const link = docsFlatOrder.find((l) => l.href === pathname);
+  if (!link) return [];
+  return [
+    { name: 'Home', path: '/' },
+    { name: 'Docs', path: '/docs' },
+    { name: link.title, path: link.href },
+  ];
+}

@@ -8,6 +8,12 @@ import { useState, type FormEvent } from 'react';
  * app/api/contact-sales/route.ts). Follows the same fetch/loading/error-state shape as
  * components/CheckoutButtons.tsx and components/DomainCheckTool.tsx — this repo's established
  * pattern for a client-side form hitting this site's own API.
+ *
+ * Responsive fix: every field below was `text-[15px]` — one pixel under the 16px threshold
+ * below which iOS Safari auto-zooms the whole page when the field gains focus. This form is the
+ * entire Tier 2 conversion path, reachable from a phone, so every mobile visitor got an
+ * unwanted pinch-zoom on the very first tap. Bumped to exactly 16px (see the matching `.field`
+ * fix in globals.css for the same bug in DomainCheckTool's input).
  */
 type FormState = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -80,7 +86,7 @@ export function ContactSalesForm() {
             type="text"
             required
             placeholder="Acme Outreach Agency"
-            className="bg-cream border border-border rounded-full px-4 py-3 text-[15px] outline-none focus:border-rust"
+            className="bg-cream border border-border rounded-full px-4 py-3 text-[16px] outline-none focus:border-rust"
           />
         </label>
         <label className="flex flex-col gap-1.5 text-sm">
@@ -90,7 +96,7 @@ export function ContactSalesForm() {
             type="text"
             required
             placeholder="Alex Rivera"
-            className="bg-cream border border-border rounded-full px-4 py-3 text-[15px] outline-none focus:border-rust"
+            className="bg-cream border border-border rounded-full px-4 py-3 text-[16px] outline-none focus:border-rust"
           />
         </label>
       </div>
@@ -101,7 +107,7 @@ export function ContactSalesForm() {
           type="email"
           required
           placeholder="alex@youragency.com"
-          className="bg-cream border border-border rounded-full px-4 py-3 text-[15px] outline-none focus:border-rust"
+          className="bg-cream border border-border rounded-full px-4 py-3 text-[16px] outline-none focus:border-rust"
         />
       </label>
       <label className="flex flex-col gap-1.5 text-sm">
@@ -111,7 +117,7 @@ export function ContactSalesForm() {
           type="text"
           required
           placeholder="e.g. 24 domains, 60 mailboxes"
-          className="bg-cream border border-border rounded-full px-4 py-3 text-[15px] outline-none focus:border-rust"
+          className="bg-cream border border-border rounded-full px-4 py-3 text-[16px] outline-none focus:border-rust"
         />
       </label>
       <label className="flex flex-col gap-1.5 text-sm">
@@ -120,7 +126,7 @@ export function ContactSalesForm() {
           name="notes"
           rows={3}
           placeholder="Migration timeline, current tool, etc."
-          className="bg-cream border border-border rounded-2xl px-4 py-3 text-[15px] outline-none focus:border-rust resize-none"
+          className="bg-cream border border-border rounded-2xl px-4 py-3 text-[16px] outline-none focus:border-rust resize-none"
         />
       </label>
       <button

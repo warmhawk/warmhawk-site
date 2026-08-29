@@ -1,3 +1,8 @@
+// Canonical source for the values duplicated across this repo's docker/env/deploy
+// config (docker/docker-compose.deploy.yml's SMTP_FROM default, .env/.env.example's
+// header comment) and lib/email.ts's own fallback — those can't literally import this
+// TS file (YAML/shell can't), so keep them byte-identical by hand and update this file
+// first when any of them change.
 export const siteConfig = {
   name: 'WarmHawk',
   url: 'https://warmhawk.com',
@@ -7,6 +12,10 @@ export const siteConfig = {
   supportEmail: 'support@warmhawk.com',
   securityEmail: 'security@warmhawk.com',
   helloEmail: 'hello@warmhawk.com',
+  // Matches docker/docker-compose.deploy.yml's SMTP_FROM default exactly — that file
+  // can't import this constant (it's YAML), so this pairing is the one to update in
+  // both places at once if it ever changes.
+  billingFrom: 'WarmHawk <billing@warmhawk.com>',
 };
 
 // Order and labels match the artifact's SITE_HEADER nav exactly: Product,

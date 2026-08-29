@@ -37,8 +37,26 @@ describe('robots()', () => {
   it('disallows /vs/instantly and /api/, and points at the real sitemap URL', () => {
     const result = robots();
     const rule = Array.isArray(result.rules) ? result.rules[0] : result.rules;
+    expect(rule?.userAgent).toBe('*');
     expect(rule?.disallow).toContain('/vs/instantly');
     expect(rule?.disallow).toContain('/api/');
     expect(result.sitemap).toMatch(/\/sitemap\.xml$/);
+  });
+
+  it('repeats the wildcard rule for every named AI/answer-engine crawler, not just "*"', () => {
+    // A crawler that matches a named user-agent group ignores the `*`
+    // group entirely — an AI crawler entry missing `disallow` here would
+    // silently see /vs/instantly and /api/, which the wildcard rule blocks.
+    const result = robots();
+    const rules = Array.isArray(result.rules) ? result.rules : [result.rules];
+    const aiCrawlers = ['GPTBot', 'ClaudeBot', 'PerplexityBot', 'Google-Extended'];
+
+    for (const userAgent of aiCrawlers) {
+      const rule = rules.find((r) => r?.userAgent === userAgent);
+      expect(rule, `expected a robots rule for ${userAgent}`).toBeDefined();
+      expect(rule?.allow).toBe('/');
+      expect(rule?.disallow).toContain('/vs/instantly');
+      expect(rule?.disallow).toContain('/api/');
+    }
   });
 });

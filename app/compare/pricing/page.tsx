@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { pageSeo } from '@/lib/seo';
+import { pageSeo, softwareApplicationSchema } from '@/lib/seo';
 import { PricingTable } from '@/components/PricingTable';
 import { CheckoutButtons } from '@/components/CheckoutButtons';
 import { FaqSection } from '@/components/FaqSchema';
@@ -171,6 +171,11 @@ const matrixRows: { feature: string; tier0: string; tier1: string; tier2: string
 export default function PricingComparisonPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema()) }}
+      />
       {/* HERO / INTRO */}
       <div className="wrap pt-16 md:pt-24 pb-14">
         <div className="max-w-3xl">

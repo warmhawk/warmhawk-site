@@ -1,12 +1,12 @@
 title = "warmhawk-site gitleaks config"
 
-# `.env.example` deliberately ships a real, working (test-only, never used in production) RSA
+# `.env/.env.example` deliberately ships a real, working (test-only, never used in production) RSA
 # private key so local dev/CI can sign+verify a license end-to-end without running
 # scripts/generate-license-keypair.sh first — see that file's own header comment and
 # scripts/generate-license-keypair.sh's. Without this allowlist, gitleaks correctly flags it as
 # real key material on every run; this tells it that specific, documented exception is expected,
 # not a leak. lib/license.test.ts carries the same value for the same reason (proving the
-# checked-in .env.example values actually interoperate, not just that some keypair round-trips).
+# checked-in .env/.env.example values actually interoperate, not just that some keypair round-trips).
 #
 # Scope stays tight on purpose: only these two known files, only the one rule gitleaks uses to
 # detect PEM private keys. A real secret landing anywhere else, or under a different rule, still
@@ -19,6 +19,6 @@ useDefault = true
 description = "Documented test-only license-signing keypair (LICENSE_SIGNING_PRIVATE_KEY)"
 targetRules = ["private-key"]
 paths = [
-  '''^\.env\.example$''',
+  '''^\.env/\.env\.example$''',
   '''^lib/license\.test\.ts$''',
 ]

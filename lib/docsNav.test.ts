@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { docsFlatOrder, getPrevNext } from './docsNav';
+import { docsFlatOrder, getPrevNext, getBreadcrumbTrail } from './docsNav';
 
 /**
  * `getPrevNext` drives the footer prev/next nav rendered on every doc
@@ -50,5 +50,34 @@ describe('getPrevNext', () => {
 
   it('has at least two entries, so the first/middle/last cases above are all distinct', () => {
     expect(docsFlatOrder.length).toBeGreaterThanOrEqual(3);
+  });
+});
+
+/**
+ * `getBreadcrumbTrail` feeds the BreadcrumbList JSON-LD rendered in
+ * app/docs/layout.tsx (lib/seo.ts's `breadcrumbSchema`) — covers the same
+ * "known page vs. unknown pathname" branching `getPrevNext` above does.
+ */
+describe('getBreadcrumbTrail', () => {
+  it('returns a Home > Docs > page trail for a real doc page, ending on that page', () => {
+    const page = docsFlatOrder[0]!;
+
+    const trail = getBreadcrumbTrail(page.href);
+
+    expect(trail).toEqual([
+      { name: 'Home', path: '/' },
+      { name: 'Docs', path: '/docs' },
+      { name: page.title, path: page.href },
+    ]);
+  });
+
+  it('returns an empty trail for a pathname outside the docs reading order', () => {
+    expect(getBreadcrumbTrail('/docs')).toEqual([]);
+    expect(getBreadcrumbTrail('/not-a-real-page')).toEqual([]);
+  });
+
+  it('every intermediate crumb resolves to a real path (Home and Docs are always present together)', () => {
+    const trail = getBreadcrumbTrail(docsFlatOrder[docsFlatOrder.length - 1]!.href);
+    expect(trail.map((c) => c.path)).toEqual(['/', '/docs', docsFlatOrder[docsFlatOrder.length - 1]!.href]);
   });
 });

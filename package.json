@@ -4,7 +4,7 @@
   "private": true,
   "description": "WarmHawk marketing/informational site — public, unauthenticated. No product code lives here.",
   "scripts": {
-    "dev": "next dev -p 4402",
+    "dev": "next dev -p 4800",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
@@ -12,9 +12,14 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "generate:og-image": "node scripts/generate-og-image.mjs",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test"
+    "test": "vitest run -c tests/vitest.config.mts",
+    "test:coverage": "vitest run -c tests/vitest.config.mts --coverage",
+    "test:unit": "vitest run -c tests/vitest.config.mts --exclude \"**/*.integration.test.ts\"",
+    "test:integration": "vitest run -c tests/vitest.config.mts integration.test",
+    "test:e2e": "playwright test -c tests/playwright.config.ts",
+    "test:e2e:docker": "bash scripts/e2e-docker-up.sh && npx playwright test -c tests/playwright.config.ts && bash scripts/e2e-docker-down.sh || (bash scripts/e2e-docker-down.sh; exit 1)",
+    "test:e2e:docker:down": "bash scripts/e2e-docker-down.sh",
+    "test:human": "playwright test -c tests/human-journeys/human.config.ts"
   },
   "dependencies": {
     "next": "14.2.18",

@@ -3,6 +3,7 @@ import './globals.css';
 import { Nav } from '@/components/Nav';
 import { Footer } from '@/components/Footer';
 import { siteConfig } from '@/lib/siteConfig';
+import { organizationSchema } from '@/lib/seo';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -21,15 +22,6 @@ export const metadata: Metadata = {
   },
 };
 
-const organizationSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: 'WarmHawk',
-  url: siteConfig.url,
-  description: siteConfig.description,
-  sameAs: ['https://github.com/warmhawk'],
-};
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -37,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema()) }}
         />
         <Nav />
         <main>{children}</main>
