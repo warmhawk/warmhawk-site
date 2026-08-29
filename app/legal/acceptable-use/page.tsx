@@ -32,11 +32,10 @@ export default function AcceptableUsePage() {
         <p className="text-sm text-ink-muted mb-8">Last updated: August 21, 2026</p>
 
         <p className="text-ink-muted leading-relaxed mb-4">
-          This document is a draft, pending attorney review. It sets out what you may and may not
-          do when sending mail through a WarmHawk instance operated by WarmHawk LLC
+          This document is a draft, pending attorney review. It sets out what you may and may not do
+          when sending mail through a WarmHawk instance operated by WarmHawk LLC
           (&ldquo;WarmHawk,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;). You must accept this
-          Acceptable Use
-          Policy (&ldquo;AUP&rdquo;), together with the{' '}
+          Acceptable Use Policy (&ldquo;AUP&rdquo;), together with the{' '}
           <Link href="/legal/terms" className="text-rust font-semibold">
             Terms of Service
           </Link>{' '}
@@ -72,20 +71,20 @@ export default function AcceptableUsePage() {
         <ol className="list-decimal pl-6 mb-4 text-ink-muted leading-relaxed space-y-3">
           <li>
             <strong>Purchased, scraped, or otherwise consent-less B2C lists.</strong> Sending to
-            consumer (B2C) recipients who did not provide some affirmative basis for contact
-            &mdash; including lists that were bought, scraped from the web, or otherwise assembled
-            without the recipient&rsquo;s knowledge &mdash; is prohibited outright, regardless of
+            consumer (B2C) recipients who did not provide some affirmative basis for contact &mdash;
+            including lists that were bought, scraped from the web, or otherwise assembled without
+            the recipient&rsquo;s knowledge &mdash; is prohibited outright, regardless of
             jurisdiction.
           </li>
           <li>
             <strong>Phishing or fraud, of any kind.</strong> Any message designed to deceive a
-            recipient into revealing credentials, financial information, or other sensitive data,
-            or designed to induce a fraudulent payment or action, is prohibited.
+            recipient into revealing credentials, financial information, or other sensitive data, or
+            designed to induce a fraudulent payment or action, is prohibited.
           </li>
           <li>
-            <strong>Sender-identity impersonation.</strong> Spoofing the identity of another
-            person, brand, or organization &mdash; sending as if you were them without
-            authorization &mdash; is prohibited.
+            <strong>Sender-identity impersonation.</strong> Spoofing the identity of another person,
+            brand, or organization &mdash; sending as if you were them without authorization &mdash;
+            is prohibited.
           </li>
           <li>
             <strong>Illegal content.</strong> Sending any content that is illegal under applicable
@@ -142,10 +141,10 @@ export default function AcceptableUsePage() {
         </h2>
         <p className="text-ink-muted leading-relaxed mb-4">
           As of this writing, WarmHawk uses a flat permission model: every team member you invite to
-          your instance has full access to mailbox credentials, campaign data, and billing
-          settings. There is no per-role or restricted-access tier available at launch. The account
-          owner is solely responsible for deciding who to invite, and for any action a team member
-          takes with that full access, including a violation of Section&nbsp;1 of this AUP.
+          your instance has full access to mailbox credentials, campaign data, and billing settings.
+          There is no per-role or restricted-access tier available at launch. The account owner is
+          solely responsible for deciding who to invite, and for any action a team member takes with
+          that full access, including a violation of Section&nbsp;1 of this AUP.
         </p>
 
         <h2 id="consequences" className="font-display text-2xl font-semibold mb-3 mt-10">
@@ -192,8 +191,8 @@ export default function AcceptableUsePage() {
           <Link href="/legal/terms#governing-law" className="text-rust font-semibold">
             Terms of Service
           </Link>
-          : applicable law, with no specific state or country designated as controlling —
-          the same governing-law approach used in the Terms of Service above.
+          : applicable law, with no specific state or country designated as controlling — the same
+          governing-law approach used in the Terms of Service above.
         </p>
       </div>
     </>

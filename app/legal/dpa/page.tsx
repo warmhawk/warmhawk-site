@@ -79,11 +79,10 @@ export default function DpaPage() {
           Terms used in this DPA &mdash; &ldquo;controller,&rdquo; &ldquo;processor,&rdquo;
           &ldquo;data subject,&rdquo; &ldquo;personal data,&rdquo; &ldquo;processing,&rdquo; and
           &ldquo;sub-processor&rdquo; &mdash; have the meanings given in Article&nbsp;4 of the GDPR.
-          In summary: Customer is the <strong>controller</strong> of its own lead and campaign
-          data, deciding why and how that data is processed; WarmHawk is the{' '}
-          <strong>processor</strong> only for the narrow billing-contact data described in
-          Section&nbsp;5, processing it solely on Customer&rsquo;s instructions to deliver the
-          subscription Customer purchased.
+          In summary: Customer is the <strong>controller</strong> of its own lead and campaign data,
+          deciding why and how that data is processed; WarmHawk is the <strong>processor</strong>{' '}
+          only for the narrow billing-contact data described in Section&nbsp;5, processing it solely
+          on Customer&rsquo;s instructions to deliver the subscription Customer purchased.
         </p>
 
         <h2 id="subject-matter" className="font-display text-2xl font-semibold mb-3 mt-10">
@@ -91,9 +90,9 @@ export default function DpaPage() {
         </h2>
         <p className="text-ink-muted leading-relaxed mb-4">
           The subject matter of processing under this DPA is the billing-contact personal data
-          submitted through the warmhawk.com checkout flow. Processing continues for the duration
-          of Customer&rsquo;s active subscription and for any retention period required afterward
-          by tax, accounting, or other applicable law, consistent with the{' '}
+          submitted through the warmhawk.com checkout flow. Processing continues for the duration of
+          Customer&rsquo;s active subscription and for any retention period required afterward by
+          tax, accounting, or other applicable law, consistent with the{' '}
           <Link href="/legal/privacy" className="text-rust font-semibold">
             Privacy Policy
           </Link>
@@ -104,13 +103,13 @@ export default function DpaPage() {
           4. Nature and purpose of processing
         </h2>
         <p className="text-ink-muted leading-relaxed mb-4">
-          The marketing site&rsquo;s billing/checkout flow processes payment and contact data
-          (name, email, billing address, payment method) via Stripe as a sub-processor, solely to
-          complete Customer&rsquo;s purchase, issue a license key, and administer the subscription.
-          This DPA does <strong>not</strong> cover, and does not need to cover, Customer&rsquo;s
-          lead lists, mailbox contents, or campaign data &mdash; that data is generated, stored, and
-          processed entirely within Customer&rsquo;s own self-hosted instance and never reaches any
-          system WarmHawk operates.
+          The marketing site&rsquo;s billing/checkout flow processes payment and contact data (name,
+          email, billing address, payment method) via Stripe as a sub-processor, solely to complete
+          Customer&rsquo;s purchase, issue a license key, and administer the subscription. This DPA
+          does <strong>not</strong> cover, and does not need to cover, Customer&rsquo;s lead lists,
+          mailbox contents, or campaign data &mdash; that data is generated, stored, and processed
+          entirely within Customer&rsquo;s own self-hosted instance and never reaches any system
+          WarmHawk operates.
         </p>
 
         <h2 id="data-subjects" className="font-display text-2xl font-semibold mb-3 mt-10">
@@ -190,8 +189,8 @@ export default function DpaPage() {
             Terms of Service
           </Link>
           ) and remains in effect for as long as the Terms of Service remain in effect, terminating
-          automatically alongside them. This DPA is governed by applicable law, with no specific state
-          or country designated as controlling — the same governing-law approach used in the
+          automatically alongside them. This DPA is governed by applicable law, with no specific
+          state or country designated as controlling — the same governing-law approach used in the
           Terms of Service.
         </p>
 

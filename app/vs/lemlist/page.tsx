@@ -100,7 +100,9 @@ export default function LemlistComparisonPage() {
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <div className="font-display text-2xl font-bold text-rust">Unlimited</div>
-                <div className="text-xs text-ink-muted mt-1.5 leading-tight">seats, no per-user fee</div>
+                <div className="text-xs text-ink-muted mt-1.5 leading-tight">
+                  seats, no per-user fee
+                </div>
               </div>
               <div className="text-center border-l border-r border-border">
                 <div className="font-display text-2xl font-bold text-rust">$199/mo</div>
@@ -124,8 +126,8 @@ export default function LemlistComparisonPage() {
             Per-seat pricing punishes exactly the teams that need cold email most
           </h2>
           <AnswerBlock>
-            Lemlist and Apollo price by seat, so cost climbs every time an agency adds a teammate,
-            a client login, or a new hire &mdash; even though sending volume and mailbox count
+            Lemlist and Apollo price by seat, so cost climbs every time an agency adds a teammate, a
+            client login, or a new hire &mdash; even though sending volume and mailbox count
             haven&rsquo;t changed. WarmHawk charges one flat $199 per month per account, with
             unlimited users, so team growth never triggers a bigger invoice.
           </AnswerBlock>
@@ -178,10 +180,10 @@ export default function LemlistComparisonPage() {
             , even for teams that only ever wanted sequencing and inbox placement.
           </p>
           <p>
-            WarmHawk is a non-goal-driven product in the best sense: it doesn&rsquo;t try to be
-            your CRM, your lead database, or your landing-page builder. It sends mail, warms
-            mailboxes, rotates load safely across them, and shows you where messages actually
-            land. That focus is the product, not a limitation of it.
+            WarmHawk is a non-goal-driven product in the best sense: it doesn&rsquo;t try to be your
+            CRM, your lead database, or your landing-page builder. It sends mail, warms mailboxes,
+            rotates load safely across them, and shows you where messages actually land. That focus
+            is the product, not a limitation of it.
           </p>
         </div>
       </div>
@@ -207,8 +209,8 @@ export default function LemlistComparisonPage() {
                 Reviewers regularly flag Lemwarm as an unexpected extra cost discovered only after
                 signing up for Lemlist itself
               </StatCite>
-              , which is a strange place to put a paywall for infrastructure the rest of the
-              product can&rsquo;t function without.
+              , which is a strange place to put a paywall for infrastructure the rest of the product
+              can&rsquo;t function without.
             </p>
             <p>
               On WarmHawk, warmup is not a feature you toggle on for an extra fee &mdash; it&rsquo;s
@@ -226,11 +228,11 @@ export default function LemlistComparisonPage() {
           New domains get pushed too hard &mdash; until they don&rsquo;t
         </h2>
         <AnswerBlock>
-          Reviewers describe Lemlist letting brand-new domains send at volumes that burn
-          reputation before warmup finishes. WarmHawk&rsquo;s queue engine,
-          computeNextSlotSeconds.ts, enforces an eight-minute cadence floor plus randomized jitter
-          on every mailbox automatically &mdash; there&rsquo;s no setting to disable, so a new
-          domain physically cannot be pushed past a safe sending rate.
+          Reviewers describe Lemlist letting brand-new domains send at volumes that burn reputation
+          before warmup finishes. WarmHawk&rsquo;s queue engine, computeNextSlotSeconds.ts, enforces
+          an eight-minute cadence floor plus randomized jitter on every mailbox automatically
+          &mdash; there&rsquo;s no setting to disable, so a new domain physically cannot be pushed
+          past a safe sending rate.
         </AnswerBlock>
         <div className="max-w-3xl mx-auto space-y-4 text-[15px] leading-relaxed text-ink-muted">
           <p>
@@ -241,16 +243,15 @@ export default function LemlistComparisonPage() {
               users report Lemlist pushing new domains to daily volumes that outpace what their
               actual sending reputation can support
             </StatCite>
-            , torching deliverability right at the moment a client is watching the results
-            closest.
+            , torching deliverability right at the moment a client is watching the results closest.
           </p>
           <p>
-            WarmHawk removes the judgment call. computeNextSlotSeconds.ts calculates the minimum
-            gap between sends per mailbox &mdash; never less than eight minutes, always with
-            randomized jitter layered on top so outbound traffic doesn&rsquo;t look like a
-            scripted drip &mdash; and enqueuer.ts spreads that load across every mailbox on the
-            account by weighted, capacity-aware rotation. A brand-new domain simply cannot be
-            rushed, by a client, an over-eager AE, or an impatient operator.
+            WarmHawk removes the judgment call. computeNextSlotSeconds.ts calculates the minimum gap
+            between sends per mailbox &mdash; never less than eight minutes, always with randomized
+            jitter layered on top so outbound traffic doesn&rsquo;t look like a scripted drip
+            &mdash; and enqueuer.ts spreads that load across every mailbox on the account by
+            weighted, capacity-aware rotation. A brand-new domain simply cannot be rushed, by a
+            client, an over-eager AE, or an impatient operator.
           </p>
         </div>
 
@@ -278,10 +279,7 @@ export default function LemlistComparisonPage() {
             <Link href="/checkout?tier=1" className="btn btn-primary">
               Start Tier 1 &mdash; $199/mo
             </Link>
-            <Link
-              href="/docs/quickstart"
-              className="btn btn-on-dark"
-            >
+            <Link href="/docs/quickstart" className="btn btn-on-dark">
               Get the free engine
             </Link>
           </div>

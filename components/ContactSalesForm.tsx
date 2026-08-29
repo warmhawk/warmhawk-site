@@ -8,6 +8,12 @@ import { useState, type FormEvent } from 'react';
  * app/api/contact-sales/route.ts). Follows the same fetch/loading/error-state shape as
  * components/CheckoutButtons.tsx and components/DomainCheckTool.tsx — this repo's established
  * pattern for a client-side form hitting this site's own API.
+ *
+ * Responsive fix: every field below was `text-[15px]` — one pixel under the 16px threshold
+ * below which iOS Safari auto-zooms the whole page when the field gains focus. This form is the
+ * entire Tier 2 conversion path, reachable from a phone, so every mobile visitor got an
+ * unwanted pinch-zoom on the very first tap. Bumped to exactly 16px (see the matching `.field`
+ * fix in globals.css for the same bug in DomainCheckTool's input).
  */
 type FormState = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -52,7 +58,9 @@ export function ContactSalesForm() {
   if (state === 'success') {
     return (
       <div className="card bg-cream-elevated p-7 text-center">
-        <div className="font-display text-xl font-semibold mb-2">Thanks — we&rsquo;ll be in touch.</div>
+        <div className="font-display text-xl font-semibold mb-2">
+          Thanks — we&rsquo;ll be in touch.
+        </div>
         <p className="text-sm text-ink-muted">
           A founder reads every Enterprise DFY inquiry personally and follows up same business day.
           In the meantime, feel free to email{' '}
@@ -68,8 +76,8 @@ export function ContactSalesForm() {
   return (
     <form onSubmit={handleSubmit} className="card p-7 flex flex-col gap-4">
       <p className="text-sm leading-relaxed text-ink-muted mb-1">
-        Tier 2 is a custom-scoped engagement — DNS, migration, dedicated IPs, and deployment
-        handled by WarmHawk&rsquo;s founder, then an ongoing retainer. Tell us about your setup and
+        Tier 2 is a custom-scoped engagement — DNS, migration, dedicated IPs, and deployment handled
+        by WarmHawk&rsquo;s founder, then an ongoing retainer. Tell us about your setup and
         we&rsquo;ll follow up to schedule a call. This does not charge a card.
       </p>
       <div className="grid sm:grid-cols-2 gap-4">
@@ -80,7 +88,7 @@ export function ContactSalesForm() {
             type="text"
             required
             placeholder="Acme Outreach Agency"
-            className="bg-cream border border-border rounded-full px-4 py-3 text-[15px] outline-none focus:border-rust"
+            className="bg-cream border border-border rounded-full px-4 py-3 text-[16px] outline-none focus:border-rust"
           />
         </label>
         <label className="flex flex-col gap-1.5 text-sm">
@@ -90,7 +98,7 @@ export function ContactSalesForm() {
             type="text"
             required
             placeholder="Alex Rivera"
-            className="bg-cream border border-border rounded-full px-4 py-3 text-[15px] outline-none focus:border-rust"
+            className="bg-cream border border-border rounded-full px-4 py-3 text-[16px] outline-none focus:border-rust"
           />
         </label>
       </div>
@@ -101,7 +109,7 @@ export function ContactSalesForm() {
           type="email"
           required
           placeholder="alex@youragency.com"
-          className="bg-cream border border-border rounded-full px-4 py-3 text-[15px] outline-none focus:border-rust"
+          className="bg-cream border border-border rounded-full px-4 py-3 text-[16px] outline-none focus:border-rust"
         />
       </label>
       <label className="flex flex-col gap-1.5 text-sm">
@@ -111,7 +119,7 @@ export function ContactSalesForm() {
           type="text"
           required
           placeholder="e.g. 24 domains, 60 mailboxes"
-          className="bg-cream border border-border rounded-full px-4 py-3 text-[15px] outline-none focus:border-rust"
+          className="bg-cream border border-border rounded-full px-4 py-3 text-[16px] outline-none focus:border-rust"
         />
       </label>
       <label className="flex flex-col gap-1.5 text-sm">
@@ -120,7 +128,7 @@ export function ContactSalesForm() {
           name="notes"
           rows={3}
           placeholder="Migration timeline, current tool, etc."
-          className="bg-cream border border-border rounded-2xl px-4 py-3 text-[15px] outline-none focus:border-rust resize-none"
+          className="bg-cream border border-border rounded-2xl px-4 py-3 text-[16px] outline-none focus:border-rust resize-none"
         />
       </label>
       <button

@@ -104,7 +104,12 @@ describe('DomainCheckTool graceful degradation', () => {
               spf: 'PASS',
               dkim: 'PASS',
               dmarc: 'FAIL',
-              blocklists: { spamhausZen: 'PASS', spamhausDbl: 'PASS', barracuda: 'PASS', sorbs: 'PASS' },
+              blocklists: {
+                spamhausZen: 'PASS',
+                spamhausDbl: 'PASS',
+                barracuda: 'PASS',
+                sorbs: 'PASS',
+              },
               listUnsubscribeCheck:
                 'RFC 8058 List-Unsubscribe headers are attached to sent messages, not resolvable ' +
                 'from DNS for a bare domain — connect this domain in WarmHawk to verify it on real sends.',

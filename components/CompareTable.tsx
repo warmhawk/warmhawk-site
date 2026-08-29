@@ -27,9 +27,13 @@ export function CompareTable({ themLabel, rows }: { themLabel: string; rows: Com
         </div>
         {rows.map((row) => (
           <Fragment key={row.label}>
-            <div className="p-4 px-5 border-t border-border text-sm font-semibold text-ink">{row.label}</div>
+            <div className="p-4 px-5 border-t border-border text-sm font-semibold text-ink">
+              {row.label}
+            </div>
             <div className="p-4 px-5 border-t border-border text-sm text-ink-muted">{row.them}</div>
-            <div className="p-4 px-5 border-t border-border text-sm font-medium bg-rust-tint">{row.us}</div>
+            <div className="p-4 px-5 border-t border-border text-sm font-medium bg-rust-tint">
+              {row.us}
+            </div>
           </Fragment>
         ))}
       </div>

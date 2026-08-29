@@ -1,9 +1,9 @@
-# Not a git repo yet (built local-disk-only per instructions), but this
-# file is here for when warmhawk-site is bootstrapped into a real repo.
 node_modules
 .next
 out
-.env
+.env/.env.local
+.env/.env.stage
+.env/.env.prod
 .env.local
 .env*.local
 *.log
@@ -11,5 +11,14 @@ out
 .vercel
 tsconfig.tsbuildinfo
 
+# Playwright output — matches the sibling warmhawk-enterprise-operator repo's
+# .gitignore convention for the same two directories.
+/playwright-report/
+/test-results/
+
+# Vitest --coverage output (added alongside @vitest/coverage-v8).
+/coverage/
+
 # Real RSA keypairs from scripts/generate-license-keypair.sh — never committed.
 /keys
+/keys-nonprod

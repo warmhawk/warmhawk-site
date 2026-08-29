@@ -38,10 +38,10 @@ export default function TermsPage() {
           This document is a draft, pending attorney review, and describes the terms under which
           WarmHawk LLC (&ldquo;WarmHawk,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or
           &ldquo;our&rdquo;) makes its cold-email infrastructure software and related services
-          available to you (&ldquo;Customer,&rdquo; &ldquo;you&rdquo;). WarmHawk LLC is the
-          operator of the WarmHawk product and the warmhawk.com website. By
-          installing, activating a license for, or otherwise using WarmHawk, you agree to these
-          Terms of Service (&ldquo;Terms&rdquo;).
+          available to you (&ldquo;Customer,&rdquo; &ldquo;you&rdquo;). WarmHawk LLC is the operator
+          of the WarmHawk product and the warmhawk.com website. By installing, activating a license
+          for, or otherwise using WarmHawk, you agree to these Terms of Service
+          (&ldquo;Terms&rdquo;).
         </p>
 
         <div className="card p-6 mb-10 bg-cream-elevated">
@@ -93,8 +93,8 @@ export default function TermsPage() {
           </li>
           <li>
             an optional, separately-priced Enterprise &ldquo;done-for-you&rdquo; provisioning
-            service, under which WarmHawk personnel configure and maintain dedicated
-            infrastructure on your behalf.
+            service, under which WarmHawk personnel configure and maintain dedicated infrastructure
+            on your behalf.
           </li>
         </ul>
         <p className="text-ink-muted leading-relaxed mb-4">
@@ -109,9 +109,9 @@ export default function TermsPage() {
           A WarmHawk license is issued once you complete checkout and is activated during the
           self-hosted install flow (the <code>--license</code> flag passed to the install script).
           As part of that install flow, you must affirmatively accept these Terms, the Privacy
-          Policy, and the AUP together before the license key will validate and unlock the
-          software. Refusing any one of the three documents will cause activation to fail; there is
-          no way to activate a license while accepting only part of this bundle.
+          Policy, and the AUP together before the license key will validate and unlock the software.
+          Refusing any one of the three documents will cause activation to fail; there is no way to
+          activate a license while accepting only part of this bundle.
         </p>
         <p className="text-ink-muted leading-relaxed mb-4">
           You are responsible for keeping your license key confidential and for all activity that
@@ -138,9 +138,9 @@ export default function TermsPage() {
           </li>
           <li>
             <strong>Cancellation:</strong> you may cancel auto-renewal at any time through the
-            Stripe Customer Portal, accessible from your dashboard. Cancellation takes effect at
-            the end of the then-current billing period; we do not prorate mid-period refunds
-            outside the Tier&nbsp;1 guarantee window above.
+            Stripe Customer Portal, accessible from your dashboard. Cancellation takes effect at the
+            end of the then-current billing period; we do not prorate mid-period refunds outside the
+            Tier&nbsp;1 guarantee window above.
           </li>
           <li>
             <strong>Price changes:</strong> we will give reasonable advance notice by email before
@@ -174,9 +174,9 @@ export default function TermsPage() {
           WarmHawk is provided &ldquo;as is&rdquo; and &ldquo;as available,&rdquo; without
           warranties of any kind, whether express, implied, or statutory, including implied
           warranties of merchantability, fitness for a particular purpose, and non-infringement. We
-          do not warrant that the software will be uninterrupted, error-free, or that any
-          particular deliverability, inbox-placement, or sending outcome will be achieved, since
-          your own server, sending domains, and content practices materially affect those outcomes.
+          do not warrant that the software will be uninterrupted, error-free, or that any particular
+          deliverability, inbox-placement, or sending outcome will be achieved, since your own
+          server, sending domains, and content practices materially affect those outcomes.
         </p>
 
         <h2 id="liability" className="font-display text-2xl font-semibold mb-3 mt-10">
@@ -201,8 +201,8 @@ export default function TermsPage() {
           Privacy Policy, including for the AUP violations described on that page, with no
           obligation to issue a refund where termination follows an AUP violation. On termination,
           your right to receive license updates and hosted billing services ends; because WarmHawk
-          is self-hosted, a previously-installed instance and any data stored on your own server
-          are not remotely disabled or deleted by us.
+          is self-hosted, a previously-installed instance and any data stored on your own server are
+          not remotely disabled or deleted by us.
         </p>
 
         <h2 id="changes" className="font-display text-2xl font-semibold mb-3 mt-10">
@@ -219,10 +219,9 @@ export default function TermsPage() {
           10. Governing law
         </h2>
         <p className="text-ink-muted leading-relaxed mb-4">
-          These Terms are governed by applicable law. These Terms do not designate a specific
-          state or country&rsquo;s law as controlling; a governing-law determination, if one
-          becomes necessary, will be made under standard conflict-of-laws principles at that
-          time.
+          These Terms are governed by applicable law. These Terms do not designate a specific state
+          or country&rsquo;s law as controlling; a governing-law determination, if one becomes
+          necessary, will be made under standard conflict-of-laws principles at that time.
         </p>
 
         <h2 id="contact" className="font-display text-2xl font-semibold mb-3 mt-10">

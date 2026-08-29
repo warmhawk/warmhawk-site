@@ -92,9 +92,7 @@ describe('POST /api/contact-sales', () => {
 
     await POST(postRequest(withoutNotes));
 
-    expect(sendSalesInquiryEmailMock).toHaveBeenCalledWith(
-      expect.objectContaining({ notes: '' }),
-    );
+    expect(sendSalesInquiryEmailMock).toHaveBeenCalledWith(expect.objectContaining({ notes: '' }));
   });
 
   it('returns 502 without crashing if the email send fails', async () => {

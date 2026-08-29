@@ -13,7 +13,7 @@ export const metadata: Metadata = pageSeo({
 
 export default function QuickstartPage() {
   return (
-    <div className="wrap py-16">
+    <div className="py-16">
       <div className="label text-rust mb-5">Docs / Get started / Quickstart &amp; installation</div>
       <h1 className="font-display text-4xl md:text-[48px] leading-tight font-semibold mb-6 max-w-3xl">
         Install it, then send a real email in six calls.
@@ -22,23 +22,24 @@ export default function QuickstartPage() {
         The open-core package (<code className="font-mono text-base">warmhawk-core-engine</code>) is
         a complete API with no web UI attached &mdash; that&rsquo;s the point of Tier 0. Run{' '}
         <code className="font-mono text-base">install.sh</code> once, then everything below runs
-        against your own instance with nothing but <code className="font-mono text-base">curl</code>.
+        against your own instance with nothing but <code className="font-mono text-base">curl</code>
+        .
       </p>
       <AnswerBlock>
         This page gets you from a fresh WarmHawk install to a real sent email: install the stack,
         authenticate, register a sending domain, connect a mailbox, create a campaign, import a
-        lead, launch, and check the queue. It&rsquo;s the fastest way to confirm your instance
-        works end-to-end before building anything on top of the API.
+        lead, launch, and check the queue. It&rsquo;s the fastest way to confirm your instance works
+        end-to-end before building anything on top of the API.
       </AnswerBlock>
 
       <h2 className="font-display text-2xl font-semibold mb-4">0. Install the stack</h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
-        On a fresh server with a domain already pointed at it, run the installer. It preflight-checks
-        Docker/Compose, ports 80/443, and DNS before touching anything, and it&rsquo;s safe to
-        re-run at any point:
+        On a fresh server with a domain already pointed at it, run the installer. It
+        preflight-checks Docker/Compose, ports 80/443, and DNS before touching anything, and
+        it&rsquo;s safe to re-run at any point:
       </p>
       <CodeBlock label="Install WarmHawk">
-{`curl -fsSL https://warmhawk.com/install | bash -s -- --domain app.yourcompany.com`}
+        {`curl -fsSL https://warmhawk.com/install | bash -s -- --domain app.yourcompany.com`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
         Ran into a failure? See{' '}
@@ -54,32 +55,31 @@ export default function QuickstartPage() {
 
       <h2 className="font-display text-2xl font-semibold mb-4">1. Authenticate</h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
-        Every endpoint below except this one requires a bearer token. Log in against the engine&rsquo;s
-        own user table (the account <code className="font-mono">install.sh</code> printed at the end
-        of setup) to get one:
+        Every endpoint below except this one requires a bearer token. Log in against the
+        engine&rsquo;s own user table (the account <code className="font-mono">install.sh</code>{' '}
+        printed at the end of setup) to get one:
       </p>
       <CodeBlock label="POST /v1/auth/login">
-{`curl -X POST https://app.yourcompany.com/v1/auth/login \\
+        {`curl -X POST https://app.yourcompany.com/v1/auth/login \\
   -H "Content-Type: application/json" \\
   -d '{ "email": "you@yourcompany.com", "password": "YOUR_PASSWORD" }'`}
       </CodeBlock>
-      <CodeBlock label="Response">
-{`{ "token": "YOUR_API_KEY" }`}
-      </CodeBlock>
+      <CodeBlock label="Response">{`{ "token": "YOUR_API_KEY" }`}</CodeBlock>
 
       <h2 className="font-display text-2xl font-semibold mb-4 mt-10">2. Add a sending domain</h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         A mailbox belongs to a domain, so create the domain first:
       </p>
       <CodeBlock label="POST /v1/domains">
-{`curl -X POST https://app.yourcompany.com/v1/domains \\
+        {`curl -X POST https://app.yourcompany.com/v1/domains \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{ "domainName": "yourcompany.com" }'`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
-        Returns a <code className="font-mono">Domain</code> row with an <code className="font-mono">id</code> &mdash;
-        you&rsquo;ll pass that as <code className="font-mono">domainId</code> in the next step.
+        Returns a <code className="font-mono">Domain</code> row with an{' '}
+        <code className="font-mono">id</code> &mdash; you&rsquo;ll pass that as{' '}
+        <code className="font-mono">domainId</code> in the next step.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4">3. Connect a mailbox</h2>
@@ -88,7 +88,7 @@ export default function QuickstartPage() {
         register it directly:
       </p>
       <CodeBlock label="POST /v1/mailboxes">
-{`curl -X POST https://app.yourcompany.com/v1/mailboxes \\
+        {`curl -X POST https://app.yourcompany.com/v1/mailboxes \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -111,28 +111,31 @@ export default function QuickstartPage() {
         <Link href="/docs/guides/connecting-mailboxes" className="text-rust font-semibold">
           Connecting mailboxes
         </Link>{' '}
-        for the full walkthrough. Either way, the response returns a real <code className="font-mono">Mailbox</code> row
-        (never the credential itself) with the <code className="font-mono">id</code> you&rsquo;ll reference below.
+        for the full walkthrough. Either way, the response returns a real{' '}
+        <code className="font-mono">Mailbox</code> row (never the credential itself) with the{' '}
+        <code className="font-mono">id</code> you&rsquo;ll reference below.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4">4. Create a campaign</h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
-        A campaign has two content fields that do different jobs: <code className="font-mono">template</code> is
-        the plain-text body sent as-is (or used as a fallback if AI personalization is off or
-        fails) &mdash; it supports native spintax <code className="font-mono">{'{option one|option two}'}</code> variation.{' '}
+        A campaign has two content fields that do different jobs:{' '}
+        <code className="font-mono">template</code> is the plain-text body sent as-is (or used as a
+        fallback if AI personalization is off or fails) &mdash; it supports native spintax{' '}
+        <code className="font-mono">{'{option one|option two}'}</code> variation.{' '}
         <code className="font-mono">aiPromptTemplate</code> is the instruction handed to your BYOK
         Gemini/Claude key, which then writes the actual send &mdash; it supports flat{' '}
-        <code className="font-mono">{'{{fieldName}}'}</code> placeholders resolved from the lead&rsquo;s{' '}
-        <code className="font-mono">firstName</code>/<code className="font-mono">lastName</code>/
-        <code className="font-mono">company</code> and any <code className="font-mono">customFields</code> key
-        (flat, so a custom field named <code className="font-mono">recentNews</code> is{' '}
+        <code className="font-mono">{'{{fieldName}}'}</code> placeholders resolved from the
+        lead&rsquo;s <code className="font-mono">firstName</code>/
+        <code className="font-mono">lastName</code>/<code className="font-mono">company</code> and
+        any <code className="font-mono">customFields</code> key (flat, so a custom field named{' '}
+        <code className="font-mono">recentNews</code> is{' '}
         <code className="font-mono">{'{{recentNews}}'}</code>, never{' '}
-        <code className="font-mono">{'{{customFields.recentNews}}'}</code>). A campaign also needs an{' '}
-        <code className="font-mono">unsubscribeUrlTemplate</code> before it can launch (CAN-SPAM) &mdash;
-        set it now to avoid a 422 later:
+        <code className="font-mono">{'{{customFields.recentNews}}'}</code>). A campaign also needs
+        an <code className="font-mono">unsubscribeUrlTemplate</code> before it can launch (CAN-SPAM)
+        &mdash; set it now to avoid a 422 later:
       </p>
       <CodeBlock label="POST /v1/campaigns">
-{`curl -X POST https://app.yourcompany.com/v1/campaigns \\
+        {`curl -X POST https://app.yourcompany.com/v1/campaigns \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -143,11 +146,15 @@ export default function QuickstartPage() {
   }'`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
-        The response echoes the created campaign plus a <code className="font-mono">contentQuality</code> block
-        (spam-word score, spintax group count) computed on every save &mdash; a 422 here means the{' '}
+        The response echoes the created campaign plus a{' '}
+        <code className="font-mono">contentQuality</code> block (spam-word score, spintax group
+        count) computed on every save &mdash; a 422 here means the{' '}
         <code className="font-mono">template</code>&rsquo;s spintax groups are unbalanced, not that
         the content was rejected for tone. See{' '}
-        <Link href="/docs/guides/campaigns-ai-and-content-quality" className="text-rust font-semibold">
+        <Link
+          href="/docs/guides/campaigns-ai-and-content-quality"
+          className="text-rust font-semibold"
+        >
           Campaigns, AI &amp; content quality
         </Link>{' '}
         for the full field reference.
@@ -159,7 +166,7 @@ export default function QuickstartPage() {
         <code className="font-mono">customFields</code> object:
       </p>
       <CodeBlock label="POST /v1/leads">
-{`curl -X POST https://app.yourcompany.com/v1/leads \\
+        {`curl -X POST https://app.yourcompany.com/v1/leads \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -184,7 +191,7 @@ export default function QuickstartPage() {
 
       <h2 className="font-display text-2xl font-semibold mb-4">6. Launch, then check the queue</h2>
       <CodeBlock label="POST /v1/campaigns/:id/launch">
-{`curl -X POST https://app.yourcompany.com/v1/campaigns/camp_g7h8i9/launch \\
+        {`curl -X POST https://app.yourcompany.com/v1/campaigns/camp_g7h8i9/launch \\
   -H "Authorization: Bearer YOUR_API_KEY"`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-4">
@@ -194,11 +201,11 @@ export default function QuickstartPage() {
         to confirm it moved:
       </p>
       <CodeBlock label="GET /v1/queue/status">
-{`curl https://app.yourcompany.com/v1/queue/status \\
+        {`curl https://app.yourcompany.com/v1/queue/status \\
   -H "Authorization: Bearer YOUR_API_KEY"`}
       </CodeBlock>
       <CodeBlock label="Example response">
-{`{
+        {`{
   "counts": { "waiting": 0, "active": 0, "delayed": 0, "completed": 1, "failed": 0 },
   "isPaused": false,
   "jobs": [],
@@ -206,17 +213,23 @@ export default function QuickstartPage() {
 }`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-14">
-        A job that moves from <code className="font-mono">waiting</code>/<code className="font-mono">delayed</code> to{' '}
-        <code className="font-mono">completed</code> means the whole path worked: mailbox
-        credentials, queue, and outbound delivery through your own nginx. See{' '}
-        <Link href="/docs/guides/sending-safely-and-domain-health" className="text-rust font-semibold">
+        A job that moves from <code className="font-mono">waiting</code>/
+        <code className="font-mono">delayed</code> to <code className="font-mono">completed</code>{' '}
+        means the whole path worked: mailbox credentials, queue, and outbound delivery through your
+        own nginx. See{' '}
+        <Link
+          href="/docs/guides/sending-safely-and-domain-health"
+          className="text-rust font-semibold"
+        >
           Sending safely &amp; domain health
         </Link>{' '}
         for what the throttling numbers mean and how the bounce circuit breaker protects a domain.
       </p>
 
       <div className="card bg-cream-elevated p-7 max-w-2xl mb-10">
-        <h2 className="font-display text-xl font-semibold mb-3">If something doesn&rsquo;t come up clean</h2>
+        <h2 className="font-display text-xl font-semibold mb-3">
+          If something doesn&rsquo;t come up clean
+        </h2>
         <ul className="space-y-2 text-[15px] text-ink-muted">
           <li>
             <Link href="/docs/install-troubleshooting" className="text-rust font-semibold">

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { siteConfig } from './siteConfig';
+import { tiers } from './tierConfig';
 
 interface PageSeoInput {
   title: string;
@@ -19,14 +20,15 @@ export function pageSeo({ title, description, path, noIndex }: PageSeoInput): Me
   const fullTitle = path === '/' ? title : `${title} | ${siteConfig.name}`;
 
   return {
-    title: fullTitle,
+    // `{ absolute }` opts out of the root layout's `title.template` (`%s | WarmHawk`) — fullTitle
+    // above already appends the site name itself, so applying the template on top of it produced
+    // a doubled/tripled suffix (e.g. "Introduction | WarmHawk | WarmHawk").
+    title: { absolute: fullTitle },
     description,
     alternates: {
       canonical: url,
     },
-    robots: noIndex
-      ? { index: false, follow: false }
-      : { index: true, follow: true },
+    robots: noIndex ? { index: false, follow: false } : { index: true, follow: true },
     openGraph: {
       title: fullTitle,
       description,
@@ -66,6 +68,87 @@ export function faqSchema(items: { question: string; answer: string }[]) {
         '@type': 'Answer',
         text: item.answer,
       },
+    })),
+  };
+}
+
+/** Site-wide Organization JSON-LD, rendered once in the root layout so every
+ * page carries the same entity/E-E-A-T signal. `sameAs` is derived from
+ * `siteConfig` rather than hand-listed, so a profile link added there (or
+ * removed) can't silently drift out of sync with this schema. */
+export function organizationSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: siteConfig.name,
+    url: siteConfig.url,
+    description: siteConfig.description,
+    sameAs: [
+      'https://github.com/warmhawk',
+      `https://twitter.com/${siteConfig.twitter.replace(/^@/, '')}`,
+    ],
+  };
+}
+
+// Strips a tier's display price ("$0", "$199", "$1,500") down to the plain
+// numeric string schema.org's `Offer.price` expects — no currency symbol or
+// thousands separator.
+function parsePrice(priceAmount: string): string {
+  return priceAmount.replace(/[^0-9.]/g, '');
+}
+
+// Tier CTAs mix relative site paths ("/checkout?tier=1") and absolute
+// external URLs (Tier 0's GitHub link) — resolve both to a single absolute
+// URL so `Offer.url` is always a real, fetchable link either way.
+function resolveUrl(href: string): string {
+  return href.startsWith('http') ? href : `${siteConfig.url}${href}`;
+}
+
+/** SoftwareApplication JSON-LD with one Offer per pricing tier, sourced
+ * directly from `lib/tierConfig`'s `tiers` (the same single source of truth
+ * `PricingTable` renders) so this schema can't drift from the visible
+ * pricing it describes. Deliberately carries no `aggregateRating`/`review`
+ * — WarmHawk has no real review data yet, and fabricating one to qualify
+ * for a richer result would be worse than shipping no rating at all. */
+export function softwareApplicationSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: `${siteConfig.name} — Self-hosted cold email infrastructure`,
+    description: siteConfig.description,
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Linux (Docker)',
+    offers: tiers.map((tier) => ({
+      '@type': 'Offer',
+      name: tier.tierLabel,
+      price: parsePrice(tier.priceAmount),
+      priceCurrency: 'USD',
+      url: resolveUrl(tier.ctaHref),
+      description: tier.priceSuffix
+        ? `${tier.priceNote} (${tier.priceAmount}${tier.priceSuffix})`
+        : tier.priceNote,
+    })),
+  };
+}
+
+export interface BreadcrumbItem {
+  name: string;
+  path: string;
+}
+
+/** BreadcrumbList JSON-LD for a trail of real, navigable pages (Technical
+ * SEO baseline) — gives both classic search sitelinks and answer engines
+ * explicit hierarchical context. Every `item` must be one of this site's
+ * actual routes; never pass a synthetic label with no page behind it. */
+export function breadcrumbSchema(items: BreadcrumbItem[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: item.name,
+      item: `${siteConfig.url}${item.path}`,
     })),
   };
 }

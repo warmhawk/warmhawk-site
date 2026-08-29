@@ -99,10 +99,9 @@ export async function POST(request: NextRequest) {
 
         const privateKeyPem = process.env.LICENSE_SIGNING_PRIVATE_KEY;
         if (!privateKeyPem) {
-          console.error(
-            'LICENSE_SIGNING_PRIVATE_KEY is not configured — cannot issue a license',
-            { eventId: event.id },
-          );
+          console.error('LICENSE_SIGNING_PRIVATE_KEY is not configured — cannot issue a license', {
+            eventId: event.id,
+          });
           break;
         }
 

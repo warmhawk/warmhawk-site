@@ -35,7 +35,10 @@ describe('POST /api/portal', () => {
   });
 
   it('returns 400 for an unparsable body', async () => {
-    const req = new NextRequest('http://localhost/api/portal', { method: 'POST', body: 'not json' });
+    const req = new NextRequest('http://localhost/api/portal', {
+      method: 'POST',
+      body: 'not json',
+    });
     const res = await POST(req);
     expect(res.status).toBe(400);
   });

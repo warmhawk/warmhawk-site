@@ -10,7 +10,7 @@ import {
 } from './license';
 
 // TEST KEYPAIR — DO NOT USE IN PRODUCTION. This is the exact keypair checked into this repo's
-// .env.example as LICENSE_SIGNING_PRIVATE_KEY and into warmhawk-enterprise-operator's
+// .env/.env.example as LICENSE_SIGNING_PRIVATE_KEY and into warmhawk-enterprise-operator's
 // .env.example as the matching LICENSE_PUBLIC_KEY_PEM — proving the two repos' checked-in test
 // values actually interoperate, not just that *some* keypair round-trips. Rotated 2026-08-24 —
 // keep in lockstep with both .env.example files if either rotates again. SHA-256 fingerprint of

@@ -83,7 +83,10 @@ export function DomainCheckTool() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const trimmed = domain.trim().replace(/^https?:\/\//i, '').replace(/\/.*$/, '');
+    const trimmed = domain
+      .trim()
+      .replace(/^https?:\/\//i, '')
+      .replace(/\/.*$/, '');
     if (!trimmed) return;
 
     const apiUrl = process.env.NEXT_PUBLIC_CORE_ENGINE_PUBLIC_API_URL;

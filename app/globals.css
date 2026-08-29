@@ -78,10 +78,16 @@ a {
   .field label {
     @apply block text-[13px] font-semibold text-ink mb-1.5;
   }
+  /* Responsive fix: this was `text-[13.5px]` — under the 16px threshold below
+     which iOS Safari auto-zooms the whole page on focus (a well-known mobile
+     bug, not an artifact deviation). DomainCheckTool's domain input is the
+     only `.field` on the site, and it's reachable from a phone, so every
+     visit there on an iPhone triggered an unwanted pinch-zoom on tap. Bumped
+     to exactly 16px, the minimum that suppresses it. */
   .field input,
   .field textarea,
   .field select {
-    @apply w-full border border-border rounded-lg px-3 py-2.5 font-sans text-[13.5px] bg-paper text-ink outline-none focus:border-rust;
+    @apply w-full border border-border rounded-lg px-3 py-2.5 font-sans text-[16px] bg-paper text-ink outline-none focus:border-rust;
   }
 
   /* Matches the artifact's `.eyebrow` class: mono, tracked-out, semibold.

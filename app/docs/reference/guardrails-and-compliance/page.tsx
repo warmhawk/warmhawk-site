@@ -83,19 +83,18 @@ const faqItems = [
 
 export default function GuardrailsCompliancePage() {
   return (
-    <div className="wrap py-16">
+    <div className="py-16">
       <div className="label text-rust mb-5">Docs / Reference / Guardrails &amp; compliance</div>
       <h1 className="font-display text-4xl md:text-[48px] leading-tight font-semibold mb-6 max-w-3xl">
         Enforced structurally, not just documented.
       </h1>
       <p className="text-lg leading-relaxed text-ink-muted max-w-2xl mb-8">
-        Every guardrail on this page lives in the one shared send/ingest path &mdash; not
-        duplicated (and possibly forgotten) per API entry point, and not something a caller can
-        route around.
+        Every guardrail on this page lives in the one shared send/ingest path &mdash; not duplicated
+        (and possibly forgotten) per API entry point, and not something a caller can route around.
       </p>
       <AnswerBlock>
-        WarmHawk enforces CAN-SPAM (address + unsubscribe), RFC 8058 one-click unsubscribe, an EU
-        AI Act disclosure marker, GDPR erasure, CSV-injection defense, a bounce/complaint circuit
+        WarmHawk enforces CAN-SPAM (address + unsubscribe), RFC 8058 one-click unsubscribe, an EU AI
+        Act disclosure marker, GDPR erasure, CSV-injection defense, a bounce/complaint circuit
         breaker (auto-pause past 5% with a 20-send minimum sample), login brute-force throttling,
         continuous blocklist monitoring, and AES-256-GCM credential encryption — all structurally,
         in the API itself, not as optional dashboard settings.
@@ -116,14 +115,20 @@ export default function GuardrailsCompliancePage() {
           <thead>
             <tr>
               <th className="label text-left p-4 text-ink-muted font-semibold">Route</th>
-              <th className="label text-left p-4 text-ink-muted font-semibold border-l border-border">Limit</th>
+              <th className="label text-left p-4 text-ink-muted font-semibold border-l border-border">
+                Limit
+              </th>
             </tr>
           </thead>
           <tbody>
             {rateLimits.map((row) => (
               <tr key={row.route}>
-                <td className="p-4 border-t border-border align-top font-mono text-[13px]">{row.route}</td>
-                <td className="p-4 border-t border-l border-border align-top text-ink-muted">{row.limit}</td>
+                <td className="p-4 border-t border-border align-top font-mono text-[13px]">
+                  {row.route}
+                </td>
+                <td className="p-4 border-t border-l border-border align-top text-ink-muted">
+                  {row.limit}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -143,14 +148,20 @@ export default function GuardrailsCompliancePage() {
             Leads &amp; enrichment
           </Link>{' '}
           and{' '}
-          <Link href="/docs/guides/sending-safely-and-domain-health" className="text-rust font-semibold">
+          <Link
+            href="/docs/guides/sending-safely-and-domain-health"
+            className="text-rust font-semibold"
+          >
             Sending safely &amp; domain health
           </Link>
           .
         </p>
       </div>
 
-      <FaqSection items={faqItems} title="Guardrails & compliance: questions worth answering up front" />
+      <FaqSection
+        items={faqItems}
+        title="Guardrails & compliance: questions worth answering up front"
+      />
     </div>
   );
 }

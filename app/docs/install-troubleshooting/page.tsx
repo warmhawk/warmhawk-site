@@ -37,7 +37,7 @@ const faqItems = [
 
 export default function InstallTroubleshootingPage() {
   return (
-    <div className="wrap py-16">
+    <div className="py-16">
       <div className="label text-rust mb-5">Docs / Install troubleshooting</div>
       <h1 className="font-display text-4xl md:text-[48px] leading-tight font-semibold mb-6 max-w-3xl">
         When install.sh doesn&rsquo;t finish clean.
@@ -54,7 +54,9 @@ export default function InstallTroubleshootingPage() {
         without losing your secrets or license.
       </AnswerBlock>
 
-      <h2 className="font-display text-2xl font-semibold mb-4">Docker or Docker Compose not installed</h2>
+      <h2 className="font-display text-2xl font-semibold mb-4">
+        Docker or Docker Compose not installed
+      </h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         install.sh checks for both <code className="font-mono">docker</code> and the Compose plugin
         as its very first preflight step. If either is missing, it stops immediately with a clear
@@ -62,7 +64,7 @@ export default function InstallTroubleshootingPage() {
         for you.
       </p>
       <CodeBlock label="Check what's actually present">
-{`docker --version
+        {`docker --version
 docker compose version`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
@@ -79,18 +81,18 @@ docker compose version`}
         different app) already owns those ports, the compose stack will fail to start. Check first:
       </p>
       <CodeBlock label="Find what's listening on 443 (Linux)">
-{`sudo lsof -i :443
+        {`sudo lsof -i :443
 sudo lsof -i :80`}
       </CodeBlock>
       <CodeBlock label="No lsof? use netstat or ss">
-{`sudo netstat -tulpn | grep -E ':80|:443'
+        {`sudo netstat -tulpn | grep -E ':80|:443'
 sudo ss -tulpn | grep -E ':80|:443'`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
-        Stop or reconfigure whatever&rsquo;s bound to those ports (<code className="font-mono">sudo systemctl stop nginx</code> is
-        the usual culprit on a box that had a prior web server), confirm both ports are free, then
-        re-run install.sh. It&rsquo;s idempotent, so it will pick up where it left off rather than
-        starting over.
+        Stop or reconfigure whatever&rsquo;s bound to those ports (
+        <code className="font-mono">sudo systemctl stop nginx</code> is the usual culprit on a box
+        that had a prior web server), confirm both ports are free, then re-run install.sh.
+        It&rsquo;s idempotent, so it will pick up where it left off rather than starting over.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4">DNS hasn&rsquo;t propagated yet</h2>
@@ -99,19 +101,15 @@ sudo ss -tulpn | grep -E ':80|:443'`}
         you just pointed DNS at this box, propagation can take anywhere from a few minutes to a few
         hours depending on your registrar and TTL. Check whether it&rsquo;s resolved yet:
       </p>
-      <CodeBlock label="Check DNS resolution">
-{`dig +short app.yourcompany.com`}
-      </CodeBlock>
+      <CodeBlock label="Check DNS resolution">{`dig +short app.yourcompany.com`}</CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-4">
         That should print this server&rsquo;s public IP. If it prints nothing, or a different IP,
-        DNS isn&rsquo;t ready yet. This is expected and install.sh handles it gracefully: nginx comes
-        up HTTP-only, the certbot step degrades instead of crashing the stack, and your dashboard
-        will be reachable over plain HTTP in the meantime. Once <code className="font-mono">dig</code> shows
-        the right IP, recover TLS with:
+        DNS isn&rsquo;t ready yet. This is expected and install.sh handles it gracefully: nginx
+        comes up HTTP-only, the certbot step degrades instead of crashing the stack, and your
+        dashboard will be reachable over plain HTTP in the meantime. Once{' '}
+        <code className="font-mono">dig</code> shows the right IP, recover TLS with:
       </p>
-      <CodeBlock label="Retry TLS once DNS is ready">
-{`sudo ./install.sh --retry-tls`}
-      </CodeBlock>
+      <CodeBlock label="Retry TLS once DNS is ready">{`sudo ./install.sh --retry-tls`}</CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
         See{' '}
         <Link href="/docs/self-hosting/tls-and-observability" className="text-rust font-semibold">
@@ -128,7 +126,7 @@ sudo ss -tulpn | grep -E ':80|:443'`}
         answered those prompts. Just run the same command again:
       </p>
       <CodeBlock label="Re-run install">
-{`curl -fsSL https://warmhawk.com/install | bash -s -- --domain app.yourcompany.com`}
+        {`curl -fsSL https://warmhawk.com/install | bash -s -- --domain app.yourcompany.com`}
       </CodeBlock>
 
       <h2 className="font-display text-2xl font-semibold mb-4">Reading the install log</h2>
@@ -138,10 +136,10 @@ sudo ss -tulpn | grep -E ':80|:443'`}
         your next run, or check the containers it already started:
       </p>
       <CodeBlock label="Tee the install output to a file">
-{`curl -fsSL https://warmhawk.com/install | bash -s -- --domain app.yourcompany.com 2>&1 | tee install.log`}
+        {`curl -fsSL https://warmhawk.com/install | bash -s -- --domain app.yourcompany.com 2>&1 | tee install.log`}
       </CodeBlock>
       <CodeBlock label="Check which containers actually started">
-{`docker compose ps
+        {`docker compose ps
 docker compose logs --tail=100 nginx`}
       </CodeBlock>
 

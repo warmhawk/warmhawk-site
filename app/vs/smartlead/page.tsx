@@ -128,11 +128,11 @@ export default function VsSmartleadPage() {
                 <StatCite source="G2/Reddit">
                   Smartlead campaigns have been reported to stop mid-send with no notification
                 </StatCite>{' '}
-                reaching the user. WarmHawk installs Uptime Kuma by default on every Tier 1 and
-                Tier 2 install, watching the dashboard, API, Postgres, Redis, the BullMQ send
-                worker, n8n, and the mail relay every 60 seconds, and firing to the Slack, Discord,
-                or email webhook you set during <code>install.sh</code>. A stalled queue surfaces
-                as an alert, not as a quiet gap in your send logs.
+                reaching the user. WarmHawk installs Uptime Kuma by default on every Tier 1 and Tier
+                2 install, watching the dashboard, API, Postgres, Redis, the BullMQ send worker,
+                n8n, and the mail relay every 60 seconds, and firing to the Slack, Discord, or email
+                webhook you set during <code>install.sh</code>. A stalled queue surfaces as an
+                alert, not as a quiet gap in your send logs.
               </p>
             </div>
             <div className="card bg-cream p-7">
@@ -159,9 +159,9 @@ export default function VsSmartleadPage() {
                   Independent cost breakdowns show Smartlead&rsquo;s premium warmup, whitelabel, and
                   other add-ons stacking the effective price to 3-5x the advertised base rate
                 </StatCite>
-                . WarmHawk&rsquo;s $199/month is the whole product: unlimited mailboxes and
-                domains, Uptime Kuma, and native OTEL export are bundled by default, never sold as
-                separate upgrades.
+                . WarmHawk&rsquo;s $199/month is the whole product: unlimited mailboxes and domains,
+                Uptime Kuma, and native OTEL export are bundled by default, never sold as separate
+                upgrades.
               </p>
             </div>
           </div>
@@ -204,7 +204,10 @@ export default function VsSmartleadPage() {
         <ComparisonCallout />
       </div>
 
-      <FaqSection items={faqItems} title="WarmHawk vs Smartlead: questions worth answering up front" />
+      <FaqSection
+        items={faqItems}
+        title="WarmHawk vs Smartlead: questions worth answering up front"
+      />
 
       {/* FINAL CTA */}
       <div className="bg-slate text-paper">
@@ -219,10 +222,7 @@ export default function VsSmartleadPage() {
             <Link href="/checkout?tier=1" className="btn btn-primary">
               Start Tier 1 &mdash; $199/mo
             </Link>
-            <Link
-              href="/docs/quickstart"
-              className="btn btn-on-dark"
-            >
+            <Link href="/docs/quickstart" className="btn btn-on-dark">
               Get the free engine
             </Link>
           </div>

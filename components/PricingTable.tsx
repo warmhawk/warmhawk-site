@@ -26,15 +26,21 @@ export function PricingTable() {
               Most agencies start here
             </span>
           )}
-          <div className={`font-mono text-xs tracking-[0.1em] uppercase ${tier.highlight ? 'text-amber' : 'text-rust'}`}>
+          <div
+            className={`font-mono text-xs tracking-[0.1em] uppercase ${tier.highlight ? 'text-amber' : 'text-rust'}`}
+          >
             {tier.tierLabel}
           </div>
           <div className="font-display text-[21px] font-semibold mt-2">{tier.priceName}</div>
           <div className="mt-3 font-mono text-[32px] font-semibold">
             {tier.priceAmount}
-            {tier.priceSuffix && <span className="text-[13px] font-medium opacity-65">{tier.priceSuffix}</span>}
+            {tier.priceSuffix && (
+              <span className="text-[13px] font-medium opacity-65">{tier.priceSuffix}</span>
+            )}
           </div>
-          <div className={`text-[12.5px] mt-1 ${tier.highlight ? 'text-slate-soft' : 'text-ink-muted'}`}>
+          <div
+            className={`text-[12.5px] mt-1 ${tier.highlight ? 'text-slate-soft' : 'text-ink-muted'}`}
+          >
             {tier.priceNote}
           </div>
 
@@ -44,7 +50,9 @@ export function PricingTable() {
                 key={feature}
                 className={`text-sm py-[9px] pl-6 relative ${i === 0 ? '' : tier.highlight ? 'border-t border-border-dark' : 'border-t border-border'} ${tier.highlight ? 'text-slate-soft' : 'text-ink-muted'}`}
               >
-                <span className={`absolute left-0 font-bold ${tier.highlight ? 'text-amber' : 'text-rust'}`}>
+                <span
+                  className={`absolute left-0 font-bold ${tier.highlight ? 'text-amber' : 'text-rust'}`}
+                >
                   &#10003;
                 </span>
                 {feature}

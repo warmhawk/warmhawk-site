@@ -35,11 +35,11 @@ export default function PrivacyPage() {
 
         <p className="text-ink-muted leading-relaxed mb-4">
           This document is a draft, pending attorney review. It describes the personal data
-          practices of WarmHawk LLC (&ldquo;WarmHawk,&rdquo; &ldquo;we,&rdquo;
-          &ldquo;us&rdquo;), the operator of warmhawk.com and the WarmHawk billing path, with
-          respect to visitors to our marketing site and customers who purchase a subscription.
-          Because WarmHawk&rsquo;s product is fully self-hosted, this policy is intentionally
-          narrow in scope &mdash; see Section&nbsp;2 for what falls entirely outside it.
+          practices of WarmHawk LLC (&ldquo;WarmHawk,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;),
+          the operator of warmhawk.com and the WarmHawk billing path, with respect to visitors to
+          our marketing site and customers who purchase a subscription. Because WarmHawk&rsquo;s
+          product is fully self-hosted, this policy is intentionally narrow in scope &mdash; see
+          Section&nbsp;2 for what falls entirely outside it.
         </p>
 
         <div className="card p-6 mb-10 bg-cream-elevated">
@@ -65,13 +65,13 @@ export default function PrivacyPage() {
         <ul className="list-disc pl-6 mb-4 text-ink-muted leading-relaxed space-y-1.5">
           <li>
             <strong>Site analytics:</strong> basic, aggregate traffic data about pages viewed on
-            warmhawk.com (for example, referrer and page-path counts), used only to understand
-            which pages are useful. We do not build cross-site advertising profiles from this data.
+            warmhawk.com (for example, referrer and page-path counts), used only to understand which
+            pages are useful. We do not build cross-site advertising profiles from this data.
           </li>
           <li>
             <strong>Checkout and billing data:</strong> when you purchase a subscription, Stripe
-            collects your name, email, billing address, and payment details on our behalf to
-            process the charge and issue your license key. See Section&nbsp;6.
+            collects your name, email, billing address, and payment details on our behalf to process
+            the charge and issue your license key. See Section&nbsp;6.
           </li>
           <li>
             <strong>Support correspondence:</strong> if you email {siteConfig.supportEmail} or{' '}
@@ -179,9 +179,9 @@ export default function PrivacyPage() {
           8. Children&rsquo;s privacy
         </h2>
         <p className="text-ink-muted leading-relaxed mb-4">
-          WarmHawk is a B2B infrastructure product not directed at children, and we do not
-          knowingly collect personal data from anyone under 16. If you believe a child has provided
-          us personal data, contact us at {siteConfig.supportEmail} and we will delete it.
+          WarmHawk is a B2B infrastructure product not directed at children, and we do not knowingly
+          collect personal data from anyone under 16. If you believe a child has provided us
+          personal data, contact us at {siteConfig.supportEmail} and we will delete it.
         </p>
 
         <h2 id="changes" className="font-display text-2xl font-semibold mb-3 mt-10">
@@ -208,8 +208,8 @@ export default function PrivacyPage() {
           <Link href="/legal/terms#governing-law" className="text-rust font-semibold">
             Terms of Service
           </Link>
-          : applicable law, with no specific state or country designated as controlling —
-          the same governing-law approach used in the Terms of Service above.
+          : applicable law, with no specific state or country designated as controlling — the same
+          governing-law approach used in the Terms of Service above.
         </p>
       </div>
     </>

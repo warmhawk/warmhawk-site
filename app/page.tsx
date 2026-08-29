@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { pageSeo } from '@/lib/seo';
+import { pageSeo, softwareApplicationSchema } from '@/lib/seo';
 import { FaqSection } from '@/components/FaqSchema';
 import { PricingTable } from '@/components/PricingTable';
 import { CompareTable } from '@/components/CompareTable';
@@ -134,6 +134,11 @@ function InstallCommand({ center = false }: { center?: boolean }) {
 export default function HomePage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema()) }}
+      />
       {/* HERO */}
       <div className="wrap pt-16 md:pt-[70px] pb-14">
         <div className="grid md:grid-cols-[1.05fr_.95fr] gap-10 md:gap-14 items-center">
@@ -165,14 +170,20 @@ export default function HomePage() {
               <span className="font-mono text-[11.5px] tracking-wide uppercase text-ink-muted">
                 Domain health — acme-outreach.com
               </span>
-              <span className="font-mono text-[11.5px] tracking-wide uppercase text-ink-muted">Live</span>
+              <span className="font-mono text-[11.5px] tracking-wide uppercase text-ink-muted">
+                Live
+              </span>
             </div>
             <div className="flex items-center justify-between py-3.5">
               <div>
                 <div className="text-sm text-ink-muted">Vendor warmup &ldquo;heat score&rdquo;</div>
-                <div className="text-xs text-ink-muted/70 mt-0.5">self-reported by the sending tool</div>
+                <div className="text-xs text-ink-muted/70 mt-0.5">
+                  self-reported by the sending tool
+                </div>
               </div>
-              <div className="font-mono font-semibold text-lg text-ink-muted/50 line-through">97</div>
+              <div className="font-mono font-semibold text-lg text-ink-muted/50 line-through">
+                97
+              </div>
             </div>
             <div className="flex items-center justify-between py-3.5 border-t border-border">
               <div>
@@ -186,7 +197,14 @@ export default function HomePage() {
             </div>
             <svg viewBox="0 0 320 64" preserveAspectRatio="none" className="w-full h-14 mt-3">
               <defs>
-                <linearGradient id="heroTrace" x1="0" y1="0" x2="320" y2="0" gradientUnits="userSpaceOnUse">
+                <linearGradient
+                  id="heroTrace"
+                  x1="0"
+                  y1="0"
+                  x2="320"
+                  y2="0"
+                  gradientUnits="userSpaceOnUse"
+                >
                   <stop offset="0" stopColor="#DE9E38" />
                   <stop offset="1" stopColor="#B94B27" />
                 </linearGradient>
@@ -212,7 +230,10 @@ export default function HomePage() {
             { num: '$0', label: 'per seat, forever — unlimited users' },
             { num: '8min+jitter', label: 'minimum send cadence floor, enforced' },
           ].map((stat, i) => (
-            <div key={stat.label} className={`text-left ${i > 0 ? 'md:border-l md:border-border-dark md:pl-5' : ''}`}>
+            <div
+              key={stat.label}
+              className={`text-left ${i > 0 ? 'md:border-l md:border-border-dark md:pl-5' : ''}`}
+            >
               <div className="font-mono font-semibold text-2xl text-amber">{stat.num}</div>
               <div className="text-[13px] text-slate-soft mt-1">{stat.label}</div>
             </div>
@@ -234,8 +255,13 @@ export default function HomePage() {
         </div>
         <div>
           {features.map((feature) => (
-            <div key={feature.num} className="grid grid-cols-[56px_1fr] md:grid-cols-[80px_1fr] gap-6 py-7 border-t border-border last:border-b">
-              <div className="font-mono text-rust text-[15px] font-semibold pt-0.5">{feature.num}</div>
+            <div
+              key={feature.num}
+              className="grid grid-cols-[56px_1fr] md:grid-cols-[80px_1fr] gap-6 py-7 border-t border-border last:border-b"
+            >
+              <div className="font-mono text-rust text-[15px] font-semibold pt-0.5">
+                {feature.num}
+              </div>
               <div>
                 <h3 className="text-lg md:text-xl font-semibold mb-2">{feature.title}</h3>
                 <p className="text-sm leading-relaxed text-ink-muted max-w-2xl">{feature.body}</p>
@@ -267,7 +293,9 @@ export default function HomePage() {
           <div className="bg-cream-elevated border border-border rounded-2xl p-5 mt-6 flex gap-3.5 items-start">
             <span className="font-display text-xl text-rust leading-none flex-none">&rdquo;</span>
             <p className="text-sm leading-relaxed text-ink-muted">
-              <strong className="text-ink">Not shared with another agency or customer — full stop.</strong>{' '}
+              <strong className="text-ink">
+                Not shared with another agency or customer — full stop.
+              </strong>{' '}
               &ldquo;Tenant&rdquo; here means your WarmHawk account: it&rsquo;s fully isolated from
               everyone else&rsquo;s, down to the container and the database. Inside your own
               account, client domains and mailboxes currently share one database — full
@@ -313,10 +341,7 @@ export default function HomePage() {
             <Link href="/checkout?tier=1" className="btn btn-primary">
               Start Tier 1 — $199/mo
             </Link>
-            <Link
-              href="/docs/quickstart"
-              className="btn btn-on-dark"
-            >
+            <Link href="/docs/quickstart" className="btn btn-on-dark">
               Get the free engine
             </Link>
           </div>

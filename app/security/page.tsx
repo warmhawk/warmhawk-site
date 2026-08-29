@@ -39,9 +39,7 @@ export default function SecurityPage() {
       <div className="wrap pb-16 md:pb-20">
         <div className="max-w-3xl">
           <h2 className="font-display text-2xl md:text-[28px] font-semibold mb-4">Scope</h2>
-          <p className="text-base leading-relaxed text-ink-muted mb-4">
-            In scope for reports:
-          </p>
+          <p className="text-base leading-relaxed text-ink-muted mb-4">In scope for reports:</p>
           <ul className="space-y-3 mb-6">
             <li className="flex gap-3">
               <span className="text-rust font-semibold">&bull;</span>
@@ -74,10 +72,10 @@ export default function SecurityPage() {
               <strong className="text-ink">A customer&rsquo;s own self-hosted deployment</strong> is
               generally that customer&rsquo;s own responsibility to patch and keep current via{' '}
               <code className="text-[13px] bg-cream px-1.5 py-0.5 rounded">warmhawk update</code>.
-              That said, a genuine vulnerability in the product itself &mdash; found on a self-hosted
-              instance but rooted in how WarmHawk ships &mdash; is still welcome and in scope. If
-              you&rsquo;re unsure which bucket a finding falls into, report it anyway and we&rsquo;ll
-              sort it out.
+              That said, a genuine vulnerability in the product itself &mdash; found on a
+              self-hosted instance but rooted in how WarmHawk ships &mdash; is still welcome and in
+              scope. If you&rsquo;re unsure which bucket a finding falls into, report it anyway and
+              we&rsquo;ll sort it out.
             </p>
           </div>
         </div>
@@ -114,9 +112,8 @@ export default function SecurityPage() {
           </h2>
           <p className="text-base leading-relaxed text-ink-muted">
             Confirmed security issues get the same response-time commitment as Tier 1&rsquo;s
-            support SLA:{' '}
-            <strong className="text-ink">first response within 1 business day</strong>, or{' '}
-            <strong className="text-ink">within 4 business hours for anything critical</strong>.
+            support SLA: <strong className="text-ink">first response within 1 business day</strong>,
+            or <strong className="text-ink">within 4 business hours for anything critical</strong>.
             We&rsquo;ll keep you updated as triage and a fix progress, and we&rsquo;ll credit your
             report (if you&rsquo;d like) once it&rsquo;s resolved.
           </p>
@@ -126,12 +123,10 @@ export default function SecurityPage() {
       <div className="border-t border-b border-border bg-cream-elevated">
         <div className="wrap py-16 md:py-20">
           <div className="max-w-3xl">
-            <h2 className="font-display text-2xl md:text-[28px] font-semibold mb-4">
-              Safe harbor
-            </h2>
+            <h2 className="font-display text-2xl md:text-[28px] font-semibold mb-4">Safe harbor</h2>
             <p className="text-base leading-relaxed text-ink-muted">
-              WarmHawk will not pursue legal action against good-faith security researchers who
-              test within the scope above, avoid destructive actions (no data deletion, no service
+              WarmHawk will not pursue legal action against good-faith security researchers who test
+              within the scope above, avoid destructive actions (no data deletion, no service
               disruption, no accessing another user&rsquo;s data beyond what&rsquo;s needed to
               demonstrate a finding), and report responsibly &mdash; privately, to{' '}
               {siteConfig.securityEmail}, giving us reasonable time to fix an issue before any
@@ -163,8 +158,8 @@ export default function SecurityPage() {
             <li className="flex gap-3">
               <span className="text-fail font-semibold">&times;</span>
               <span className="text-base leading-relaxed text-ink-muted">
-                Denial-of-service testing against production infrastructure, including load
-                testing without prior written permission.
+                Denial-of-service testing against production infrastructure, including load testing
+                without prior written permission.
               </span>
             </li>
           </ul>

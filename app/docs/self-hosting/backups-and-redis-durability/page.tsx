@@ -37,15 +37,17 @@ const faqItems = [
 
 export default function BackupsRedisDurabilityPage() {
   return (
-    <div className="wrap py-16">
-      <div className="label text-rust mb-5">Docs / Self-hosting / Backups &amp; Redis durability</div>
+    <div className="py-16">
+      <div className="label text-rust mb-5">
+        Docs / Self-hosting / Backups &amp; Redis durability
+      </div>
       <h1 className="font-display text-4xl md:text-[48px] leading-tight font-semibold mb-6 max-w-3xl">
         A backup you&rsquo;ve never restored is a guess, not a plan.
       </h1>
       <p className="text-lg leading-relaxed text-ink-muted max-w-2xl mb-8">
-        Two independent durability stories: Postgres backs up nightly to infrastructure you
-        control, and Redis &mdash; which holds the live send queue, not just a cache &mdash; is
-        configured for crash-safe durability by default.
+        Two independent durability stories: Postgres backs up nightly to infrastructure you control,
+        and Redis &mdash; which holds the live send queue, not just a cache &mdash; is configured
+        for crash-safe durability by default.
       </p>
       <AnswerBlock>
         WarmHawk backs up Postgres nightly (pg_dump, gzip, your own local path or rclone remote —
@@ -54,7 +56,9 @@ export default function BackupsRedisDurabilityPage() {
         send queue — losing unflushed writes there means a lead silently never gets emailed.
       </AnswerBlock>
 
-      <h2 className="font-display text-2xl font-semibold mb-4">How nightly Postgres backups work</h2>
+      <h2 className="font-display text-2xl font-semibold mb-4">
+        How nightly Postgres backups work
+      </h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         <code className="font-mono">scripts/backup-postgres.sh</code> runs on a nightly schedule
         inside your instance: <code className="font-mono">pg_dump</code>, piped through{' '}
@@ -64,7 +68,7 @@ export default function BackupsRedisDurabilityPage() {
         (default yes), 14-day retention by default, configurable directly in the script.
       </p>
       <CodeBlock label="Run a backup right now, before a risky change">
-{`docker compose exec api /app/scripts/backup-postgres.sh
+        {`docker compose exec api /app/scripts/backup-postgres.sh
 ls -lh /var/backups/warmhawk/`}
       </CodeBlock>
 
@@ -72,14 +76,12 @@ ls -lh /var/backups/warmhawk/`}
       <ol className="list-decimal pl-6 space-y-4 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
         <li>
           <strong className="text-ink">Stop the services that write to Postgres.</strong>
-          <CodeBlock label="Stop dependent services">
-{`docker compose stop api worker`}
-          </CodeBlock>
+          <CodeBlock label="Stop dependent services">{`docker compose stop api worker`}</CodeBlock>
         </li>
         <li>
           <strong className="text-ink">Restore the gzipped dump.</strong>
           <CodeBlock label="Restore from a gzipped dump">
-{`gunzip -c /var/backups/warmhawk/warmhawk-2026-08-20.sql.gz \\
+            {`gunzip -c /var/backups/warmhawk/warmhawk-2026-08-20.sql.gz \\
   | docker compose exec -T postgres psql -U warmhawk -d warmhawk`}
           </CodeBlock>
           Restoring onto a database with existing (possibly corrupted) data: drop and recreate it
@@ -87,29 +89,29 @@ ls -lh /var/backups/warmhawk/`}
         </li>
         <li>
           <strong className="text-ink">Restart the API and worker.</strong>
-          <CodeBlock label="Bring services back up">
-{`docker compose start api worker`}
-          </CodeBlock>
+          <CodeBlock label="Bring services back up">{`docker compose start api worker`}</CodeBlock>
         </li>
         <li>
           <strong className="text-ink">Verify it actually worked.</strong>
           <CodeBlock label="Verify health, then spot-check data">
-{`docker compose ps
+            {`docker compose ps
 docker compose exec postgres psql -U warmhawk -d warmhawk -c "SELECT count(*) FROM leads;"`}
           </CodeBlock>
         </li>
       </ol>
 
-      <h2 className="font-display text-2xl font-semibold mb-4">Redis durability: why it isn&rsquo;t just a cache</h2>
+      <h2 className="font-display text-2xl font-semibold mb-4">
+        Redis durability: why it isn&rsquo;t just a cache
+      </h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         Redis backs the BullMQ dispatch queue &mdash; mailbox rotation, cadence/jitter scheduling,
         every job waiting to send. Losing unflushed writes on a crash or restart means a lead
-        silently never gets emailed, with no error surfaced anywhere else in the system. That&rsquo;s
-        why the bundled <code className="font-mono">ops/redis.conf</code> configures real
-        durability instead of Redis&rsquo;s cache-friendly defaults:
+        silently never gets emailed, with no error surfaced anywhere else in the system.
+        That&rsquo;s why the bundled <code className="font-mono">ops/redis.conf</code> configures
+        real durability instead of Redis&rsquo;s cache-friendly defaults:
       </p>
       <CodeBlock label="ops/redis.conf — the durability-relevant lines">
-{`appendonly yes
+        {`appendonly yes
 appendfsync everysec
 aof-use-rdb-preamble yes
 
@@ -126,19 +128,21 @@ maxmemory-policy noeviction`}
           second of writes instead of everything since the last RDB snapshot.
         </li>
         <li>
-          <strong className="text-ink">RDB snapshots as a second safety net</strong>, layered on
-          top of AOF, not instead of it.
+          <strong className="text-ink">RDB snapshots as a second safety net</strong>, layered on top
+          of AOF, not instead of it.
         </li>
         <li>
-          <strong className="text-ink"><code className="font-mono">noeviction</code></strong> &mdash;
-          Redis refuses new writes rather than silently evicting queue data under memory pressure.
-          A refused write is loud and recoverable; a silently evicted job is neither.
+          <strong className="text-ink">
+            <code className="font-mono">noeviction</code>
+          </strong>{' '}
+          &mdash; Redis refuses new writes rather than silently evicting queue data under memory
+          pressure. A refused write is loud and recoverable; a silently evicted job is neither.
         </li>
         <li>
           <strong className="text-ink">A crash-recovery reconciliation cron</strong> cross-checks{' '}
           <code className="font-mono">ExecutionLog</code> rows against what BullMQ actually has
-          queued on every restart, and re-enqueues anything that looks lost &mdash; a second line
-          of defense behind AOF, not a substitute for it.
+          queued on every restart, and re-enqueues anything that looks lost &mdash; a second line of
+          defense behind AOF, not a substitute for it.
         </li>
       </ul>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
@@ -167,7 +171,10 @@ maxmemory-policy noeviction`}
         database at all.
       </p>
 
-      <FaqSection items={faqItems} title="Backups & Redis durability: questions worth answering up front" />
+      <FaqSection
+        items={faqItems}
+        title="Backups & Redis durability: questions worth answering up front"
+      />
     </div>
   );
 }

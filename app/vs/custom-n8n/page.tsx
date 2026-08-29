@@ -99,7 +99,9 @@ export default function CustomN8nComparisonPage() {
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <div className="font-display text-2xl font-bold text-rust">BullMQ</div>
-                <div className="text-xs text-ink-muted mt-1.5 leading-tight">Redis-backed queue engine</div>
+                <div className="text-xs text-ink-muted mt-1.5 leading-tight">
+                  Redis-backed queue engine
+                </div>
               </div>
               <div className="text-center border-l border-r border-border">
                 <div className="font-display text-2xl font-bold text-rust">AOF</div>
@@ -126,10 +128,10 @@ export default function CustomN8nComparisonPage() {
           </h2>
           <AnswerBlock>
             WarmHawk&rsquo;s queue is BullMQ on Redis, with two dedicated modules doing the actual
-            thinking: computeNextSlotSeconds.ts calculates cadence and jitter per mailbox,
-            enforcing an eight-minute floor so sends never look scripted, and enqueuer.ts picks the
-            next mailbox by weighted, least-recently-used, capacity-aware rotation. Neither is a
-            generic building block &mdash; both were purpose-built for this exact job.
+            thinking: computeNextSlotSeconds.ts calculates cadence and jitter per mailbox, enforcing
+            an eight-minute floor so sends never look scripted, and enqueuer.ts picks the next
+            mailbox by weighted, least-recently-used, capacity-aware rotation. Neither is a generic
+            building block &mdash; both were purpose-built for this exact job.
           </AnswerBlock>
           <div className="max-w-3xl mx-auto space-y-4 text-[15px] leading-relaxed text-ink-muted">
             <p>
@@ -139,17 +141,16 @@ export default function CustomN8nComparisonPage() {
                 what&rsquo;s purpose-built is the pair of modules that sit on top of it:
                 computeNextSlotSeconds.ts for timing, enqueuer.ts for mailbox selection
               </StatCite>
-              . Every send that goes out has already passed through both before it ever reaches
-              the wire.
+              . Every send that goes out has already passed through both before it ever reaches the
+              wire.
             </p>
             <p>
               computeNextSlotSeconds.ts doesn&rsquo;t just enforce a flat delay &mdash; it
-              calculates the next legal slot per mailbox, with an eight-minute floor and
-              randomized jitter layered on so a sequence of sends never reads as a mechanical
-              drip. enqueuer.ts then asks, for every job pulled off the queue: which connected
-              mailbox has the least recent send, the most remaining daily capacity, and the best
-              standing to take this one right now? That&rsquo;s the rotation decision, made fresh
-              every time, automatically.
+              calculates the next legal slot per mailbox, with an eight-minute floor and randomized
+              jitter layered on so a sequence of sends never reads as a mechanical drip. enqueuer.ts
+              then asks, for every job pulled off the queue: which connected mailbox has the least
+              recent send, the most remaining daily capacity, and the best standing to take this one
+              right now? That&rsquo;s the rotation decision, made fresh every time, automatically.
             </p>
           </div>
         </div>
@@ -164,16 +165,15 @@ export default function CustomN8nComparisonPage() {
           If Redis crashes mid-send, an unflushed write can otherwise mean a silently dropped
           message with no error anywhere. WarmHawk prevents that with AOF persistence set to fsync
           every second, a noeviction memory policy, and a reconciliation cron that re-enqueues any
-          lead or send row whose status implies it should be queued but has no matching BullMQ
-          job.
+          lead or send row whose status implies it should be queued but has no matching BullMQ job.
         </AnswerBlock>
         <div className="max-w-3xl mx-auto space-y-4 text-[15px] leading-relaxed text-ink-muted">
           <p>
             The dangerous case in any queue-backed system isn&rsquo;t the crash itself &mdash;
             it&rsquo;s the write that happened just before it. A lead gets marked as
-            &ldquo;sending&rdquo; in the database, the process dies before the matching job
-            reaches Redis or before Redis flushes it to disk, and now there&rsquo;s a row that
-            thinks it&rsquo;s in flight with nothing actually tracking it.{' '}
+            &ldquo;sending&rdquo; in the database, the process dies before the matching job reaches
+            Redis or before Redis flushes it to disk, and now there&rsquo;s a row that thinks
+            it&rsquo;s in flight with nothing actually tracking it.{' '}
             <StatCite source="WarmHawk architecture">
               WarmHawk closes that gap with `appendfsync everysec` AOF persistence plus
               `maxmemory-policy noeviction`, so queued jobs survive a restart instead of being
@@ -182,11 +182,10 @@ export default function CustomN8nComparisonPage() {
             .
           </p>
           <p>
-            The reconciliation cron is the second layer: it periodically scans for any lead or
-            send row whose status says it should be queued but has no corresponding BullMQ job,
-            and re-enqueues it. That closes the write-then-crash gap completely &mdash; a
-            dropped send either goes out on the retry pass or surfaces as a visible error, never as
-            silence.
+            The reconciliation cron is the second layer: it periodically scans for any lead or send
+            row whose status says it should be queued but has no corresponding BullMQ job, and
+            re-enqueues it. That closes the write-then-crash gap completely &mdash; a dropped send
+            either goes out on the retry pass or surfaces as a visible error, never as silence.
           </p>
           <p>
             <StatCite source="WarmHawk architecture">
@@ -217,19 +216,19 @@ export default function CustomN8nComparisonPage() {
             <p>
               None of this is a knock on n8n &mdash; it&rsquo;s an excellent tool for exactly what
               it&rsquo;s designed for: gluing APIs together into a workflow a human can read on a
-              canvas. Cold-email sending just isn&rsquo;t that kind of problem. It needs
-              per-mailbox state, timing math that has to run correctly thousands of times a day
-              without drifting, and recovery behavior that works even when nobody&rsquo;s watching
-              the workflow at 3am.
+              canvas. Cold-email sending just isn&rsquo;t that kind of problem. It needs per-mailbox
+              state, timing math that has to run correctly thousands of times a day without
+              drifting, and recovery behavior that works even when nobody&rsquo;s watching the
+              workflow at 3am.
             </p>
             <p>
               In practice, a hand-rolled n8n cold-email sender tends to grow the same way: a
-              Function node with a fixed delay, then a smarter Function node with some jitter
-              math bolted on, then per-mailbox counters kept in a workflow&rsquo;s static data or
-              an external key-value store, then error handling for the counters getting out of
-              sync. Every one of those is solvable &mdash; but it&rsquo;s bespoke code that has to
-              be maintained by whoever built it, with no upstream fixes or improvements arriving
-              for free.
+              Function node with a fixed delay, then a smarter Function node with some jitter math
+              bolted on, then per-mailbox counters kept in a workflow&rsquo;s static data or an
+              external key-value store, then error handling for the counters getting out of sync.
+              Every one of those is solvable &mdash; but it&rsquo;s bespoke code that has to be
+              maintained by whoever built it, with no upstream fixes or improvements arriving for
+              free.
             </p>
             <p>
               Scale is usually where it breaks first. Rate-limiting logic that&rsquo;s fine for two
@@ -259,7 +258,7 @@ export default function CustomN8nComparisonPage() {
         </p>
         <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
           <CodeBlock label="n8n Function node — hand-rolled">
-{`// Runs inside a Function node on every item.
+            {`// Runs inside a Function node on every item.
 // Delay + rotation logic the operator owns and maintains.
 const mailboxState = getWorkflowStaticData('global');
 mailboxState.lastSent = mailboxState.lastSent || {};
@@ -281,7 +280,7 @@ mailboxState.lastSent[mailbox] = Date.now();
 return { mailbox };`}
           </CodeBlock>
           <CodeBlock label="WarmHawk — computeNextSlotSeconds.ts + enqueuer.ts">
-{`// Handled automatically for every send, per mailbox.
+            {`// Handled automatically for every send, per mailbox.
 const mailbox = enqueuer.pickMailbox({
   strategy: 'weighted-lru-capacity-aware',
 });
@@ -332,10 +331,7 @@ await bullmqQueue.add('send', payload, {
             <Link href="/docs/quickstart" className="btn btn-primary">
               Read the quickstart
             </Link>
-            <Link
-              href="/checkout?tier=1"
-              className="btn btn-on-dark"
-            >
+            <Link href="/checkout?tier=1" className="btn btn-on-dark">
               Start Tier 1 &mdash; $199/mo
             </Link>
           </div>

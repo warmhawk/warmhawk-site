@@ -12,8 +12,8 @@ export function getStripeClient(): Stripe {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey) {
     throw new Error(
-      'STRIPE_SECRET_KEY is not set. Configure it in this deployment\'s environment before ' +
-        'calling any Stripe-backed route (see docs/stripe-webhooks and .env.example).',
+      "STRIPE_SECRET_KEY is not set. Configure it in this deployment's environment before " +
+        'calling any Stripe-backed route (see docs/stripe-webhooks and .env/.env.example).',
     );
   }
   return new Stripe(secretKey, {

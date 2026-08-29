@@ -45,7 +45,7 @@ const compareRows: CompareRow[] = [
 // prove a runtime fact), so it must be asserted by hand as a SECOND, independent flag. Setting
 // only one of the two is treated as a misconfiguration, not "on": it's logged loudly server-side
 // and rendered as an explicit misconfigured state rather than either the real page or a silent
-// 404, so an operator who half-enabled this by mistake finds out immediately. See .env.example
+// 404, so an operator who half-enabled this by mistake finds out immediately. See .env/.env.example
 // for the full rationale on both vars.
 function isFlagEnabled(value: string | undefined): boolean {
   return value === 'true' || value === '1';
@@ -60,11 +60,11 @@ function VsInstantlyMisconfigured() {
       </h1>
       <p className="text-base text-ink-muted max-w-xl mx-auto">
         <code className="font-mono">ENABLE_VS_INSTANTLY</code> is true, but{' '}
-        <code className="font-mono">SEED_PLACEMENT_LIVE_IN_PRODUCTION</code> is not also true.
-        Both environment variables are required together before this page will render — see{' '}
-        <code className="font-mono">.env.example</code> for what each one gates and why. This
-        page stays hidden until both are explicitly set to <code className="font-mono">true</code> in
-        this deployment&rsquo;s environment.
+        <code className="font-mono">SEED_PLACEMENT_LIVE_IN_PRODUCTION</code> is not also true. Both
+        environment variables are required together before this page will render — see{' '}
+        <code className="font-mono">.env/.env.example</code> for what each one gates and why. This
+        page stays hidden until both are explicitly set to <code className="font-mono">true</code>{' '}
+        in this deployment&rsquo;s environment.
       </p>
     </div>
   );
@@ -85,7 +85,8 @@ const faqItems = [
       'No, and we want to be precise about that. Instantly’s warmup score is a self-reported heat rating from its own warmup network. WarmHawk’s placement sampling BCCs a handful of your own seed inboxes on real sends and reports which folder each one actually landed in — a narrower, more literal signal, not a full inbox-placement testing product.',
   },
   {
-    question: 'Does WarmHawk fix the problem where a high warmup score doesn’t mean real inbox placement?',
+    question:
+      'Does WarmHawk fix the problem where a high warmup score doesn’t mean real inbox placement?',
     answer:
       'It addresses it honestly rather than repeating it. WarmHawk doesn’t publish a single confidence score at all — it reports actual per-seed-inbox placement results (inbox, spam, or promotions) from real sends, so there’s nothing to inflate.',
   },
@@ -95,7 +96,8 @@ const faqItems = [
       'Instantly users report support that’s either a bot or slow to respond even at roughly $400/month. WarmHawk’s support is founder-staffed: first response within 1 business day, 4 business hours for critical issues.',
   },
   {
-    question: 'Can I get double-billed or denied a refund on WarmHawk like some Instantly users report?',
+    question:
+      'Can I get double-billed or denied a refund on WarmHawk like some Instantly users report?',
     answer:
       'Structurally, no — WarmHawk is self-hosted with no metered platform billing layer to double-charge in the first place, and every plan includes a 30-day money-back guarantee.',
   },
@@ -121,10 +123,10 @@ export default function VsInstantlyPage() {
     // this codebase actually verified.
     console.error(
       '[vs/instantly] MISCONFIGURED: ENABLE_VS_INSTANTLY=true but SEED_PLACEMENT_LIVE_IN_PRODUCTION ' +
-        'is not also true. This page\'s whole argument is real, production-verified seed-inbox ' +
+        "is not also true. This page's whole argument is real, production-verified seed-inbox " +
         'placement sampling — rendering it without that second confirmation would make WarmHawk ' +
         'guilty of exactly the overclaiming this page criticizes Instantly for. Refusing to render ' +
-        'the real content; see .env.example for both required env vars.',
+        'the real content; see .env/.env.example for both required env vars.',
     );
     return <VsInstantlyMisconfigured />;
   }
@@ -141,11 +143,10 @@ export default function VsInstantlyPage() {
         </h1>
         <p className="text-lg leading-relaxed text-ink-muted max-w-2xl mb-9">
           Instantly&rsquo;s own users have reported a warmup &ldquo;heat score&rdquo; reading 90+
-          while real inbox placement collapsed to 30&ndash;40%. WarmHawk replaces that vanity
-          metric with an honest signal instead: it BCCs real sends to a handful of your own seed
-          inboxes and reports exactly which folder each one landed in. We call that placement
-          sampling, not full inbox-placement testing, and we mean the distinction &mdash; see
-          below.
+          while real inbox placement collapsed to 30&ndash;40%. WarmHawk replaces that vanity metric
+          with an honest signal instead: it BCCs real sends to a handful of your own seed inboxes
+          and reports exactly which folder each one landed in. We call that placement sampling, not
+          full inbox-placement testing, and we mean the distinction &mdash; see below.
         </p>
         <div className="flex flex-wrap items-center gap-4 mb-10">
           <Link href="/checkout?tier=1" className="btn btn-primary">
@@ -260,7 +261,10 @@ export default function VsInstantlyPage() {
         <ComparisonCallout />
       </div>
 
-      <FaqSection items={faqItems} title="WarmHawk vs Instantly: questions worth answering up front" />
+      <FaqSection
+        items={faqItems}
+        title="WarmHawk vs Instantly: questions worth answering up front"
+      />
 
       {/* FINAL CTA */}
       <div className="bg-slate text-paper">
@@ -275,10 +279,7 @@ export default function VsInstantlyPage() {
             <Link href="/checkout?tier=1" className="btn btn-primary">
               Start Tier 1 &mdash; $199/mo
             </Link>
-            <Link
-              href="/docs/quickstart"
-              className="btn btn-on-dark"
-            >
+            <Link href="/docs/quickstart" className="btn btn-on-dark">
               Get the free engine
             </Link>
           </div>
