@@ -42,8 +42,16 @@ test.describe('Human journey: homepage -> docs -> checkout -> vs -> legal', () =
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Your sending engine');
 
     // 2. Open the nav and go to Docs.
-    const header = page.locator('body > div').first();
-    await header.getByRole('link', { name: 'Docs', exact: true }).click();
+    // Note: not scoped to a header container — Next.js 15's App Router now
+    // renders a hidden `<div hidden><!--$--><!--/$--></div>` Suspense/metadata
+    // marker as body's actual first child (confirmed via curl against the raw
+    // server-rendered HTML, 2026-08-29), which broke the previous
+    // `page.locator('body > div').first()` positional scoping — that div no
+    // longer resolves to the real header. The nav's "Docs" link has a unique
+    // accessible name across the whole page (the footer's own docs link is
+    // "Docs & quickstart"), so an unscoped exact-match query is both simpler
+    // and no longer coupled to body's child ordering.
+    await page.getByRole('link', { name: 'Docs', exact: true }).click();
     await expect(page).toHaveURL(/\/docs$/);
     await expect(request.get('/docs').then((r) => r.status())).resolves.toBe(200);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
