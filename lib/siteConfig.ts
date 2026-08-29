@@ -15,7 +15,7 @@ export const siteConfig = {
   // Matches docker/docker-compose.deploy.yml's SMTP_FROM default exactly — that file
   // can't import this constant (it's YAML), so this pairing is the one to update in
   // both places at once if it ever changes.
-  billingFrom: 'WarmHawk <billing@warmhawk.com>',
+  defaultFrom: 'WarmHawk <support@warmhawk.com>',
 };
 
 // Order and labels match the artifact's SITE_HEADER nav exactly: Product,
