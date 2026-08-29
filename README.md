@@ -159,7 +159,7 @@ HUMAN_ENV=stage npm run test:human
 No pipeline config lives in this repo — like every other KS-LLC-org repo, it runs on
 self-hosted Woodpecker, generated centrally from `ks-woodpecker-config`'s `repo-map.ts`
 (`warmhawk/warmhawk-site` entry). Push-to-`main` builds the image (`docker/Dockerfile.web`),
-pushes it to `ghcr.io/warmhawk/warmhawk-site`, and deploys via `docker/docker-compose.deploy.yml`
+pushes it to `ghcr.io/warmhawk/web`, and deploys via `docker/docker-compose.deploy.yml`
 (the "own repo, git-pull" pattern — pulls the pushed image, no on-box rebuild). This repo is
 permanently private (decided 2026-08-25, superseding an earlier assumption it would go public at
 go-live).

@@ -1,7 +1,10 @@
 # Deploy compose file for warmhawk-site — NOT used for local dev (that's
 # `npm run dev`, no Docker involved at all). Pulls the prebuilt image
-# Woodpecker's build-push workflow already built and pushed to
-# ghcr.io/warmhawk/warmhawk-site:<git-sha> — no rebuild on deploy. Deployed
+# Woodpecker's build-push-web workflow already built and pushed to
+# ghcr.io/warmhawk/web:<git-sha> (package name is "web", matching the
+# Dockerfile/service name — not "warmhawk-site"; confirmed live 2026-08-29
+# after this field's original "warmhawk-site" name caused every deploy to
+# fail with "not found") — no rebuild on deploy. Deployed
 # via plain `docker compose -p warmhawk-site up -d` (the "own repo,
 # git-pull" pattern — see jitterflow-core-app/docker/docker-compose.deploy.yml
 # for the original of this shape, and its docs/ for why: no PaaS control
@@ -15,7 +18,7 @@
 services:
   web:
     container_name: ${CONTAINER_PREFIX:?CONTAINER_PREFIX is required}-web
-    image: ghcr.io/warmhawk/warmhawk-site:${IMAGE_TAG:?IMAGE_TAG is required}
+    image: ghcr.io/warmhawk/web:${IMAGE_TAG:?IMAGE_TAG is required}
     restart: unless-stopped
     environment:
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:?STRIPE_SECRET_KEY is required}
