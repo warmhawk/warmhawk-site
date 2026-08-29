@@ -10,6 +10,18 @@ const nextConfig = {
   // `/tools/domain-check` page's client-side call to core-engine's public
   // API. Everything else ships as static HTML.
   poweredByHeader: false,
+  // next build's own internal ESLint pass (separate from this repo's own
+  // `npm run lint` / CI's 1.8-lint-format step, both still eslint 8.57.1's
+  // real `eslint .` CLI and both still passing) broke against next 15.5.24's
+  // lint runner: "ESLint: Invalid Options: - Unknown options: useEslintrc,
+  // extensions" (confirmed live 2026-08-29, build still exits 0, but the
+  // internal pass silently does nothing). Next 16 removes build-time
+  // linting entirely in favor of exactly the standalone-CLI pattern this
+  // repo already uses, so skip the broken redundant internal pass now
+  // rather than carry a build log that misleadingly shows a lint failure.
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   async headers() {
     return [
       {

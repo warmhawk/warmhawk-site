@@ -1,4 +1,3 @@
-import { createElement } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import CheckoutPage from './page';
@@ -8,8 +7,8 @@ describe('CheckoutPage (app/checkout/page.tsx)', () => {
     cleanup();
   });
 
-  it('defaults to the Tier 1 tab when no ?tier= query param is present', () => {
-    render(createElement(CheckoutPage, { searchParams: {} }));
+  it('defaults to the Tier 1 tab when no ?tier= query param is present', async () => {
+    render(await CheckoutPage({ searchParams: Promise.resolve({}) }));
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Get your license.');
     expect(screen.getByRole('tab', { name: 'Tier 1 — Self-Hosted Pro' })).toHaveAttribute(
@@ -21,8 +20,8 @@ describe('CheckoutPage (app/checkout/page.tsx)', () => {
     ).toBeInTheDocument();
   });
 
-  it('starts on the Tier 2 tab when ?tier=2 is passed, and only tier=2 does that', () => {
-    render(createElement(CheckoutPage, { searchParams: { tier: '2' } }));
+  it('starts on the Tier 2 tab when ?tier=2 is passed, and only tier=2 does that', async () => {
+    render(await CheckoutPage({ searchParams: Promise.resolve({ tier: '2' }) }));
 
     expect(screen.getByRole('tab', { name: 'Tier 2 — Enterprise DFY' })).toHaveAttribute(
       'aria-selected',
@@ -31,8 +30,8 @@ describe('CheckoutPage (app/checkout/page.tsx)', () => {
     expect(screen.getByLabelText('Company')).toBeInTheDocument();
   });
 
-  it('falls back to Tier 1 for any tier value other than exactly "2"', () => {
-    render(createElement(CheckoutPage, { searchParams: { tier: 'anything-else' } }));
+  it('falls back to Tier 1 for any tier value other than exactly "2"', async () => {
+    render(await CheckoutPage({ searchParams: Promise.resolve({ tier: 'anything-else' }) }));
 
     expect(screen.getByRole('tab', { name: 'Tier 1 — Self-Hosted Pro' })).toHaveAttribute(
       'aria-selected',
@@ -40,8 +39,8 @@ describe('CheckoutPage (app/checkout/page.tsx)', () => {
     );
   });
 
-  it('switches tabs on click, swapping CheckoutButtons for ContactSalesForm and back', () => {
-    render(createElement(CheckoutPage, { searchParams: {} }));
+  it('switches tabs on click, swapping CheckoutButtons for ContactSalesForm and back', async () => {
+    render(await CheckoutPage({ searchParams: Promise.resolve({}) }));
 
     // Both tab panels stay mounted at all times (CheckoutTabs toggles the
     // `hidden` attribute rather than conditionally rendering), so an

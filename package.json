@@ -22,8 +22,8 @@
     "test:human": "playwright test -c tests/human-journeys/human.config.ts"
   },
   "dependencies": {
-    "next": "14.2.18",
-    "nodemailer": "^6.9.15",
+    "next": "15.5.24",
+    "nodemailer": "^9.0.6",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "stripe": "16.12.0"
@@ -34,15 +34,15 @@
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "20.16.11",
-    "@types/nodemailer": "^6.4.16",
+    "@types/nodemailer": "^8.0.1",
     "@types/react": "18.3.11",
     "@types/react-dom": "18.3.1",
     "@vitest/coverage-v8": "^4.1.11",
     "autoprefixer": "10.4.20",
     "eslint": "8.57.1",
-    "eslint-config-next": "14.2.18",
+    "eslint-config-next": "15.5.24",
     "jsdom": "^29.1.1",
-    "postcss": "8.4.47",
+    "postcss": "8.5.26",
     "prettier": "3.3.3",
     "sharp": "^0.35.3",
     "tailwindcss": "3.4.13",
@@ -51,5 +51,10 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "8.5.26"
+    }
   }
 }

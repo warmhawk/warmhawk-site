@@ -20,11 +20,16 @@ export const metadata: Metadata = pageSeo({
 // instead of a static form. See components/CheckoutTabs.tsx for the full artifact cross-reference.
 
 interface CheckoutPageProps {
-  searchParams: { tier?: string };
+  // Next.js 15+: searchParams is a Promise — see the Next.js 15 upgrade
+  // guide's Async Request APIs section. Confirmed live 2026-08-29 as part
+  // of the 14->15 upgrade: this was the only sync searchParams/params usage
+  // in this repo's app/ tree.
+  searchParams: Promise<{ tier?: string }>;
 }
 
-export default function CheckoutPage({ searchParams }: CheckoutPageProps) {
-  const initialTier = searchParams?.tier === '2' ? 'tier2' : 'tier1';
+export default async function CheckoutPage({ searchParams }: CheckoutPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const initialTier = resolvedSearchParams?.tier === '2' ? 'tier2' : 'tier1';
 
   return (
     <div className="wrap py-16">
