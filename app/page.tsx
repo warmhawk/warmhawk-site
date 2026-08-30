@@ -23,6 +23,14 @@ export const metadata: Metadata = pageSeo({
 // the artifact's terminal-box STYLING exactly (pulsing dot, timer) but with
 // the real, working `curl | bash` command in it instead of copy that would
 // 404 for anyone who typed it.
+//
+// 2026-08-30 go-live audit (finding B4): that command was nonetheless broken in two ways,
+// both now fixed and verified end to end. (1) `/install` hard-required `--license`, so the
+// exact string shown here died immediately on "--license is required" — the installer now
+// has a real Tier 0 path (see app/install/route.ts). (2) The domain shown was
+// `app.yourcompany.com`, but the script derives `api.<domain>`/`dashboard.<domain>` from
+// whatever you pass, so that would have produced `api.app.yourcompany.com`. The bare company
+// domain is the correct input.
 
 const faqItems = [
   {
@@ -125,7 +133,7 @@ function InstallCommand({ center = false }: { center?: boolean }) {
       <span className="w-1.5 h-1.5 rounded-full bg-amber animate-pulse flex-none" />
       <span className="text-paper">$</span>
       <span className="break-all">
-        curl -fsSL https://warmhawk.com/install | bash -s -- --domain app.yourcompany.com
+        curl -fsSL https://warmhawk.com/install | bash -s -- --domain yourcompany.com
       </span>
     </div>
   );

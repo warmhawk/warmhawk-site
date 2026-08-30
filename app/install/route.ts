@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server';
 
 /**
- * Serves the combined WarmHawk installer as a piped shell script — `curl -fsSL
- * https://warmhawk.com/install | bash -s -- --license <token> --domain <domain> --owner-email
- * <email>`, exactly the command `lib/email.ts`'s `sendLicenseEmail` puts in every real license
- * email (see that file's `buildInstallCommand`). Same get.docker.com/rustup.rs-style pattern: a
- * GET here returns plain shell text, not JSON — there is no API contract, only a script.
+ * Serves the combined WarmHawk installer as a piped shell script. Same get.docker.com/rustup.rs
+ * pattern: a GET here returns plain shell text, not JSON — there is no API contract, only a script.
+ *
+ * TIER 0 IS A REAL PATH THROUGH THIS SCRIPT (2026-08-30 go-live audit finding B4). `--license` used
+ * to be a hard requirement, which meant the exact command printed on the homepage hero, the
+ * homepage closing CTA, `/docs/quickstart` and warmhawk-core-engine's README —
+ * `curl ... | bash -s -- --domain app.yourcompany.com` — died immediately on
+ * "--license is required". Every one of those four surfaces is aimed at free-tier users, and the
+ * whole open-core pitch depends on that command working. It now installs core-engine alone and
+ * exits cleanly, pointing at the Tier 0 quickstart; passing `--license` adds the dashboard exactly
+ * as before. `lib/email.ts`'s `buildInstallCommand` emits the licensed form for paying customers.
  *
  * This is an ORCHESTRATOR, not a reimplementation. warmhawk-core-engine's and
  * warmhawk-enterprise-operator's own `scripts/install.sh` are each already a complete, idempotent
@@ -47,8 +53,16 @@ const INSTALL_SCRIPT = `#!/usr/bin/env bash
 # script reuses an already-fetched checkout rather than re-cloning over it.
 #
 # Usage:
-#   curl -fsSL https://warmhawk.com/install | bash -s -- \\
-#     --license whk_live_XXXX --domain yourcompany.com --owner-email you@yourcompany.com
+#   Tier 0 (free, API-only -- installs the core engine and nothing else):
+#     curl -fsSL https://warmhawk.com/install | bash -s -- --domain yourcompany.com
+#
+#   Tier 1/2 (adds the licensed operator dashboard):
+#     curl -fsSL https://warmhawk.com/install | bash -s -- \\
+#       --license <token-from-your-purchase-email> \\
+#       --domain yourcompany.com --owner-email you@yourcompany.com
+#
+#   --license takes the FULL token from your purchase email (a long two-part string), not the
+#   short whk_live_ identifier printed alongside it.
 #
 # Optional overrides:
 #   --api-domain <domain>        (default: api.<domain>)
@@ -90,9 +104,14 @@ while [ \$# -gt 0 ]; do
   esac
 done
 
-[ -z "\$LICENSE" ] && fail "--license is required -- this is the license key from your WarmHawk purchase email."
+# --domain is the only universally required flag. --license is what selects the tier:
+#   absent  -> Tier 0 (free): core-engine only, no dashboard, no license needed.
+#   present -> Tier 1/2: core-engine + the licensed operator dashboard, which also needs
+#              --owner-email to send the owner their setup link.
 [ -z "\$DOMAIN" ] && fail "--domain is required (e.g. --domain yourcompany.com)."
-[ -z "\$OWNER_EMAIL" ] && fail "--owner-email is required -- this is the address that receives the dashboard owner's setup link."
+if [ -n "\$LICENSE" ] && [ -z "\$OWNER_EMAIL" ]; then
+  fail "--owner-email is required alongside --license -- it's the address that receives the dashboard owner's setup link."
+fi
 
 API_DOMAIN="\${API_DOMAIN:-api.\$DOMAIN}"
 DASHBOARD_DOMAIN="\${DASHBOARD_DOMAIN:-dashboard.\$DOMAIN}"
@@ -133,12 +152,28 @@ fetch_source "\$CORE_REPO_SOURCE" "\$CORE_DIR" "warmhawk-core-engine"
 log "Installing WarmHawk Core Engine at https://\${API_DOMAIN}/ ..."
 ( cd "\$CORE_DIR" && ./scripts/install.sh --domain "\$API_DOMAIN" )
 
+# --- 2. Tier 0 stops here -----------------------------------------------------------------------
+# No license means no dashboard to install: the operator repo is the licensed component, and Tier 0
+# is "direct API endpoints, no web UI" by design. Finish with the real next step rather than
+# silently doing nothing, so a free-tier install ends somewhere useful.
+if [ -z "\$LICENSE" ]; then
+  log "Done. WarmHawk Core Engine (Tier 0, free) is running at https://\${API_DOMAIN}/"
+  log ""
+  log "Next: create your first API user and send a test campaign --"
+  log "  https://warmhawk.com/docs/quickstart"
+  log ""
+  log "Tier 0 is API-only. To add the operator dashboard (queue inspector, domain health,"
+  log "unified reply inbox, team management), get a license at https://warmhawk.com/checkout"
+  log "and re-run this same command with --license <token> --owner-email <you@yourcompany.com>."
+  exit 0
+fi
+
 CORE_ENV="\$CORE_DIR/.env"
 [ -f "\$CORE_ENV" ] || fail "warmhawk-core-engine's install completed but \${CORE_ENV} is missing -- cannot read its OPERATOR_SERVICE_TOKEN."
 CORE_SERVICE_TOKEN="\$(grep -m1 '^OPERATOR_SERVICE_TOKEN=' "\$CORE_ENV" | cut -d= -f2-)"
 [ -n "\$CORE_SERVICE_TOKEN" ] || fail "Could not read OPERATOR_SERVICE_TOKEN from \${CORE_ENV} after install -- check: cat \${CORE_ENV}"
 
-# --- 2. warmhawk-enterprise-operator (dashboard, license-gated) --------------------------------
+# --- 3. warmhawk-enterprise-operator (dashboard, license-gated) --------------------------------
 OPERATOR_DIR="\$INSTALL_DIR/warmhawk-enterprise-operator"
 fetch_source "\$OPERATOR_REPO_SOURCE" "\$OPERATOR_DIR" "warmhawk-enterprise-operator"
 

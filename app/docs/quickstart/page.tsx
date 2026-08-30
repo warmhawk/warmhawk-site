@@ -38,8 +38,24 @@ export default function QuickstartPage() {
         preflight-checks Docker/Compose, ports 80/443, and DNS before touching anything, and
         it&rsquo;s safe to re-run at any point:
       </p>
-      <CodeBlock label="Install WarmHawk">
-        {`curl -fsSL https://warmhawk.com/install | bash -s -- --domain app.yourcompany.com`}
+      <CodeBlock label="Install WarmHawk — Tier 0 (free, API-only)">
+        {`curl -fsSL https://warmhawk.com/install | bash -s -- --domain yourcompany.com`}
+      </CodeBlock>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-4">
+        Pass your <strong>bare company domain</strong>, not a subdomain — the installer derives{' '}
+        <code className="font-mono">api.yourcompany.com</code> for the engine (and{' '}
+        <code className="font-mono">dashboard.yourcompany.com</code> for the operator dashboard, if
+        you install it). Both need to resolve to this server before you run it.
+      </p>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        Bought Tier 1 or Tier 2? Use the licensed form instead — same command, plus the token from
+        your purchase email. It installs the engine <em>and</em> the operator dashboard in one pass:
+      </p>
+      <CodeBlock label="Install WarmHawk — Tier 1/2 (adds the operator dashboard)">
+        {`curl -fsSL https://warmhawk.com/install | bash -s -- \\
+  --license <token-from-your-purchase-email> \\
+  --domain yourcompany.com \\
+  --owner-email you@yourcompany.com`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
         Ran into a failure? See{' '}
@@ -49,8 +65,8 @@ export default function QuickstartPage() {
         for the three most common causes (missing Docker, a bound port, DNS not propagated yet)
         before continuing below. Every call from here on uses{' '}
         <code className="font-mono">YOUR_API_KEY</code> and{' '}
-        <code className="font-mono">app.yourcompany.com</code> as placeholders for the token you get
-        from step 1 and the domain you installed against.
+        <code className="font-mono">api.yourcompany.com</code> as placeholders for the token you get
+        from step 1 and the API host the installer created.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4">1. Authenticate</h2>
@@ -60,7 +76,7 @@ export default function QuickstartPage() {
         printed at the end of setup) to get one:
       </p>
       <CodeBlock label="POST /v1/auth/login">
-        {`curl -X POST https://app.yourcompany.com/v1/auth/login \\
+        {`curl -X POST https://api.yourcompany.com/v1/auth/login \\
   -H "Content-Type: application/json" \\
   -d '{ "email": "you@yourcompany.com", "password": "YOUR_PASSWORD" }'`}
       </CodeBlock>
@@ -71,7 +87,7 @@ export default function QuickstartPage() {
         A mailbox belongs to a domain, so create the domain first:
       </p>
       <CodeBlock label="POST /v1/domains">
-        {`curl -X POST https://app.yourcompany.com/v1/domains \\
+        {`curl -X POST https://api.yourcompany.com/v1/domains \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{ "domainName": "yourcompany.com" }'`}
@@ -88,7 +104,7 @@ export default function QuickstartPage() {
         register it directly:
       </p>
       <CodeBlock label="POST /v1/mailboxes">
-        {`curl -X POST https://app.yourcompany.com/v1/mailboxes \\
+        {`curl -X POST https://api.yourcompany.com/v1/mailboxes \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -135,7 +151,7 @@ export default function QuickstartPage() {
         &mdash; set it now to avoid a 422 later:
       </p>
       <CodeBlock label="POST /v1/campaigns">
-        {`curl -X POST https://app.yourcompany.com/v1/campaigns \\
+        {`curl -X POST https://api.yourcompany.com/v1/campaigns \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -166,7 +182,7 @@ export default function QuickstartPage() {
         <code className="font-mono">customFields</code> object:
       </p>
       <CodeBlock label="POST /v1/leads">
-        {`curl -X POST https://app.yourcompany.com/v1/leads \\
+        {`curl -X POST https://api.yourcompany.com/v1/leads \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -191,7 +207,7 @@ export default function QuickstartPage() {
 
       <h2 className="font-display text-2xl font-semibold mb-4">6. Launch, then check the queue</h2>
       <CodeBlock label="POST /v1/campaigns/:id/launch">
-        {`curl -X POST https://app.yourcompany.com/v1/campaigns/camp_g7h8i9/launch \\
+        {`curl -X POST https://api.yourcompany.com/v1/campaigns/camp_g7h8i9/launch \\
   -H "Authorization: Bearer YOUR_API_KEY"`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-4">
@@ -201,7 +217,7 @@ export default function QuickstartPage() {
         to confirm it moved:
       </p>
       <CodeBlock label="GET /v1/queue/status">
-        {`curl https://app.yourcompany.com/v1/queue/status \\
+        {`curl https://api.yourcompany.com/v1/queue/status \\
   -H "Authorization: Bearer YOUR_API_KEY"`}
       </CodeBlock>
       <CodeBlock label="Example response">

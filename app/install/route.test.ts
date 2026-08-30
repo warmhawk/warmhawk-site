@@ -17,14 +17,50 @@ describe('GET /install', () => {
     expect(res.headers.get('Cache-Control')).toBe('no-store');
   });
 
-  it('parses --license, --domain, and --owner-email, and requires all three', async () => {
+  it('parses --license, --domain, and --owner-email', async () => {
     const script = await (await GET()).text();
     expect(script).toContain('--license) LICENSE="$2"; shift 2 ;;');
     expect(script).toContain('--domain) DOMAIN="$2"; shift 2 ;;');
     expect(script).toContain('--owner-email) OWNER_EMAIL="$2"; shift 2 ;;');
-    expect(script).toMatch(/\[ -z "\$LICENSE" \] && fail/);
+  });
+
+  it('requires only --domain — Tier 0 must install with no license at all', async () => {
+    const script = await (await GET()).text();
     expect(script).toMatch(/\[ -z "\$DOMAIN" \] && fail/);
-    expect(script).toMatch(/\[ -z "\$OWNER_EMAIL" \] && fail/);
+    // The 2026-08-30 go-live audit's blocker B4: an unconditional --license guard made the
+    // one-liner printed on the homepage hero, the closing CTA, /docs/quickstart and core-engine's
+    // README all die instantly on "--license is required". Nothing may reintroduce it.
+    expect(script).not.toMatch(/\[ -z "\$LICENSE" \] && fail/);
+    expect(script).not.toMatch(/\[ -z "\$OWNER_EMAIL" \] && fail/);
+  });
+
+  it('requires --owner-email only when --license is supplied', async () => {
+    const script = await (await GET()).text();
+    // The operator needs an address to send the owner's setup link to, so the pairing still holds
+    // — it is just conditional on actually installing the operator now.
+    expect(script).toMatch(/if \[ -n "\$LICENSE" \] && \[ -z "\$OWNER_EMAIL" \]; then/);
+    expect(script).toContain('--owner-email is required alongside --license');
+  });
+
+  it('exits cleanly after the engine when no license was given, never reaching the operator', async () => {
+    const script = await (await GET()).text();
+    const tier0Exit = script.indexOf('exit 0');
+    const operatorIdx = script.indexOf('--license "$LICENSE"');
+    expect(tier0Exit).toBeGreaterThan(-1);
+    expect(operatorIdx).toBeGreaterThan(-1);
+    // The early exit has to come first, or the operator block runs licenseless and fails.
+    expect(tier0Exit).toBeLessThan(operatorIdx);
+    // And it has to tell a free-tier user where to go next, rather than just stopping.
+    expect(script).toContain('https://warmhawk.com/docs/quickstart');
+    expect(script).toContain('https://warmhawk.com/checkout');
+  });
+
+  it('documents both the Tier 0 and licensed invocations in its usage header', async () => {
+    const script = await (await GET()).text();
+    expect(script).toContain('Tier 0');
+    // --license takes the long signed token; teaching the short whk_live_ identifier here is what
+    // /docs/license-activation had to be corrected for.
+    expect(script).not.toMatch(/--license whk_live_/);
   });
 
   it('splits --domain into api.<domain> and dashboard.<domain> by default', async () => {
