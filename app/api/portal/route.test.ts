@@ -90,7 +90,9 @@ describe('POST /api/portal', () => {
   });
 
   it('rejects a garbage token with 401 and never reaches Stripe', async () => {
-    const res = await POST(postRequest({ licenseToken: 'whk_live_a1b2c3d4' }));
+    // gitleaks:allow — deliberately-invalid fixture: the point of this test is that it is NOT a
+    // real token. Kept on one line so the inline directive lands on the line gitleaks reports.
+    const res = await POST(postRequest({ licenseToken: 'whk_live_a1b2c3d4' })); // gitleaks:allow
     const json = (await res.json()) as { error?: string };
 
     expect(res.status).toBe(401);

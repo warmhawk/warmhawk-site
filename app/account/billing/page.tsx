@@ -8,6 +8,11 @@ export const metadata: Metadata = pageSeo({
   description:
     'Open the Stripe Customer Portal for your WarmHawk subscription — update your card, download invoices, switch monthly ⇄ annual, or cancel. Authenticated with your license token.',
   path: '/account/billing',
+  // Deliberately not indexed: an account-management destination for existing customers, not a
+  // marketing page, with nothing to rank for. Goes through pageSeo's own `noIndex` — a top-level
+  // `export const robots` is NOT a valid App Router page export and fails `next build` (caught by
+  // CI's docker build, 2026-08-30; `tsc --noEmit` and vitest both pass it happily).
+  noIndex: true,
 });
 
 // Closes 2026-08-30 go-live audit finding T2. warmhawk-enterprise-operator sends customers here
@@ -15,10 +20,6 @@ export const metadata: Metadata = pageSeo({
 // billing settings page, and the dashboard's own support copy — and this route did not exist, so
 // all three 404'd. The expired-license screen is the worst of the three: a locked-out customer
 // actively trying to pay was the one most likely to click it.
-//
-// Deliberately not indexed: it is an account-management destination for existing customers, not a
-// marketing page, and it has nothing to rank for.
-export const robots = { index: false, follow: false };
 
 interface BillingPageProps {
   // Next.js 15+: searchParams is a Promise (Async Request APIs) — same treatment as
