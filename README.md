@@ -24,7 +24,8 @@ logic lives here; that's `warmhawk-core-engine` and
 | Legal (draft, pending attorney review)                                      | `app/legal/*`                                                                           |
 | Security disclosure + `security.txt`                                        | `app/security`, `public/.well-known/security.txt`                                       |
 | Status page                                                                 | `app/status`                                                                            |
-| Stripe checkout / webhook / portal skeletons                                | `app/api/*`                                                                             |
+| Self-serve billing (email → Stripe Customer Portal)                         | `app/account/billing`                                                                   |
+| Stripe checkout / webhook / portal / license issuance + refresh             | `app/api/*`                                                                             |
 | Shared design system                                                        | `components/*`, `lib/*`, `tailwind.config.ts`                                           |
 | App-wide constants (name, URLs, support/security/hello/billing emails, nav) | `lib/siteConfig.ts` — the one file to edit when any of these change                     |
 | Docker build + deploy compose                                               | `docker/Dockerfile.web`, `docker/docker-compose.deploy.yml`                             |
@@ -83,6 +84,38 @@ received the matching key without ever comparing the private key itself.
 
 ---
 
+## 🔄 License lifecycle
+
+A license is a signed token, not a database row — this repo has no database. The
+signature _is_ the record, so every step below is stateless and verifiable offline.
+
+| Step                   | Route                                    | What happens                                                                                                                                               |
+| ---------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Issue**              | `app/api/stripe/webhook`                 | `checkout.session.completed` / `invoice.paid` mints a token and emails the install command.                                                                |
+| **Persist**            | (same webhook)                           | The token is written back onto the Stripe **subscription's metadata**, split across `warmhawk_license_1`/`_2` (Stripe caps a metadata value at 500 chars). |
+| **Refresh**            | `app/api/license/refresh`                | The dashboard presents its **current, possibly expired** token; entitlement is re-derived from the live subscription and a fresh token comes back.         |
+| **Self-serve billing** | `app/account/billing` → `app/api/portal` | Paste the token, land in the Stripe Customer Portal — card, invoices, monthly ⇄ annual, cancel.                                                            |
+
+> **🔑 Why the token is the credential.** A valid RSA signature proves the caller
+> holds a license this deployment actually issued, and the signed payload names the
+> Stripe customer to look up. So there is no shared secret to provision, no password,
+> and no `customerId` parameter for an attacker to enumerate. `/api/portal` accepts a
+> token **only** — a `stripeCustomerId` in the request body is ignored outright.
+
+**Expiry never grants access on its own.** `authenticateLicenseToken` deliberately
+accepts an expired token (a dashboard asking to renew is, by definition, holding one),
+so tier and expiry are always recomputed from Stripe — never copied from the old
+payload. A cancelled or `unpaid` customer gets a **402**; `past_due` still refreshes,
+because locking someone out mid-dunning over a transient card decline is exactly the
+jarring failure the daily re-validation design exists to avoid.
+
+The operator side of this loop — the daily auto-refresh and the **Refresh license**
+button on the expired screen — lives in `warmhawk-enterprise-operator`
+(`src/lib/license/refresh.ts`), and re-verifies whatever this endpoint returns against
+its own public key before storing it.
+
+---
+
 ## 🧩 Design system
 
 - **Palette:** cream (`#faf5ee`) / cream-elevated (`#f2e9db`) background,
@@ -126,10 +159,10 @@ test shipping in `warmhawk-core-engine`; that feature now exists on both sides
 **What still gates it** is no longer a code question, which is why nothing in
 CI can decide it:
 
-| Gate | Who clears it |
-|---|---|
+| Gate                                                                         | Who clears it                           |
+| ---------------------------------------------------------------------------- | --------------------------------------- |
 | Seed placement confirmed working against **live production**, not just tests | Human attestation — by hand, on purpose |
-| The two publish flags flipped once that's confirmed | Same |
+| The two publish flags flipped once that's confirmed                          | Same                                    |
 
 > **⚠️ Don't remove the `noindex` / do-not-publish markers as a code cleanup.**
 > This page makes a public, named comparative claim about a competitor. It
