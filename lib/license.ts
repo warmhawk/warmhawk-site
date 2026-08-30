@@ -1,4 +1,4 @@
-import { createSign, createVerify } from 'node:crypto';
+import { createSign, createVerify, createPublicKey, randomBytes } from 'node:crypto';
 
 /**
  * RSA license-key issuance — the ONE canonical implementation for the whole product.
@@ -141,10 +141,52 @@ export function tierForPriceId(priceId: string | undefined): LicenseTier {
 
 /** Generates a production-shaped license identifier. Only ever called from the live webhook
  *  handler — test/CI code must use an obviously-fake shape instead (see e.g.
- *  warmhawk-core-engine's `generateTestLicenseKey`). */
+ *  warmhawk-core-engine's `generateTestLicenseKey`).
+ *
+ *  Uses `crypto.randomBytes`, not `Math.random()`. The RSA signature is what actually secures a
+ *  license, so a predictable identifier was never exploitable on its own — but `Math.random()` is
+ *  seeded predictably, and its base-36 encoding produced a variable-length key (a leading-zero
+ *  fraction yields a short string), so two licenses could in principle collide. A customer
+ *  security review would flag it on sight. 16 bytes -> 32 fixed hex chars. */
 export function generateLicenseKey(): string {
-  const random = Math.random().toString(36).slice(2, 14) + Math.random().toString(36).slice(2, 14);
-  return `whk_live_${random}`;
+  return `whk_live_${randomBytes(16).toString('hex')}`;
+}
+
+/** Derives the PEM public half from the signing private key.
+ *
+ *  Lets routes that must VERIFY a token (`/api/portal`, `/api/license/refresh`) do so without
+ *  introducing a second env var that could drift out of sync with `LICENSE_SIGNING_PRIVATE_KEY`.
+ *  RSA private keys embed their own public modulus/exponent, so this is a pure local derivation —
+ *  no I/O, nothing new to provision. */
+export function derivePublicKeyPem(privateKeyPem: string): string {
+  return createPublicKey(privateKeyPem).export({ type: 'spki', format: 'pem' }).toString();
+}
+
+/**
+ * Authenticates a license token WITHOUT rejecting it for being expired, returning its payload
+ * only when the RSA signature genuinely verifies against our own signing key.
+ *
+ * This is the authorization primitive behind both `/api/portal` and `/api/license/refresh`, and
+ * expiry-tolerance is the entire point of it: the two moments a customer most needs to reach
+ * billing — renewing a lapsed subscription, and pulling a fresh license after one expired — are
+ * exactly the moments their token is expired. Rejecting on expiry would lock them out of the page
+ * that fixes the lockout.
+ *
+ * Holding a validly-signed token is itself the proof of purchase: only this deployment's private
+ * key can produce one, it is delivered solely to the paying customer, and its payload names the
+ * Stripe customer it was issued for. That is why neither route accepts a raw `cus_...` id —
+ * Stripe customer ids are not secrets, and treating one as an authenticator would let anyone who
+ * learned or guessed an id open a stranger's billing portal.
+ */
+export function authenticateLicenseToken(
+  token: string,
+  privateKeyPem: string,
+): LicensePayload | null {
+  const result = verifyLicense(token, derivePublicKeyPem(privateKeyPem));
+  // `valid` (signature good, unexpired) and `expired` (signature good, past its date) both carry a
+  // trustworthy payload; `invalid_signature`/`malformed` carry none and must never authenticate.
+  if (result.valid || result.expired) return result.payload;
+  return null;
 }
 
 const BILLING_PERIOD_SECONDS = 31 * 24 * 60 * 60; // ~1 month grace beyond a 30-day cycle

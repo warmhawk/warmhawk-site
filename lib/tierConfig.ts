@@ -50,7 +50,11 @@ export const tiers: TierDefinition[] = [
     price: 'Free',
     priceDetail: 'GitHub / Docker, self-hosted',
     ctaLabel: 'Get the free engine',
-    ctaHref: 'https://github.com/warmhawk/warmhawk-core-engine',
+    // Was a direct link to the core-engine GitHub repo, which is private today — a 404 on the
+    // pricing table's most-clicked free-tier CTA. /docs/quickstart is where every other "get the
+    // free engine" button on the site already points (homepage, footer, nav), it carries the real
+    // install command, and it stays correct whether or not the repo is public.
+    ctaHref: '/docs/quickstart',
     tierLabel: 'Tier 0 — Open Core',
     priceName: 'Free',
     priceAmount: '$0',
@@ -60,7 +64,7 @@ export const tiers: TierDefinition[] = [
       'CSV lead import via API',
       'Gemini/Claude BYOK AI personalization via API',
       'Own nginx/TLS package, one-command install.sh',
-      'One-command warmhawk update',
+      'One-command in-place upgrades (warmhawk update)',
       'Business Source License — non-compete grant, Apache 2.0 after 4 years',
     ],
   },

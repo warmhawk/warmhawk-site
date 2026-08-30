@@ -8,7 +8,7 @@ import { FaqSection } from '@/components/FaqSchema';
 export const metadata: Metadata = pageSeo({
   title: 'License activation troubleshooting',
   description:
-    'How WarmHawk license activation is supposed to work, what "license invalid" and "license expired" errors mean, how LicenseGate&rsquo;s daily re-validation works, and what to do if a payment succeeded but the dashboard disagrees.',
+    'How WarmHawk license activation is supposed to work, what "license invalid" and "license expired" errors mean, how LicenseGate&rsquo;s daily re-validation and self-refresh work at renewal, and what to do if a payment succeeded but the dashboard disagrees.',
   path: '/docs/license-activation',
 });
 
@@ -28,6 +28,16 @@ const faqItems = [
       'My subscription lapsed a few hours ago but the dashboard still works — is that a bug?',
     answer:
       'No, that&rsquo;s by design. LicenseGate re-validates against the license&rsquo;s embedded expiry once a day, not continuously, so there&rsquo;s a bounded grace window rather than an instant, jarring lockout the moment a payment fails.',
+  },
+  {
+    question: 'Do I have to re-install every month when my license renews?',
+    answer:
+      'No. Your dashboard refreshes its own license once a day — it presents the token it already holds and gets a freshly signed one back, as long as your subscription is still paying. There is also a "Refresh license" button on the expired screen and under Settings → Billing if you want it applied immediately. An expired token is still accepted for refreshing, so being locked out never stops you recovering on your own.',
+  },
+  {
+    question: 'What exactly do I pass to --license?',
+    answer:
+      'The long two-part token from your purchase email, hundreds of characters long — not the short whk_live_ value. That short one is only a human-readable identifier for support to reference; it carries no signature, so passing it to --license fails as "License invalid".',
   },
   {
     question: 'Can support manually re-activate a license for me?',
@@ -51,8 +61,9 @@ export default function LicenseActivationPage() {
       <AnswerBlock>
         This page explains how WarmHawk license activation works end to end: the license passed via
         --license during install, no separate dashboard paste-in step, what &ldquo;invalid&rdquo; or
-        &ldquo;expired&rdquo; errors mean, how the dashboard&rsquo;s daily re-validation check
-        works, and what to do if a real payment succeeded but the dashboard still shows unlicensed.
+        &ldquo;expired&rdquo; errors mean, how the dashboard&rsquo;s daily check both re-validates
+        and self-refreshes the license at renewal, and what to do if a real payment succeeded but
+        the dashboard still shows unlicensed.
       </AnswerBlock>
 
       <h2 className="font-display text-2xl font-semibold mb-4">
@@ -63,14 +74,35 @@ export default function LicenseActivationPage() {
         directly into the install command:
       </p>
       <CodeBlock label="License passed at install time">
-        {`curl -fsSL https://warmhawk.com/install-dashboard | bash -s -- \\
-  --license whk_live_a1b2c3d4e5f6 \\
-  --domain app.yourcompany.com \\
-  --core-engine-url https://api.yourcompany.com \\
+        {`curl -fsSL https://warmhawk.com/install | bash -s -- \\
+  --license <token-from-your-purchase-email> \\
+  --domain yourcompany.com \\
   --owner-email you@yourcompany.com`}
       </CodeBlock>
-      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
-        install.sh writes that key into your instance&rsquo;s{' '}
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-6">
+        Pass your <strong>bare company domain</strong> &mdash; the installer derives{' '}
+        <code className="font-mono">api.yourcompany.com</code> for the engine and{' '}
+        <code className="font-mono">dashboard.yourcompany.com</code> for the dashboard, and wires
+        the two together for you.
+      </p>
+
+      <div className="card bg-cream-elevated p-5 border-l-2 border-rust max-w-2xl mb-10">
+        <p className="text-[15px] leading-relaxed text-ink-muted">
+          <strong className="text-ink">
+            Your license is the long token, not the short identifier.
+          </strong>{' '}
+          Your purchase email contains a two-part string hundreds of characters long, like{' '}
+          <code className="font-mono text-[13px]">eyJsaWNlbnNlS2V5Ijoi…&#46;Qk9mVzRy…</code> &mdash;{' '}
+          <em>that</em> is what <code className="font-mono">--license</code> takes. The short{' '}
+          <code className="font-mono">whk_live_…</code> value is just a human-readable identifier
+          for support to reference; passing it to <code className="font-mono">--license</code> fails
+          as <strong className="text-ink">License invalid</strong>, because it carries no signature
+          to verify. If you hit that error, this is the first thing to check.
+        </p>
+      </div>
+
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
+        install.sh writes that token into your instance&rsquo;s{' '}
         <code className="font-mono">.env</code> and the dashboard&rsquo;s activation flow reads it
         from there on first boot &mdash; there is no separate &ldquo;paste your license here&rdquo;
         screen anywhere in the product. If activation looks broken, the license itself, or the path
@@ -86,17 +118,19 @@ export default function LicenseActivationPage() {
       </p>
       <ul className="list-disc pl-6 space-y-3 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
         <li>
-          <strong className="text-ink">License invalid</strong> &mdash; the key&rsquo;s RSA
-          signature doesn&rsquo;t verify. This usually means the key was mistyped, truncated when
-          copied, or belongs to a different product/environment (a{' '}
-          <code className="font-mono">whk_test_</code> key against a production instance, for
-          example). Double-check the exact string against what Stripe/your confirmation email sent.
+          <strong className="text-ink">License invalid</strong> &mdash; the token&rsquo;s RSA
+          signature doesn&rsquo;t verify. In order of how often it&rsquo;s actually the cause: the
+          short <code className="font-mono">whk_live_</code> identifier was pasted instead of the
+          full token; the token was truncated when copied (it&rsquo;s long, and terminals wrap it);
+          or it belongs to a different environment than the instance you&rsquo;re installing.
+          Compare the exact string against your confirmation email.
         </li>
         <li>
           <strong className="text-ink">License expired</strong> &mdash; the signature is valid, but
           the embedded expiry timestamp has passed. This is the expected, working state for a
-          subscription that lapsed &mdash; not a bug. See the re-validation section below for the
-          timing.
+          subscription that lapsed &mdash; not a bug. If your subscription is still active, it just
+          means your instance is holding last period&rsquo;s token; use{' '}
+          <strong className="text-ink">Refresh license</strong> in the dashboard, covered below.
         </li>
       </ul>
 
@@ -106,8 +140,13 @@ export default function LicenseActivationPage() {
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         Every license has an expiry embedded in it at issuance, tied to the current Stripe billing
         period. <code className="font-mono">LicenseGate</code> checks the current time against that
-        embedded expiry roughly once a day &mdash; it does not phone home to Stripe or WarmHawk on
-        every page load, and it does not actively revoke anything the moment a payment fails.
+        embedded expiry, and attempts a refresh, roughly once a day &mdash; not on every page load,
+        and it does not actively revoke anything the moment a payment fails.
+      </p>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        Between those daily checks, the gate is reading a signed token on your own disk. Your
+        dashboard keeps working through a WarmHawk outage or a network partition &mdash; there is no
+        license server your instance depends on to stay up minute to minute.
       </p>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
         In practice this means a lapsed subscription locks the dashboard out naturally at its
@@ -115,6 +154,49 @@ export default function LicenseActivationPage() {
         That&rsquo;s deliberate: it avoids a jarring mid-session lockout over a same-day billing
         hiccup, while still guaranteeing access stops within about a day of a subscription actually
         ending.
+      </p>
+
+      <h2 className="font-display text-2xl font-semibold mb-4">
+        Renewals: your license refreshes itself
+      </h2>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        A monthly license carries about a month of expiry, and an annual one about a year. That
+        expiry is baked in at issuance, so every renewal has to put a <em>new</em> token on your
+        instance &mdash; which would be a monthly SSH session if you had to do it by hand. You
+        don&rsquo;t.
+      </p>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        Your dashboard checks in once a day, presents the token it already holds as proof of who it
+        is, and gets back a freshly signed one as long as your subscription is still paying. In the
+        normal case a renewal is invisible: the card charges, the next daily check picks up the new
+        token, nobody touches a server.
+      </p>
+      <ul className="list-disc pl-6 space-y-3 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        <li>
+          <strong className="text-ink">To force it immediately</strong> &mdash; rather than waiting
+          for the daily check &mdash; click <strong className="text-ink">Refresh license</strong>,
+          on the expired-license screen and under{' '}
+          <code className="font-mono">Settings &rarr; Billing</code>.
+        </li>
+        <li>
+          <strong className="text-ink">An expired token still works to refresh with.</strong> That
+          is the whole point: a locked-out dashboard is holding an expired token by definition, so
+          being locked out never blocks you from recovering.
+        </li>
+        <li>
+          <strong className="text-ink">If the subscription genuinely isn&rsquo;t paying</strong>,
+          the refresh declines and tells you so, rather than silently reissuing. Fix the payment
+          method in{' '}
+          <Link href="/account/billing" className="text-rust font-semibold">
+            billing
+          </Link>
+          , then refresh again.
+        </li>
+      </ul>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
+        Your tier and expiry are always re-read from Stripe at refresh time &mdash; never copied
+        from the old token &mdash; so a refresh reflects what you&rsquo;re actually subscribed to
+        today, including an upgrade or downgrade made since your last one.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4">

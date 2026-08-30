@@ -113,14 +113,28 @@ Applied site-wide, not per-page:
 
 ---
 
-## 🚧 `/vs/instantly` — do not publish yet
+## 🚧 `/vs/instantly` — built, still unpublished
 
 This page is built but intentionally `noindex`'d, excluded from the
-sitemap, and disallowed in `robots.txt`. It's gated on the seed-inbox
-placement test feature shipping in `warmhawk-core-engine` first — see the
-product spec's Guardrails section and Go-Live Checklist. Do not remove the
-`noindex` / do-not-publish markers without confirming that feature has
-actually shipped.
+sitemap, and disallowed in `robots.txt`.
+
+**The original gate has cleared.** It was blocked on the seed-inbox placement
+test shipping in `warmhawk-core-engine`; that feature now exists on both sides
+— `seedPlacement.ts` / `seedPlacementPoller.ts` in the engine, and
+`dashboard/seed-accounts` + `placement-detail-dialog.tsx` in the operator.
+
+**What still gates it** is no longer a code question, which is why nothing in
+CI can decide it:
+
+| Gate | Who clears it |
+|---|---|
+| Seed placement confirmed working against **live production**, not just tests | Human attestation — by hand, on purpose |
+| The two publish flags flipped once that's confirmed | Same |
+
+> **⚠️ Don't remove the `noindex` / do-not-publish markers as a code cleanup.**
+> This page makes a public, named comparative claim about a competitor. It
+> publishes when someone has actually watched placement work in production and
+> says so — not when the feature merely compiles.
 
 ---
 

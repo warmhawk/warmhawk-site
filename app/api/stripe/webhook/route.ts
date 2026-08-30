@@ -49,6 +49,58 @@ import { emailSender } from '@/lib/email';
  * verified Stripe signature AND a resolvable customer id on the event object — this handler checks
  * both before calling issueLicense(), never just the signature check alone.
  */
+/** Stripe caps a metadata VALUE at 500 characters. A signed license runs longer than that (a
+ *  base64url payload plus a base64url RSA-2048 signature), so it is stored in two halves and
+ *  rejoined by whoever reads it back. Chunked at 450 to stay clear of the limit. */
+const METADATA_CHUNK_SIZE = 450;
+
+/**
+ * Writes the issued license onto the Stripe SUBSCRIPTION the invoice belongs to, so the token has
+ * a durable home outside the customer's inbox. The subscription (not the invoice) is the right
+ * anchor: it is the object that persists across billing cycles, so each renewal overwrites these
+ * keys with the current license rather than scattering one per invoice.
+ */
+async function persistLicenseOnSubscription(
+  invoice: Stripe.Invoice,
+  token: string,
+  payload: LicensePayload,
+): Promise<void> {
+  const subscriptionId =
+    typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
+  if (!subscriptionId) {
+    // A one-off invoice with no subscription (e.g. a hand-raised Tier 2 setup fee) has nowhere
+    // durable to hang this. Log the token itself so it is at least recoverable from logs.
+    console.warn('Issued license for an invoice with no subscription — storing in logs only', {
+      licenseKey: payload.licenseKey,
+      licenseToken: token,
+    });
+    return;
+  }
+
+  // Two 450-char chunks hold 900 characters; a current token runs ~620 (a ~270-char base64url
+  // payload plus a 344-char base64url RSA-2048 signature). Guard anyway, so a future key-size or
+  // payload change surfaces as a loud log line rather than a silently truncated, unusable token.
+  if (token.length > METADATA_CHUNK_SIZE * 2) {
+    console.error('License token exceeds the two-chunk metadata budget — not persisting it', {
+      licenseKey: payload.licenseKey,
+      tokenLength: token.length,
+    });
+    return;
+  }
+
+  const stripe = getStripeClient();
+  await stripe.subscriptions.update(subscriptionId, {
+    metadata: {
+      // Existing keys (tier, billingInterval) are preserved: Stripe merges metadata updates,
+      // only overwriting the keys named here.
+      warmhawk_license_key: payload.licenseKey,
+      warmhawk_license_expires_at: new Date(payload.expiresAt * 1000).toISOString(),
+      warmhawk_license_token_1: token.slice(0, METADATA_CHUNK_SIZE),
+      warmhawk_license_token_2: token.slice(METADATA_CHUNK_SIZE, METADATA_CHUNK_SIZE * 2),
+    },
+  });
+}
+
 export async function POST(request: NextRequest) {
   const signature = request.headers.get('stripe-signature');
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -107,15 +159,27 @@ export async function POST(request: NextRequest) {
 
         const { token } = issueLicense(payload, privateKeyPem);
 
+        // Persist the token before attempting delivery (2026-08-30 audit finding L2). This repo
+        // has no database, and until now the signed token existed only in the outbound email —
+        // if that bounced or landed in spam it was unrecoverable, because re-signing by hand was
+        // the only way back. (The comment that used to sit below claimed the license was
+        // "retrievable from Stripe's own record of the event"; it wasn't. Stripe records the
+        // invoice, not our RSA-signed token. Writing it here is what finally makes that true.)
+        await persistLicenseOnSubscription(invoice, token, payload).catch((error) => {
+          // Degrade, never crash: a metadata write failure must not fail the webhook and trigger
+          // a Stripe retry that would issue a second license for the same invoice.
+          console.error('Could not persist license to Stripe subscription metadata', {
+            eventId: event.id,
+            error,
+          });
+        });
+
         // Invoice objects carry `customer_email` directly (not `customer_details`, which only
         // exists on Checkout.Session) — this was silently always-undefined before the V13 fix.
         const toEmail = invoice.customer_email ?? undefined;
         if (toEmail) {
           await emailSender.sendLicenseEmail({ toEmail, licenseToken: token, tier });
         } else {
-          // Same "degrade, don't crash" philosophy as the rest of the Guardrails section — a
-          // license was still issued and is retrievable from Stripe's own record of the event,
-          // even if we couldn't find an email address to send it to automatically.
           console.error('Issued license but no customer email was resolvable on the event', {
             eventId: event.id,
             licenseKey: payload.licenseKey,

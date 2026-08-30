@@ -49,12 +49,13 @@ export function Nav() {
               {item.label}
             </Link>
           ))}
-          <a
-            href="https://github.com/warmhawk/warmhawk-enterprise-operator"
-            className="hover:text-rust transition-colors"
-          >
-            Dashboard ↗
-          </a>
+          {/* Was an external link to github.com/warmhawk/warmhawk-enterprise-operator, which is a
+              private-forever repo (see that repo's own README) — so this 404'd for every visitor,
+              on every page of the site. Points at the docs describing what the dashboard actually
+              does instead. */}
+          <Link href="/docs/introduction" className="hover:text-rust transition-colors">
+            Dashboard
+          </Link>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/docs/quickstart" className="hidden sm:inline-flex btn btn-ghost btn-sm">
@@ -96,12 +97,12 @@ export function Nav() {
                   {item.label}
                 </Link>
               ))}
-              <a
-                href="https://github.com/warmhawk/warmhawk-enterprise-operator"
+              <Link
+                href="/docs/introduction"
                 className="rounded-lg px-2.5 py-2.5 hover:bg-cream-elevated hover:text-ink transition-colors"
               >
-                Dashboard ↗
-              </a>
+                Dashboard
+              </Link>
               <Link
                 href="/docs/quickstart"
                 className="sm:hidden rounded-lg px-2.5 py-2.5 hover:bg-cream-elevated hover:text-ink transition-colors"

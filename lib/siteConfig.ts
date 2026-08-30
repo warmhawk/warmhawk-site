@@ -69,7 +69,14 @@ export const footerLinks = {
     { label: 'Docs & quickstart', href: '/docs' },
     { label: 'Domain health check', href: '/tools/domain-check' },
     { label: 'Security', href: '/security' },
-    { label: 'Roadmap', href: 'https://github.com/warmhawk/warmhawk-core-engine/discussions' },
+    // Points at core-engine's GitHub Discussions once that repo is public — it is private today,
+    // so this link 404'd for every visitor. Gated on the same kind of explicit flag as
+    // ENABLE_VS_INSTANTLY above rather than hardcoded either way: the moment the repo goes public
+    // at go-live, setting CORE_ENGINE_REPO_PUBLIC=true restores it with no code change, and until
+    // then visitors get the FAQ/changelog page instead of a 404.
+    isFlagEnabled(process.env.CORE_ENGINE_REPO_PUBLIC)
+      ? { label: 'Roadmap', href: 'https://github.com/warmhawk/warmhawk-core-engine/discussions' }
+      : { label: 'Changelog & FAQ', href: '/docs/reference/faq-and-changelog' },
     { label: 'Support', href: 'mailto:support@warmhawk.com' },
   ],
   legal: [

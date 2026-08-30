@@ -83,7 +83,10 @@ describe('softwareApplicationSchema', () => {
     const freeOffer = schema.offers.find((o) => o.name === 'Tier 0 — Open Core');
     expect(freeOffer?.price).toBe('0');
     expect(freeOffer?.priceCurrency).toBe('USD');
-    expect(freeOffer?.url).toBe('https://github.com/warmhawk/warmhawk-core-engine');
+    // Retargeted off the core-engine GitHub repo by the 2026-08-30 go-live audit: that repo is
+    // private today, so the free tier's Offer url — the one Google may surface directly — pointed
+    // at a 404. /docs/quickstart carries the real install command and stays correct either way.
+    expect(freeOffer?.url).toBe(`${siteConfig.url}/docs/quickstart`);
 
     const proOffer = schema.offers.find((o) => o.name === 'Tier 1 — Self-Hosted Pro');
     expect(proOffer?.price).toBe('199');

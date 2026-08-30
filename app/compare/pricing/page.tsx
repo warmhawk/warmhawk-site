@@ -101,7 +101,7 @@ const matrixRows: { feature: string; tier0: string; tier1: string; tier2: string
     tier2: 'Yes — WarmHawk runs it for you',
   },
   {
-    feature: 'One-command warmhawk update',
+    feature: 'One-command in-place upgrades (warmhawk update)',
     tier0: 'Yes',
     tier1: 'Yes',
     tier2: 'Yes — WarmHawk runs it for you',
@@ -119,8 +119,13 @@ const matrixRows: { feature: string; tier0: string; tier1: string; tier2: string
     tier2: 'Yes',
   },
   {
+    // Corrected 2026-08-30: Uptime Kuma is bundled in warmhawk-core-engine's own
+    // docker-compose.yml and provisioned by its install.sh, so a Tier 0 install genuinely gets it
+    // — this row previously said "N/A — no dashboard to monitor", understating the free tier
+    // against what actually ships. The tier difference is the operator dashboard's own health
+    // alerting on top, not Kuma itself.
     feature: 'Bundled Uptime Kuma (free, 1-min checks on every service, on by default)',
-    tier0: 'N/A — no dashboard to monitor',
+    tier0: 'Yes — bundled with the engine',
     tier1: 'Yes',
     tier2: 'Yes',
   },
