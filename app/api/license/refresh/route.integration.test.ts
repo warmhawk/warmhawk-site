@@ -77,9 +77,14 @@ describe.skipIf(!canRun)('POST /api/license/refresh (real Stripe test-mode API)'
     });
     customerId = customer.id;
 
-    await stripe.paymentMethods.attach(TEST_PAYMENT_METHOD, { customer: customerId });
+    // `attach` mints a real PaymentMethod and returns ITS id — `pm_card_visa` is only an input
+    // alias Stripe accepts on the way in, and passing it back as a default fails with "The
+    // customer does not have a payment method with the ID pm_...".
+    const paymentMethod = await stripe.paymentMethods.attach(TEST_PAYMENT_METHOD, {
+      customer: customerId,
+    });
     await stripe.customers.update(customerId, {
-      invoice_settings: { default_payment_method: TEST_PAYMENT_METHOD },
+      invoice_settings: { default_payment_method: paymentMethod.id },
     });
 
     const subscription = await stripe.subscriptions.create({
