@@ -31,7 +31,7 @@ const faqItems = [
   {
     question: 'Where do I check what actually changed before I update a production instance?',
     answer:
-      'The relevant package&rsquo;s CHANGELOG.md on GitHub — warmhawk-core-engine and warmhawk-enterprise-operator each maintain their own. Read the entries between your current version and the new one before updating anything customer-facing.',
+      'The Changelog &amp; FAQ page in these docs, which carries both packages&rsquo; current entries — warmhawk-core-engine also publishes its own CHANGELOG.md on GitHub, and the licensed dashboard is proprietary so its entries live in the docs only. Read what changed between your current version and the new one before updating anything customer-facing.',
   },
 ];
 

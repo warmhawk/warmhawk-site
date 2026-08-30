@@ -1,11 +1,12 @@
+import Link from 'next/link';
 import { footerLinks } from '@/lib/siteConfig';
 import { BrandMark } from '@/components/BrandMark';
 
 /**
  * Matches the design artifact's actual footer — a light `--cream-2` band
  * (confirmed against the artifact's own CSS: `footer{background:var(--cream-2)...}`),
- * the exact brand mark, and the exact bottom-bar copy/link
- * ("View the operator dashboard (demo) →") from SITE_FOOTER.
+ * the exact brand mark, and SITE_FOOTER's bottom bar. The bottom-bar link is the one
+ * deliberate divergence from the artifact's copy; see its own comment below.
  */
 export function Footer() {
   return (
@@ -40,12 +41,15 @@ export function Footer() {
       <div className="border-t border-footer-ink/10">
         <div className="wrap py-5 flex justify-between flex-wrap gap-2.5 text-[13px] text-footer-ink/55">
           <span>© 2026 WarmHawk. Self-hosted, always.</span>
-          <a
-            href="https://github.com/warmhawk/warmhawk-enterprise-operator"
-            className="text-rust font-semibold"
-          >
-            View the operator dashboard (demo) →
-          </a>
+          {/* Was an external link to github.com/warmhawk/warmhawk-enterprise-operator labelled
+              "(demo)". Two problems, both found in the 2026-08-30 go-live link crawl: that repo is
+              proprietary and stays private permanently, so the link was GitHub's 404 page on all 41
+              pages of the site; and there is no demo to view, so the label promised something that
+              doesn't exist. Points at the tier comparison instead — the page that actually answers
+              "what do I get in the dashboard". */}
+          <Link href="/compare/pricing" className="text-rust font-semibold">
+            See what the operator dashboard includes →
+          </Link>
         </div>
       </div>
     </div>
