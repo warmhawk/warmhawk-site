@@ -39,6 +39,17 @@ function isFlagEnabled(value: string | undefined): boolean {
 }
 const vsInstantlyLive = isFlagEnabled(process.env.ENABLE_VS_INSTANTLY);
 
+// Which of the three repos an anonymous visitor can actually open on github.com. Exported because
+// more than the footer needs it — the changelog page links each repo's CHANGELOG.md too, and a
+// link to a private repo renders as GitHub's 404 page, which reads to a buyer doing diligence like
+// the product doesn't exist.
+//
+// `warmhawk-core-engine` is the open-core half: BSL 1.1, public at go-live, so its links are
+// flag-gated and light up the moment CORE_ENGINE_REPO_PUBLIC is set. The other two are
+// proprietary and stay private permanently — never link them, under any flag.
+export const coreEngineRepoPublic = isFlagEnabled(process.env.CORE_ENGINE_REPO_PUBLIC);
+export const coreEngineRepoUrl = 'https://github.com/warmhawk/warmhawk-core-engine';
+
 export const vsPages = [
   ...(vsInstantlyLive ? [{ slug: 'instantly', label: 'vs Instantly' }] : []),
   { slug: 'smartlead', label: 'vs Smartlead' },
@@ -74,8 +85,8 @@ export const footerLinks = {
     // ENABLE_VS_INSTANTLY above rather than hardcoded either way: the moment the repo goes public
     // at go-live, setting CORE_ENGINE_REPO_PUBLIC=true restores it with no code change, and until
     // then visitors get the FAQ/changelog page instead of a 404.
-    isFlagEnabled(process.env.CORE_ENGINE_REPO_PUBLIC)
-      ? { label: 'Roadmap', href: 'https://github.com/warmhawk/warmhawk-core-engine/discussions' }
+    coreEngineRepoPublic
+      ? { label: 'Roadmap', href: `${coreEngineRepoUrl}/discussions` }
       : { label: 'Changelog & FAQ', href: '/docs/reference/faq-and-changelog' },
     { label: 'Support', href: 'mailto:support@warmhawk.com' },
   ],

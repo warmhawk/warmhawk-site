@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { pageSeo } from '@/lib/seo';
 import { AnswerBlock } from '@/components/AnswerBlock';
 import { FaqSection } from '@/components/FaqSchema';
+import { coreEngineRepoPublic, coreEngineRepoUrl } from '@/lib/siteConfig';
 
 export const metadata: Metadata = pageSeo({
   title: 'FAQ & changelog',
@@ -30,7 +31,7 @@ const faqItems = [
   {
     question: 'Where’s the product changelog?',
     answer:
-      'Below on this page, pulled from each repo’s own CHANGELOG.md — warmhawk-site, warmhawk-core-engine, and warmhawk-enterprise-operator each maintain their own, versioned alongside their code.',
+      'Below on this page. Each of the three packages maintains its own CHANGELOG.md versioned alongside its code, and this page summarizes all three. warmhawk-core-engine is open source, so its file links through; the licensed dashboard and this site are proprietary, so the summaries here are the changelog for those two.',
   },
   {
     question: 'Are there outbound webhooks I can register for events?',
@@ -41,7 +42,13 @@ const faqItems = [
 
 interface ChangelogEntry {
   repo: string;
-  repoUrl: string;
+  /**
+   * Set only for a repo an anonymous reader can actually open. `warmhawk-enterprise-operator` and
+   * `warmhawk-site` are proprietary and stay private permanently, so linking their CHANGELOG.md
+   * served GitHub's 404 page — found in the 2026-08-30 go-live link crawl. Their summaries below
+   * are the changelog for those two; there is no file to go read.
+   */
+  repoUrl?: string;
   summary: string;
   highlights: string[];
 }
@@ -49,7 +56,9 @@ interface ChangelogEntry {
 const changelog: ChangelogEntry[] = [
   {
     repo: 'warmhawk-core-engine',
-    repoUrl: 'https://github.com/warmhawk/warmhawk-core-engine/blob/main/CHANGELOG.md',
+    // The open-core half (BSL 1.1, public at go-live) — the one repo whose CHANGELOG.md a reader
+    // can open, and only once CORE_ENGINE_REPO_PUBLIC says so.
+    repoUrl: coreEngineRepoPublic ? `${coreEngineRepoUrl}/blob/main/CHANGELOG.md` : undefined,
     summary:
       'The sending/queueing API, worker, and install.sh — pre-1.0, everything below is still Unreleased in this repo’s own CHANGELOG.',
     highlights: [
@@ -60,17 +69,18 @@ const changelog: ChangelogEntry[] = [
   },
   {
     repo: 'warmhawk-enterprise-operator',
-    repoUrl: 'https://github.com/warmhawk/warmhawk-enterprise-operator/blob/main/CHANGELOG.md',
     summary:
       'The licensed Tier 1/2 operator dashboard — also pre-1.0, Unreleased in its own CHANGELOG.',
     highlights: [
       'Initial scaffold: Next.js dashboard, its own Postgres, LicenseGate with tier-based feature gating, team invite/remove, TOTP 2FA, onboarding checklist, leads/campaigns/domain-health/Unified Reply Inbox/live queue inspector pages.',
-      'Known, tracked gap: transactional email for team invites is stubbed to console log pending a provider decision.',
+      // Was "Known, tracked gap: transactional email for team invites is stubbed to console log
+      // pending a provider decision." — untrue since BYO-SMTP shipped, and a bad thing to leave on
+      // a public docs page: it tells a prospective buyer a feature they're paying for is broken.
+      'Team invites send over your own SMTP server (any provider — no SDK, no vendor lock-in). With SMTP left unconfigured the invite still works: the dashboard says plainly that nothing was emailed and hands you a copyable accept link to pass along yourself.',
     ],
   },
   {
     repo: 'warmhawk-site',
-    repoUrl: 'https://github.com/warmhawk/warmhawk-site/blob/main/CHANGELOG.md',
     summary: 'This marketing/docs/checkout site — also pre-1.0, Unreleased.',
     highlights: [
       'Homepage, all /vs/* comparison pages, /compare/pricing, /tools/domain-check, /status, /security, /legal/*.',
@@ -106,8 +116,10 @@ export default function FaqAndChangelogPage() {
         <h2 className="font-display text-2xl md:text-[30px] font-semibold mb-3">Changelog</h2>
         <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-8">
           This site doesn&rsquo;t own the product changelog. Each package ships and maintains its
-          own <code className="font-mono text-sm">CHANGELOG.md</code>, versioned alongside its code
-          — summarized here, linked to the real file. None of the three has cut a tagged release
+          own <code className="font-mono text-sm">CHANGELOG.md</code>, versioned alongside its code,
+          summarized here. <strong>warmhawk-core-engine</strong> is open source (BSL 1.1) and its
+          file links through; the licensed dashboard and this site are proprietary, so their
+          summaries below <em>are</em> the changelog. None of the three has cut a tagged release
           yet, so there are no version numbers to show; what follows is each repo&rsquo;s current{' '}
           <code className="font-mono text-sm">[Unreleased]</code> section.
         </p>
@@ -116,11 +128,22 @@ export default function FaqAndChangelogPage() {
             <div key={entry.repo} className="card bg-cream-elevated p-7">
               <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
                 <h3 className="font-display text-lg font-semibold">
-                  <a href={entry.repoUrl} className="text-rust">
-                    {entry.repo}
-                  </a>
+                  {entry.repoUrl ? (
+                    <a href={entry.repoUrl} className="text-rust">
+                      {entry.repo}
+                    </a>
+                  ) : (
+                    <span className="font-mono text-[15px]">{entry.repo}</span>
+                  )}
                 </h3>
-                <span className="badge badge-pending">Unreleased</span>
+                <div className="flex items-center gap-2">
+                  {!entry.repoUrl && (
+                    <span className="label text-[10px] px-2.5 py-1 border border-ink/15 rounded-full text-ink-muted">
+                      Source not public
+                    </span>
+                  )}
+                  <span className="badge badge-pending">Unreleased</span>
+                </div>
               </div>
               <p className="text-[14px] leading-relaxed text-ink-muted mb-4">{entry.summary}</p>
               <ul className="list-disc pl-6 space-y-1.5 text-[13.5px] leading-relaxed text-ink-muted">
