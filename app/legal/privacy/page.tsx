@@ -31,7 +31,7 @@ export default function PrivacyPage() {
       <div className="wrap py-16">
         <div className="label text-rust mb-5">Legal</div>
         <h1 className="font-display text-4xl font-semibold mb-4">Privacy Policy</h1>
-        <p className="text-sm text-ink-muted mb-8">Last updated: August 21, 2026</p>
+        <p className="text-sm text-ink-muted mb-8">Last updated: August 31, 2026</p>
 
         <p className="text-ink-muted leading-relaxed mb-4">
           This document is a draft, pending attorney review. It describes the personal data
@@ -64,9 +64,12 @@ export default function PrivacyPage() {
         </p>
         <ul className="list-disc pl-6 mb-4 text-ink-muted leading-relaxed space-y-1.5">
           <li>
-            <strong>Site analytics:</strong> basic, aggregate traffic data about pages viewed on
-            warmhawk.com (for example, referrer and page-path counts), used only to understand which
-            pages are useful. We do not build cross-site advertising profiles from this data.
+            <strong>Site analytics:</strong> aggregate traffic data about pages viewed on
+            warmhawk.com (for example, referrer and page-path counts), measured without cookies by
+            default. If you accept cookies via the on-page banner, we also recognize a return visit
+            as the same person and may record session activity (including session replay) to see how
+            the checkout flow actually behaves &mdash; see Section&nbsp;7. We do not build
+            cross-site advertising profiles from this data.
           </li>
           <li>
             <strong>Checkout and billing data:</strong> when you purchase a subscription, Stripe
@@ -170,9 +173,12 @@ export default function PrivacyPage() {
         <p className="text-ink-muted leading-relaxed mb-4">
           Consistent with WarmHawk&rsquo;s &ldquo;no shared infrastructure, no third-party
           leaks&rdquo; positioning, we keep cookie use to a minimum: essential cookies required for
-          the checkout flow to function, and, where enabled, a privacy-respecting analytics cookie
-          used only for the aggregate site metrics described in Section&nbsp;1. We do not run
-          invasive cross-site advertising trackers on warmhawk.com.
+          the checkout flow to function, plus analytics, which runs cookieless by default and only
+          starts writing cookies (and, where enabled, recording session replay) once you explicitly
+          accept via the on-page consent banner. Declining costs you nothing &mdash; analytics stays
+          in its cookieless mode permanently, and traffic is still measurable either way. Whichever
+          state you&rsquo;re in, this is used only for the aggregate/product metrics described in
+          Section&nbsp;1. We do not run invasive cross-site advertising trackers on warmhawk.com.
         </p>
 
         <h2 id="children" className="font-display text-2xl font-semibold mb-3 mt-10">

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { pageSeo, softwareApplicationSchema } from '@/lib/seo';
+import { pricingFaqItems } from '@/lib/faqContent';
 import { PricingTable } from '@/components/PricingTable';
 import { CheckoutButtons } from '@/components/CheckoutButtons';
 import { FaqSection } from '@/components/FaqSchema';
@@ -23,39 +24,6 @@ export const metadata: Metadata = pageSeo({
 // second copy here. Everything below the matrix (billing mechanics, cost-at-scale framing, FAQ) is
 // this site's own AEO-oriented content beyond what the single-page artifact needed — kept as-is,
 // since it's real, accurate supporting detail, not a mockup section to prune down to match.
-
-const faqItems = [
-  {
-    question: 'Can I switch from monthly to annual later?',
-    answer:
-      'Yes. Tier 1 (Self-Hosted Pro) toggles monthly ⇄ annual any time from the Stripe Customer Portal — no support ticket, no downtime, no re-onboarding. The annual price is $1,990/yr, about two months free versus paying $199 twelve times.',
-  },
-  {
-    question: 'What happens if I cancel?',
-    answer:
-      'Your Stripe subscription for the dashboard, support SLA, and managed extras ends at the close of the billing period. The underlying Tier 0 engine is yours to keep running — it is Business Source Licensed software on your own server, not a rented seat.',
-  },
-  {
-    question: 'Is there a free trial?',
-    answer:
-      "There isn't a time-boxed trial, because Tier 0 already is the free tier — a real, fully-functional sending engine with no card required. Run it indefinitely via API. Tier 1 adds the dashboard and support SLA, backed by a 30-day money-back guarantee instead of a trial clock.",
-  },
-  {
-    question: 'What does the 30-day guarantee actually cover?',
-    answer:
-      "Tier 1 (Self-Hosted Pro) only. Cancel within 30 days of your first charge and WarmHawk refunds it in full, no questions asked. Tier 2 is a custom-scoped, founder-delivered engagement — it's covered by its own agreement, not this blanket guarantee.",
-  },
-  {
-    question: 'Do you offer invoicing instead of a credit card?',
-    answer:
-      'Tier 1 runs through Stripe Checkout and the Stripe Customer Portal, card-based by default. Tier 2 engagements are scoped directly with the founder over email and can be invoiced to match how your agency or company actually pays its vendors.',
-  },
-  {
-    question: "Does 'unlimited users' mean I can host separate clients with isolated data?",
-    answer:
-      "No — be precise about this one. Unlimited users on Tier 1/2 means your team shares one account with flat permissions, not that each of your agency's clients gets walled-off data from each other. Per-client data isolation is a tracked, unbuilt future item, not a shipped feature.",
-  },
-];
 
 const matrixRows: { feature: string; tier0: string; tier1: string; tier2: string }[] = [
   {
@@ -432,7 +400,7 @@ export default function PricingComparisonPage() {
         </div>
       </div>
 
-      <FaqSection items={faqItems} title="Pricing questions worth answering up front" />
+      <FaqSection items={pricingFaqItems} title="Pricing questions worth answering up front" />
 
       {/* FINAL CTA */}
       <div className="bg-slate text-paper">

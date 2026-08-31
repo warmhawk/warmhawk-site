@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Nav } from '@/components/Nav';
 import { Footer } from '@/components/Footer';
+import { Analytics } from '@/components/Analytics';
 import { siteConfig } from '@/lib/siteConfig';
 import { organizationSchema } from '@/lib/seo';
 
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Nav />
         <main>{children}</main>
         <Footer />
+        <Analytics />
       </body>
     </html>
   );

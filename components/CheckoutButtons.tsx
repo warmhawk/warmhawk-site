@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { track, EVENTS } from '@/lib/analytics';
 
 /**
  * Client-side Tier 1 checkout trigger — POSTs to /api/checkout/session
@@ -19,6 +20,7 @@ export function CheckoutButtons() {
   const [error, setError] = useState<string | null>(null);
 
   async function startCheckout() {
+    track(EVENTS.checkoutStart, { billing_interval: interval });
     setLoading(true);
     setError(null);
     try {

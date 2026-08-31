@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { pageSeo } from '@/lib/seo';
+import { pageSeo, howToSchema } from '@/lib/seo';
 import { AnswerBlock } from '@/components/AnswerBlock';
 import { CodeBlock } from '@/components/CodeBlock';
 
@@ -11,9 +11,49 @@ export const metadata: Metadata = pageSeo({
   path: '/docs/quickstart',
 });
 
+// Mirrors the seven numbered sections below exactly — see lib/seo.ts's
+// howToSchema() header comment for why this page carries it.
+const quickstartSteps = [
+  {
+    name: 'Install the stack',
+    text: 'Run curl -fsSL https://warmhawk.com/install | bash -s -- --domain yourcompany.com on a fresh server with the domain already pointed at it.',
+  },
+  {
+    name: 'Authenticate',
+    text: 'POST /v1/auth/login with the email and password install.sh printed at the end of setup to get a bearer token.',
+  },
+  {
+    name: 'Add a sending domain',
+    text: 'POST /v1/domains with the domainName — a mailbox belongs to a domain, so create the domain first.',
+  },
+  {
+    name: 'Connect a mailbox',
+    text: 'POST /v1/mailboxes with SMTP/IMAP credentials, or create the mailbox first and run the Google/Microsoft OAuth consent flow.',
+  },
+  {
+    name: 'Create a campaign',
+    text: 'POST /v1/campaigns with a template, an optional aiPromptTemplate for BYOK AI personalization, and an unsubscribeUrlTemplate.',
+  },
+  {
+    name: 'Import a lead',
+    text: 'POST /v1/leads with the campaignId and the lead’s email, name, and any customFields your personalization needs.',
+  },
+  {
+    name: 'Launch, then check the queue',
+    text: 'POST /v1/campaigns/:id/launch to enqueue the send, then GET /v1/queue/status to confirm the job moved from waiting/delayed to completed.',
+  },
+];
+
 export default function QuickstartPage() {
   return (
     <div className="py-16">
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(howToSchema('Install and send with WarmHawk', quickstartSteps)),
+        }}
+      />
       <div className="label text-rust mb-5">Docs / Get started / Quickstart &amp; installation</div>
       <h1 className="font-display text-4xl md:text-[48px] leading-tight font-semibold mb-6 max-w-3xl">
         Install it, then send a real email in six calls.

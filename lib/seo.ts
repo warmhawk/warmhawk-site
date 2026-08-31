@@ -131,6 +131,31 @@ export function softwareApplicationSchema() {
   };
 }
 
+export interface HowToStepInput {
+  name: string;
+  text: string;
+}
+
+/** HowTo JSON-LD for a real, numbered procedure page (AEO/GEO baseline) —
+ * `/docs/quickstart` and `/docs/install-troubleshooting` are both already
+ * structured this way (a numbered sequence of concrete steps), this just
+ * gives an answer engine the same structure as machine-readable schema
+ * instead of only as H2 numbering. `text` should be the step's real
+ * instruction, not a paraphrase — it's what gets quoted back verbatim. */
+export function howToSchema(name: string, steps: HowToStepInput[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name,
+    step: steps.map((step, i) => ({
+      '@type': 'HowToStep',
+      position: i + 1,
+      name: step.name,
+      text: step.text,
+    })),
+  };
+}
+
 export interface BreadcrumbItem {
   name: string;
   path: string;

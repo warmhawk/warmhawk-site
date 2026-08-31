@@ -1,13 +1,23 @@
 import type { MetadataRoute } from 'next';
 import { siteConfig } from '@/lib/siteConfig';
+import { docsFlatOrder } from '@/lib/docsNav';
 
 /**
  * Build-time sitemap.xml generation (Technical SEO baseline). Deliberately
  * excludes /vs/instantly — that page is noindex'd and gated on the
  * seed-inbox placement feature shipping (Guardrails, Go-Live Checklist),
  * so it must not appear in the sitemap until it's unblocked.
+ *
+ * The docs routes are derived from `docsFlatOrder` (lib/docsNav.ts) rather
+ * than hand-listed here — that file is already the single source of truth
+ * for the sidebar nav, prev/next order, and llms.txt (see that file's own
+ * header comment), and a hand-duplicated list in this file was the one
+ * remaining place a newly added doc page could go missing from the sitemap
+ * without anything catching it.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
+  const docRoutes = ['/docs', ...docsFlatOrder.map((link) => link.href)];
+
   const routes = [
     '',
     '/vs/smartlead',
@@ -16,26 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/vs/custom-n8n',
     '/compare/pricing',
     '/tools/domain-check',
-    '/docs',
-    '/docs/introduction',
-    '/docs/quickstart',
-    '/docs/guides/connecting-mailboxes',
-    '/docs/guides/leads-and-enrichment',
-    '/docs/guides/campaigns-ai-and-content-quality',
-    '/docs/guides/sending-safely-and-domain-health',
-    '/docs/guides/replies-and-team',
-    '/docs/self-hosting/architecture',
-    '/docs/self-hosting/backups-and-redis-durability',
-    '/docs/self-hosting/tls-and-observability',
-    '/docs/api-reference/auth-and-mailboxes',
-    '/docs/api-reference/leads-and-campaigns',
-    '/docs/api-reference/queue-domains-and-webhooks',
-    '/docs/reference/guardrails-and-compliance',
-    '/docs/reference/faq-and-changelog',
-    '/docs/install-troubleshooting',
-    '/docs/update-failures',
-    '/docs/license-activation',
-    '/docs/stripe-webhooks',
+    ...docRoutes,
     '/legal/terms',
     '/legal/privacy',
     '/legal/acceptable-use',
