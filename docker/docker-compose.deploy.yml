@@ -11,10 +11,12 @@
 # plane since Coolify's decommission on 2026-08-25).
 #
 # Single stateless service, no database/cache of its own — this app has no
-# persistent state, so unlike jitterflow's deploy compose file there's
-# nothing here that needs an `external: true` volume/network to survive a
-# redeploy. CONTAINER_PREFIX still exists as a knob (matches the fleet-wide
-# convention) even though there's only ever one container to prefix.
+# persistent state to survive a redeploy. It still declares an `external:
+# true` network, matching jitterflow's deploy compose file, so a shared edge
+# proxy on the same host can reach this container by name instead of a
+# published port. CONTAINER_PREFIX still exists as a knob (matches the
+# fleet-wide convention) even though there's only ever one container to
+# prefix.
 services:
   web:
     container_name: ${CONTAINER_PREFIX:?CONTAINER_PREFIX is required}-web
@@ -46,3 +48,8 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
+
+networks:
+  default:
+    external: true
+    name: ${NETWORK_NAME:?NETWORK_NAME is required}
