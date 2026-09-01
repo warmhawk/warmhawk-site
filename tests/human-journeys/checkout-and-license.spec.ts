@@ -39,7 +39,40 @@ import { waitForResendEmail } from './resendEmail';
  *    should render an editable email field rather than a prefilled one (unlike jitterflow's flow,
  *    which already ties the session to a known customer and never needs to fill this field itself)
  *    — `#email` is Stripe's standard hosted-Checkout field id for it, but unverified live here.
+ *
+ * COVERAGE AUDIT (Human Journey Gate task 1): warmhawk-site's only other real conversion path is
+ * the Tier 2 (Enterprise DFY) contact-sales form — deliberately NOT given a human-journey spec.
+ * Its send target (`siteConfig.helloEmail`, i.e. hello@warmhawk.com — see lib/email.ts's
+ * sendSalesInquiryEmail) is hardcoded with no env override, unlike this test's own Stripe email
+ * field, which is filled with Resend's dedicated `delivered@resend.dev` simulation sink precisely
+ * so a real round trip never lands in a real inbox. There is no equivalent sink for contact-sales:
+ * a real human-journey run would either spam the founder's actual business inbox with a synthetic
+ * "Enterprise DFY inquiry" on every pipeline run, or fall back to mocking the network boundary —
+ * which tests/e2e/contact-sales-submission.spec.ts already does, and duplicating that under
+ * tests/human-journeys/ (whose whole point is REAL external round trips, not mocks) would be
+ * padding, not coverage. Closing this for real needs a product decision (e.g. an
+ * env-configurable sales-inquiry recipient) outside this pass's scope.
+ *
+ * What WAS a genuine gap: this spec used to stop at verifying the license token cryptographically
+ * — it never confirmed the brand-new customer can actually reach their real Stripe billing portal
+ * with it. app/api/portal/route.ts had a real, unauthenticated-access bug fixed only in the
+ * 2026-08-30 go-live audit (see that route's own header comment), so a live check of the
+ * now-fixed, license-token-gated path is worth the few extra seconds. Added as a continuation of
+ * THIS test (not a new spec file) so it reuses the one real Stripe customer/subscription this test
+ * already creates, rather than a second file needing its own real purchase to get a token from.
  */
+// Synthetic-data marker (Human Journey Gate task 3) — establishes the `+wh-synth-` convention for
+// warmhawk-site, mirroring jitterflow's own `+jf-synth-` tag so a future cleanup job can find every
+// real Stripe test-mode customer this suite ever created. It can't live in the Stripe customer's
+// email field: that field does double duty as BOTH the real Checkout `#email` input AND the
+// recipient `waitForResendEmail` polls below, and it must stay the exact literal
+// `delivered@resend.dev` — Resend's own documented simulation sink — for the whole real
+// checkout -> webhook -> email round trip to work at all (an untested plus-addressed variant risks
+// silently breaking that mechanism). The Stripe billing NAME has no such constraint and is exactly
+// as inspectable in the test-mode dashboard, so the marker lives there instead.
+const RUN_ID = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+const SYNTHETIC_BILLING_NAME = `WarmHawk Human Journey Test +wh-synth-${RUN_ID}-checkout`;
+
 test.describe('Human journey: real checkout -> real license email', () => {
   test.skip(
     !process.env.RESEND_API_KEY || !process.env.LICENSE_SIGNING_PRIVATE_KEY,
@@ -51,6 +84,11 @@ test.describe('Human journey: real checkout -> real license email', () => {
 
   test('a visitor can buy Tier 1 and receive a verifiable license by email', async ({ page }) => {
     test.setTimeout(180_000); // real Stripe webhook delivery + Resend polling isn't instant
+
+    // Captured before the real checkout below, so waitForResendEmail (see its own doc comment)
+    // can never match route.integration.test.ts's synthetic license email — same recipient and
+    // subject by design, since both suites use Resend's shared `delivered@resend.dev` sink.
+    const checkoutStartedAt = new Date();
 
     await page.goto(`${target.baseURL}/checkout`);
 
@@ -74,6 +112,7 @@ test.describe('Human journey: real checkout -> real license email', () => {
       apiKey: process.env.RESEND_API_KEY!,
       toEmail: 'delivered@resend.dev',
       subjectContains: 'Your WarmHawk install command',
+      sentAfter: checkoutStartedAt,
       timeoutMs: 120_000,
     });
     expect(email, 'No license email arrived at delivered@resend.dev within 120s').not.toBeNull();
@@ -104,6 +143,16 @@ test.describe('Human journey: real checkout -> real license email', () => {
     if (result.valid) {
       expect(result.payload.tier).toBe('tier_1');
     }
+
+    // Closes the coverage gap this spec used to leave open (see module doc's "COVERAGE AUDIT"):
+    // a cryptographically valid token is necessary but not sufficient — this is the same next
+    // step a real Tier 1 buyer takes (see warmhawk-enterprise-operator's LicenseGate expired-
+    // license screen, which links here). Reuses the SAME real Stripe customer/subscription this
+    // test already created above; no second charge or email.
+    await page.goto(`${target.baseURL}/account/billing`);
+    await page.getByLabel('Your license token').fill(licenseToken);
+    await page.getByRole('button', { name: 'Open billing portal' }).click();
+    await page.waitForURL(/^https:\/\/billing\.stripe\.com\//, { timeout: 30_000 });
   });
 });
 
@@ -175,7 +224,7 @@ async function completeStripeCheckoutViaBrowser(page: Page) {
   await page.locator('#cardNumber').fill('4242424242424242');
   await page.locator('#cardExpiry').fill('12/34');
   await page.locator('#cardCvc').fill('123');
-  await page.locator('#billingName').fill('WarmHawk Human Journey Test');
+  await page.locator('#billingName').fill(SYNTHETIC_BILLING_NAME);
   const postalCode = page.locator('#billingPostalCode');
   if (await postalCode.count()) {
     await postalCode.fill('94103');
