@@ -33,3 +33,14 @@ paths = [
 description = "app/docs/** code samples use the literal placeholder token name YOUR_API_KEY, never a real credential. curl-auth-header matches on entropy alone and can't tell them apart from a real Bearer token."
 targetRules = ["curl-auth-header"]
 regexes = ['''YOUR_API_KEY''']
+
+# The IndexNow key is deliberately public, not a secret — IndexNow's own verification model
+# requires hosting it at public/<key>.txt so the API can fetch it back and prove domain ownership
+# (see scripts/submit-indexnow.mjs's own header comment). generic-api-key matches on entropy alone
+# and can't tell a published verification token from a real credential.
+[[allowlists]]
+description = "IndexNow verification key — intentionally public, mirrors public/<key>.txt"
+targetRules = ["generic-api-key"]
+paths = [
+  '''^scripts/submit-indexnow\.mjs$''',
+]
