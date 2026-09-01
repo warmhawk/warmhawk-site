@@ -11,10 +11,11 @@
 # plane since Coolify's decommission on 2026-08-25).
 #
 # Single stateless service, no database/cache of its own — this app has no
-# persistent state to survive a redeploy. It still declares an `external:
-# true` network, matching jitterflow's deploy compose file, so a shared edge
-# proxy on the same host can reach this container by name instead of a
-# published port. CONTAINER_PREFIX still exists as a knob (matches the
+# persistent state to survive a redeploy. It declares an `external: true`
+# network, matching jitterflow's deploy compose file, so the shared edge
+# proxy on the same host reaches this container by name — no host port
+# published (previously 4600, redundant once the edge moved to container-name
+# routing; dropped). CONTAINER_PREFIX still exists as a knob (matches the
 # fleet-wide convention) even though there's only ever one container to
 # prefix.
 services:
@@ -40,8 +41,6 @@ services:
       NEXT_PUBLIC_CORE_ENGINE_PUBLIC_API_URL: ${NEXT_PUBLIC_CORE_ENGINE_PUBLIC_API_URL:-https://api.warmhawk.com}
       ENABLE_VS_INSTANTLY: ${ENABLE_VS_INSTANTLY:-}
       SEED_PLACEMENT_LIVE_IN_PRODUCTION: ${SEED_PLACEMENT_LIVE_IN_PRODUCTION:-}
-    ports:
-      - '127.0.0.1:${HOST_PORT:-4600}:4600'
     healthcheck:
       test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:4600/']
       interval: 30s
