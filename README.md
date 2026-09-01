@@ -196,6 +196,13 @@ target; just set the env var inline:
 HUMAN_ENV=stage npm run test:human
 ```
 
+**Stage env vars:** `HUMAN_ENV=stage` loads `.env/.env.stage` EXCLUSIVELY — no merging with, or
+fallback to, `.env/.env.local`/`.env/.env.example` (see `scripts/load-env.js`, wired into
+`tests/human-journeys/human.config.ts`). Copy `.env/.env.stage.example` (committed, placeholders
+only) to `.env/.env.stage` (gitignored) and fill in real Stripe test-mode + Resend + license-signing
+values by hand — this is for local/dev parity only and never changes how Woodpecker CI injects
+secrets into the deployed stage server itself (`from_secret` there stays authoritative).
+
 `prod` is accepted by `targets.ts` but the real-purchase test itself hard-skips whenever
 `target.label === 'prod'` — a real checkout must never run automatically against the live site.
 

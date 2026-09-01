@@ -1,6 +1,16 @@
 import { defineConfig, devices } from '@playwright/test';
 import { target } from './targets';
 
+// Loads .env/.env.stage EXCLUSIVELY when HUMAN_ENV=stage — no merge/fallback with
+// .env/.env.local or .env/.env.example, and a no-op for local/prod — before workers fork, so
+// STRIPE_SECRET_KEY/price IDs/RESEND_API_KEY/LICENSE_SIGNING_PRIVATE_KEY etc. are set for every
+// worker regardless of which spec file happens to load first. See scripts/load-env.js's own
+// header comment for the full rationale; .env/.env.stage itself is gitignored (real values, filled
+// in by hand) — .env/.env.stage.example (committed) documents its shape. Never touches any other
+// env file in this repo — deliberately narrower than jitterflow-core-app's own
+// scripts/load-env.js, which layers .env/.env.prod + .env/.env.local for a different repo shape.
+require('../../scripts/load-env').loadEnv();
+
 // Live-deploy verification suite — mirrors jitterflow-core-app's own tests/human-journeys/
 // convention: a real Stripe test-mode subscription + real Resend email round trip against an
 // already-running deployment, resolved via HUMAN_ENV (see targets.ts). fullyParallel stays false
