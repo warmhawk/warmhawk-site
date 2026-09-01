@@ -121,11 +121,9 @@ test.describe('Human journey: homepage -> docs -> checkout -> vs -> legal', () =
     const legalResponse = await page.goto('/legal/privacy');
     expect(legalResponse?.status()).toBe(200);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Privacy Policy');
-    // A longer, unique substring: "pending attorney review" alone also
-    // matches the page's separate DraftBanner <strong> ("DRAFT — pending
-    // attorney review, not yet legally ..."), which is a strict-mode
-    // violation (2 matches) — this longer phrase only appears once.
-    await expect(page.getByText('This document is a draft, pending attorney review')).toBeVisible();
+    await expect(
+      page.getByText('the operator of warmhawk.com and the WarmHawk billing path'),
+    ).toBeVisible();
 
     expect(
       consoleIssues,
