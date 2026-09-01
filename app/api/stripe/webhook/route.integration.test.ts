@@ -83,6 +83,11 @@ describe.skipIf(!canRunLiveWebhookTest)(
     });
 
     it('verifies a real signature, issues a real license, and really emails it via Resend', async () => {
+      // Captured before POSTing the fake webhook event below — see waitForResendEmail's own doc
+      // comment: this suite and checkout-and-license.spec.ts share the exact same Resend
+      // recipient/subject by design, so a recency cutoff is what keeps each poll matching its own
+      // send instead of the other suite's.
+      const sentAfter = new Date();
       const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
       const payload = JSON.stringify(invoicePaidEventBody());
 
@@ -111,6 +116,7 @@ describe.skipIf(!canRunLiveWebhookTest)(
         apiKey: process.env.RESEND_API_KEY!,
         toEmail: RESEND_TEST_RECIPIENT,
         subjectContains: 'Your WarmHawk install command',
+        sentAfter,
         timeoutMs: 30000,
       });
       expect(

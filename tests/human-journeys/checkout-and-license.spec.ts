@@ -85,6 +85,11 @@ test.describe('Human journey: real checkout -> real license email', () => {
   test('a visitor can buy Tier 1 and receive a verifiable license by email', async ({ page }) => {
     test.setTimeout(180_000); // real Stripe webhook delivery + Resend polling isn't instant
 
+    // Captured before the real checkout below, so waitForResendEmail (see its own doc comment)
+    // can never match route.integration.test.ts's synthetic license email — same recipient and
+    // subject by design, since both suites use Resend's shared `delivered@resend.dev` sink.
+    const checkoutStartedAt = new Date();
+
     await page.goto(`${target.baseURL}/checkout`);
 
     // Same locators as tests/e2e/human-journey.spec.ts's checkout section, for consistency.
@@ -107,6 +112,7 @@ test.describe('Human journey: real checkout -> real license email', () => {
       apiKey: process.env.RESEND_API_KEY!,
       toEmail: 'delivered@resend.dev',
       subjectContains: 'Your WarmHawk install command',
+      sentAfter: checkoutStartedAt,
       timeoutMs: 120_000,
     });
     expect(email, 'No license email arrived at delivered@resend.dev within 120s').not.toBeNull();

@@ -26,6 +26,20 @@ export interface WaitForResendEmailInput {
   apiKey: string;
   toEmail: string;
   subjectContains: string;
+  /**
+   * Only an email created at/after this instant is eligible — required, not optional. Both real
+   * call sites (checkout-and-license.spec.ts and route.integration.test.ts) send to the exact
+   * same recipient (`delivered@resend.dev`) with the exact same subject
+   * ("Your WarmHawk install command") by design, since that recipient is Resend's shared
+   * simulation sink. Without this cutoff, `fetchRecentEmailId` below can match the OTHER suite's
+   * still-recent email instead of the one this call just triggered — confirmed live 2026-09-01
+   * (warmhawk-site pipeline 63): the human-journeys spec's real checkout succeeded, but its
+   * billing-portal step failed with Stripe's "No such customer: 'cus_integration_test'" because
+   * it had picked up route.integration.test.ts's synthetic license email (same recipient/subject,
+   * issued minutes earlier in the same pipeline run) instead of its own. Pass `new Date()`
+   * captured right before triggering the send.
+   */
+  sentAfter: Date;
   /** Default 30s — callers doing a full checkout->webhook->email round trip should pass a much
    *  longer value (e.g. 120_000), since real Stripe webhook delivery latency dominates. */
   timeoutMs?: number;
@@ -38,6 +52,7 @@ interface ResendListItem {
   id: string;
   to: string[] | string;
   subject: string;
+  created_at: string;
 }
 
 interface ResendListResponse {
@@ -53,6 +68,7 @@ async function fetchRecentEmailId(
   apiKey: string,
   toEmail: string,
   subjectContains: string,
+  sentAfter: Date,
 ): Promise<string | null> {
   const res = await fetch(`${RESEND_API_BASE}/emails`, {
     headers: { Authorization: `Bearer ${apiKey}` },
@@ -60,11 +76,18 @@ async function fetchRecentEmailId(
   if (!res.ok) return null;
 
   const body = (await res.json()) as ResendListResponse;
-  const match = (body.data ?? []).find((item) => {
+  const matches = (body.data ?? []).filter((item) => {
     const recipients = Array.isArray(item.to) ? item.to : [item.to];
-    return recipients.includes(toEmail) && item.subject.includes(subjectContains);
+    return (
+      recipients.includes(toEmail) &&
+      item.subject.includes(subjectContains) &&
+      new Date(item.created_at) >= sentAfter
+    );
   });
-  return match?.id ?? null;
+  // Newest first: if more than one eligible email exists (e.g. a retry), the one this specific
+  // call actually cares about is always the most recent.
+  matches.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  return matches[0]?.id ?? null;
 }
 
 async function fetchEmailBody(apiKey: string, id: string): Promise<ResendEmailRecord | null> {
@@ -87,12 +110,13 @@ export async function waitForResendEmail({
   apiKey,
   toEmail,
   subjectContains,
+  sentAfter,
   timeoutMs = 30000,
 }: WaitForResendEmailInput): Promise<ResendEmailRecord | null> {
   const deadline = Date.now() + timeoutMs;
 
   while (Date.now() < deadline) {
-    const id = await fetchRecentEmailId(apiKey, toEmail, subjectContains);
+    const id = await fetchRecentEmailId(apiKey, toEmail, subjectContains, sentAfter);
     if (id) {
       const full = await fetchEmailBody(apiKey, id);
       if (full) return full;
