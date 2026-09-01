@@ -1,6 +1,7 @@
 import { siteConfig, vsPages, footerLinks } from './siteConfig';
 import { docsSections } from './docsNav';
 import { tiers } from './tierConfig';
+import { homeFaqItems, pricingFaqItems, domainCheckFaqItems } from './faqContent';
 
 /**
  * Builds the content served at https://warmhawk.com/llms.txt — the
@@ -80,4 +81,35 @@ export function buildLlmsTxt(): string {
   }
 
   return lines.join('\n') + '\n';
+}
+
+/**
+ * Builds the content served at https://warmhawk.com/llms-full.txt — the
+ * llms.txt convention's "full" companion file: the same index as
+ * llms.txt, plus the actual FAQ answer text inlined so an agent can answer
+ * from this one file without a second fetch per page.
+ *
+ * Pulls each page's FAQ content from `lib/faqContent.ts` — the same source
+ * each page's own <FaqSection> renders from — rather than a second,
+ * hand-copied FAQ list. Extend this list as more FAQ-bearing pages
+ * (currently the /vs/* pages are the biggest gap) are worth inlining in
+ * full; the index above already links every page regardless.
+ */
+export function buildLlmsFullTxt(): string {
+  const sections: { title: string; items: { question: string; answer: string }[] }[] = [
+    { title: 'Home', items: homeFaqItems },
+    { title: 'Pricing', items: pricingFaqItems },
+    { title: 'Domain check tool', items: domainCheckFaqItems },
+  ];
+
+  const lines: string[] = [buildLlmsTxt().trimEnd(), '', '## Full FAQ'];
+
+  for (const section of sections) {
+    lines.push('', `### ${section.title}`, '');
+    for (const { question, answer } of section.items) {
+      lines.push(`**${question}**`, '', answer, '');
+    }
+  }
+
+  return lines.join('\n').trimEnd() + '\n';
 }

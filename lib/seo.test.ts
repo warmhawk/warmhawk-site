@@ -5,6 +5,7 @@ import {
   organizationSchema,
   softwareApplicationSchema,
   breadcrumbSchema,
+  howToSchema,
 } from './seo';
 import { siteConfig } from './siteConfig';
 import { tiers } from './tierConfig';
@@ -97,6 +98,26 @@ describe('softwareApplicationSchema', () => {
     const schema = softwareApplicationSchema();
     expect(schema).not.toHaveProperty('aggregateRating');
     expect(schema).not.toHaveProperty('review');
+  });
+});
+
+describe('howToSchema', () => {
+  it('produces a schema.org HowTo with one positioned HowToStep per input step, in order', () => {
+    const schema = howToSchema('Install and send with WarmHawk', [
+      { name: 'Install the stack', text: 'Run install.sh.' },
+      { name: 'Authenticate', text: 'POST /v1/auth/login.' },
+    ]);
+
+    expect(schema['@type']).toBe('HowTo');
+    expect(schema.name).toBe('Install and send with WarmHawk');
+    expect(schema.step).toHaveLength(2);
+    expect(schema.step[0]).toEqual({
+      '@type': 'HowToStep',
+      position: 1,
+      name: 'Install the stack',
+      text: 'Run install.sh.',
+    });
+    expect(schema.step[1]!.position).toBe(2);
   });
 });
 

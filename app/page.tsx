@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { pageSeo, softwareApplicationSchema } from '@/lib/seo';
+import { homeFaqItems } from '@/lib/faqContent';
 import { FaqSection } from '@/components/FaqSchema';
 import { PricingTable } from '@/components/PricingTable';
 import { CompareTable } from '@/components/CompareTable';
@@ -31,38 +32,6 @@ export const metadata: Metadata = pageSeo({
 // `app.yourcompany.com`, but the script derives `api.<domain>`/`dashboard.<domain>` from
 // whatever you pass, so that would have produced `api.app.yourcompany.com`. The bare company
 // domain is the correct input.
-
-const faqItems = [
-  {
-    question: 'What does "self-hosted" actually mean here?',
-    answer:
-      'You run WarmHawk on your own server — your own containers, your own Postgres database, your own TLS certificate. WarmHawk never touches your leads or mailbox credentials, because it never sees them.',
-  },
-  {
-    question: 'Is the free tier a real product, or a crippled trial?',
-    answer:
-      'Tier 0 is the full sending engine over a direct API — same queue, same guardrails, same BYOK AI personalization. There’s no dashboard and no support SLA, but nothing about the sending engine itself is held back.',
-  },
-  {
-    question: 'What’s the difference between Tier 1 and Tier 2?',
-    answer:
-      'Tier 1 is self-hosted by you — you run the one-command install. Tier 2 has WarmHawk’s founder handle DNS, migration, and deployment for you, plus ongoing operational ownership for a monthly retainer.',
-  },
-  {
-    question: 'If it’s single-tenant, is each of my clients isolated too?',
-    answer:
-      'Single-tenant describes your account, not each end-client inside it. Your account is fully isolated from every other WarmHawk customer. Inside your own account, client domains currently share one database.',
-  },
-  {
-    question: 'What if I don’t want to manage a server myself?',
-    answer:
-      'That’s what Tier 2 is for — a one-time setup fee plus a monthly retainer, and WarmHawk’s founder runs the deployment on your behalf.',
-  },
-  {
-    question: 'Is there a guarantee?',
-    answer: 'Tier 1 ships with a 30-day money-back guarantee, stated plainly at checkout.',
-  },
-];
 
 const features = [
   {
@@ -313,7 +282,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <FaqSection items={faqItems} title="Before you install anything." />
+      <FaqSection items={homeFaqItems} title="Before you install anything." />
 
       {/* PRICING */}
       <div id="pricing" className="border-b border-border">

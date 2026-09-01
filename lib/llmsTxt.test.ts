@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { buildLlmsTxt } from './llmsTxt';
+import { buildLlmsTxt, buildLlmsFullTxt } from './llmsTxt';
 import { siteConfig, vsPages } from './siteConfig';
 import { docsSections } from './docsNav';
 import { tiers } from './tierConfig';
+import { homeFaqItems } from './faqContent';
 
 /**
  * Covers the GEO-baseline content served at https://warmhawk.com/llms.txt.
@@ -64,5 +65,30 @@ describe('buildLlmsTxt', () => {
 
   it('ends with a trailing newline', () => {
     expect(buildLlmsTxt().endsWith('\n')).toBe(true);
+  });
+});
+
+/**
+ * Covers https://warmhawk.com/llms-full.txt — the llms.txt convention's
+ * "full" companion file. Asserts it's a strict superset of llms.txt (same
+ * index, plus real FAQ answer text), not that it reflects unrelated prose.
+ */
+describe('buildLlmsFullTxt', () => {
+  it('contains the same index content as buildLlmsTxt', () => {
+    const full = buildLlmsFullTxt();
+    expect(full).toContain(`# ${siteConfig.name}`);
+    expect(full).toContain(`${siteConfig.url}/tools/domain-check`);
+  });
+
+  it('inlines the real question and answer text for the home page FAQ', () => {
+    const full = buildLlmsFullTxt();
+    for (const { question, answer } of homeFaqItems) {
+      expect(full).toContain(question);
+      expect(full).toContain(answer);
+    }
+  });
+
+  it('ends with a trailing newline', () => {
+    expect(buildLlmsFullTxt().endsWith('\n')).toBe(true);
   });
 });

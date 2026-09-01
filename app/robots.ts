@@ -14,15 +14,19 @@ const DISALLOW = ['/vs/instantly', '/api/'];
 // `app/robots.ts`.
 const AI_CRAWLER_USER_AGENTS = [
   'GPTBot',
+  'OAI-SearchBot', // ChatGPT Search's own crawler — separate from GPTBot, not covered by it
   'ChatGPT-User',
   'ClaudeBot',
   'Claude-Web',
   'anthropic-ai',
   'PerplexityBot',
+  'Perplexity-User', // user-triggered fetches, distinct from PerplexityBot's own crawl
   'Google-Extended',
   'CCBot',
   'Applebot-Extended',
   'Bingbot',
+  'meta-externalagent', // Meta AI / Llama
+  'Amazonbot', // Alexa+ / Rufus
 ];
 
 export default function robots(): MetadataRoute.Robots {

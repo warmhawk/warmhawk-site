@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { pageSeo } from '@/lib/seo';
+import { pageSeo, softwareApplicationSchema } from '@/lib/seo';
 import { FaqSection } from '@/components/FaqSchema';
 import { ComparisonCallout } from '@/components/ComparisonCallout';
 import { AnswerBlock } from '@/components/AnswerBlock';
@@ -73,6 +73,11 @@ const faqItems = [
 export default function WoodpeckerComparisonPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema()) }}
+      />
       {/* HERO */}
       <div className="wrap pt-16 md:pt-24 pb-16 md:pb-24">
         <div className="grid md:grid-cols-2 gap-10 md:gap-14 items-center">

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { pageSeo } from '@/lib/seo';
+import { pageSeo, softwareApplicationSchema } from '@/lib/seo';
 import { FaqSection } from '@/components/FaqSchema';
 import { ComparisonCallout } from '@/components/ComparisonCallout';
 import { AnswerBlock } from '@/components/AnswerBlock';
@@ -68,6 +68,11 @@ const faqItems = [
 export default function VsSmartleadPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema()) }}
+      />
       {/* HERO */}
       <div className="wrap pt-16 md:pt-24 pb-14 md:pb-16">
         <div className="label text-rust mb-5">WarmHawk vs Smartlead</div>

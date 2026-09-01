@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { pageSeo } from '@/lib/seo';
+import { domainCheckFaqItems } from '@/lib/faqContent';
 import { AnswerBlock } from '@/components/AnswerBlock';
 import { FaqSection } from '@/components/FaqSchema';
 import { StatCite } from '@/components/StatCite';
@@ -23,29 +24,6 @@ export const metadata: Metadata = pageSeo({
 // returns PASS/FAIL for SPF/DKIM/DMARC (no policy-strength gradient) and a plain explanatory
 // string for List-Unsubscribe rather than a checkable status, so the UI reflects the real API
 // contract instead of the mockup's fabricated "WEAK POLICY" badge.
-
-const faqItems = [
-  {
-    question: 'What is SPF/DKIM/DMARC and why do they matter?',
-    answer:
-      'SPF, DKIM, and DMARC are the three DNS records receiving mail servers check to decide whether your email is legitimate. SPF authorizes sending servers, DKIM signs messages so they can’t be tampered with, and DMARC tells receivers what to do when the first two fail. Missing or misconfigured records are one of the most common reasons cold email lands in spam.',
-  },
-  {
-    question: 'What is RFC 8058 List-Unsubscribe and why does Gmail care about it?',
-    answer:
-      'RFC 8058 defines a one-click unsubscribe header that lets a mailbox provider unsubscribe a recipient with a single request, no login or landing page required. As of November 2025, Gmail and Yahoo escalated enforcement from throttling to outright rejecting bulk mail that lacks it, so this is no longer optional for any sender at volume.',
-  },
-  {
-    question: 'How often should I check my sending domain?',
-    answer:
-      'DNS records and blocklist status can change without any action on your part — a DKIM key rotation, a DNS provider migration, or a single spam complaint can knock a domain out of compliance overnight. Check before starting any new sending domain, and re-check anytime deliverability drops unexpectedly.',
-  },
-  {
-    question: 'Is this the same check WarmHawk runs continuously for paying customers?',
-    answer:
-      'Yes — same underlying SPF/DKIM/DMARC/List-Unsubscribe/blocklist logic. The difference is that this free tool gives you a one-time snapshot, while the paid WarmHawk dashboard runs the identical checks continuously against every sending domain you own and alerts you the moment one starts failing.',
-  },
-];
 
 export default function DomainCheckPage() {
   return (
@@ -80,7 +58,7 @@ export default function DomainCheckPage() {
         <DomainCheckTool />
       </div>
 
-      <FaqSection items={faqItems} title="SPF, DKIM, DMARC & List-Unsubscribe FAQ" />
+      <FaqSection items={domainCheckFaqItems} title="SPF, DKIM, DMARC & List-Unsubscribe FAQ" />
     </>
   );
 }
