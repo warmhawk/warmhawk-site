@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Font trio matches the artifact's `:root` exactly (see warmhawk-full-prototype.html
+   body{font-family:'Inter'}, h1-h4{font-family:'Fraunces'}, .eyebrow/mono
+   values{font-family:'IBM Plex Mono'}). Previously this repo used an
+   unrelated Lora/Work Sans pairing with no source in the artifact. */
+:root {
+  --font-fraunces: 'Fraunces', Georgia, serif;
+  --font-inter: 'Inter', system-ui, sans-serif;
+  --font-plex-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-cream text-ink font-sans;
+}
+
+a {
+  color: inherit;
+}
+
+.wrap {
+  @apply mx-auto max-w-wrap px-6 md:px-10;
+}
+
+/* Everything below lives in Tailwind's `components` layer (not bare CSS
+   after @tailwind utilities) specifically so a utility class combined with
+   one of these in a className (e.g. `card bg-cream`, `card bg-cream-elevated`,
+   `bg-ink` alongside a class that also sets background) reliably wins,
+   matching what every call site actually intends. @layer hoists this whole
+   block ahead of the compiled utilities regardless of source position;
+   without it, a plain CSS rule declared textually after @tailwind utilities
+   ties on specificity with a utility class and wins on source order instead
+   — which was silently breaking every `card bg-*` override sitewide (docs
+   pages, /vs/* pain-point cards, ComparisonCallout, ContactSalesForm's
+   success state, etc. all rendered .card's own bg-paper/60 instead of the
+   background each call site asked for), and made CodeBlock's `bg-ink`
+   unreadable against its own text-cream. */
+@layer components {
+  .card {
+    @apply bg-paper/60 border border-border rounded-card;
+  }
+
+  /* Matches the artifact's `.kicker-card` (opaque paper, 16px radius — a
+     distinct, slightly smaller-radius card used for the domain-check tool's
+     input/results panels, not the generic translucent `.card`). */
+  .kicker-card {
+    @apply bg-paper border border-border rounded-2xl px-6 py-[22px];
+  }
+
+  /* Matches the artifact's `.toggle-row` — a compact list row (label left,
+     badge/control right) stacked inside one card, used for the domain-check
+     tool's five checks instead of five separate cards. */
+  .toggle-row {
+    @apply flex items-center justify-between gap-4 py-3.5 border-t border-border;
+  }
+  .toggle-row:first-child {
+    @apply border-t-0;
+  }
+  .toggle-row .t-label b {
+    @apply block text-sm font-semibold text-ink;
+  }
+  .toggle-row .t-label span {
+    @apply text-[12.5px] text-ink-muted;
+  }
+
+  /* Matches the artifact's `.field`/`.field label`/`.field input`. */
+  .field {
+    @apply mb-4;
+  }
+  .field label {
+    @apply block text-[13px] font-semibold text-ink mb-1.5;
+  }
+  /* Responsive fix: this was `text-[13.5px]` — under the 16px threshold below
+     which iOS Safari auto-zooms the whole page on focus (a well-known mobile
+     bug, not an artifact deviation). DomainCheckTool's domain input is the
+     only `.field` on the site, and it's reachable from a phone, so every
+     visit there on an iPhone triggered an unwanted pinch-zoom on tap. Bumped
+     to exactly 16px, the minimum that suppresses it. */
+  .field input,
+  .field textarea,
+  .field select {
+    @apply w-full border border-border rounded-lg px-3 py-2.5 font-sans text-[16px] bg-paper text-ink outline-none focus:border-rust;
+  }
+
+  /* Matches the artifact's `.eyebrow` class: mono, tracked-out, semibold.
+     Color is deliberately NOT baked in here — every call site already
+     supplies its own text-* color (text-rust, text-ink-muted, text-fail,
+     ...), which now reliably overrides via the utilities layer. */
+  .label {
+    @apply font-mono text-[12.5px] tracking-[0.14em] uppercase font-semibold;
+  }
+
+  /* Matches the artifact's .btn/.btn-primary/.btn-ghost/.btn-sm exactly:
+     9px corner radius (not a full pill), a 3px "pressed" shadow under the
+     primary button, and a distinct ghost variant for secondary nav CTAs. */
+  .btn {
+    @apply inline-flex items-center gap-2 rounded-[9px] px-[22px] py-[13px] font-semibold text-[15px] border-[1.5px] border-transparent whitespace-nowrap transition-transform hover:-translate-y-px;
+  }
+
+  .btn-primary {
+    @apply bg-rust text-rust-fg shadow-[0_3px_0_theme(colors.rust.hover)] hover:bg-[#c85530];
+  }
+
+  .btn-ghost {
+    @apply border-border-dark text-ink hover:bg-ink/5;
+  }
+
+  .btn-on-dark {
+    @apply border-paper/35 text-paper hover:bg-paper/10;
+  }
+
+  .btn-sm {
+    @apply px-[15px] py-[9px] text-[13.5px];
+  }
+
+  .btn-block {
+    @apply w-full justify-center;
+  }
+
+  /* PASS / FAIL / PENDING badges shared by the domain-check tool, the
+     dashboard-mirroring copy on the /vs/* and docs pages. Matches the
+     artifact's `.badge`/`.badge-green`/`.badge-amber`/`.badge-red`/
+     `.badge-gray`/`.badge-dot` exactly: solid pastel background (not an
+     opacity-derived tint), smaller 11.5px text, and a colored dot instead of
+     a checkmark/cross character. */
+  .badge {
+    @apply inline-flex items-center gap-[5px] rounded-full px-[9px] py-[4px] text-[11.5px] font-semibold whitespace-nowrap;
+  }
+  .badge-dot {
+    @apply w-1.5 h-1.5 rounded-full bg-current flex-none;
+  }
+  .badge-pass {
+    @apply bg-pass-tint text-pass;
+  }
+  .badge-fail {
+    @apply bg-fail-tint text-fail;
+  }
+  .badge-pending {
+    @apply bg-pending-tint text-pending;
+  }
+  .badge-unconfigured {
+    @apply bg-unconfigured-tint text-unconfigured;
+  }
+}
