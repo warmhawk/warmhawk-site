@@ -12,6 +12,10 @@ export const siteConfig = {
   supportEmail: 'support@warmhawk.com',
   securityEmail: 'security@warmhawk.com',
   helloEmail: 'hello@warmhawk.com',
+  // WarmHawk's mailing address — used only in the license-delivery email footer, where it
+  // satisfies CAN-SPAM's physical-address requirement for WarmHawk's own commercial email.
+  // Not shown on the public site. Keep this the single place it's written.
+  physicalAddress: '204 Terminus Trl, Liberty Hill, TX 78642',
   // Matches docker/docker-compose.deploy.yml's SMTP_FROM default exactly — that file
   // can't import this constant (it's YAML), so this pairing is the one to update in
   // both places at once if it ever changes.

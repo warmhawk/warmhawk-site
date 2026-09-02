@@ -6,7 +6,6 @@ import { FaqSection } from '@/components/FaqSchema';
 import { ComparisonCallout } from '@/components/ComparisonCallout';
 import { AnswerBlock } from '@/components/AnswerBlock';
 import { StatCite } from '@/components/StatCite';
-import { DoNotPublishComment } from '@/components/DoNotPublishComment';
 import { CompareTable, type CompareRow } from '@/components/CompareTable';
 
 const compareRows: CompareRow[] = [
@@ -32,11 +31,6 @@ const compareRows: CompareRow[] = [
   },
 ];
 
-// NOT LIVE: gated on the seed-inbox placement sampling feature shipping.
-// noIndex is set below and this page is already excluded from
-// app/sitemap.ts and disallowed in app/robots.ts. Do not link this page
-// from nav, footer, or any other page until the feature ships.
-//
 // REAL route-level gating (Part C), not just SEO suppression: two env vars, both required.
 // ENABLE_VS_INSTANTLY=true is required just to render the page at all — unset/false is a real
 // 404 via notFound(), not merely hidden from search. SEED_PLACEMENT_LIVE_IN_PRODUCTION=true is
@@ -47,6 +41,16 @@ const compareRows: CompareRow[] = [
 // and rendered as an explicit misconfigured state rather than either the real page or a silent
 // 404, so an operator who half-enabled this by mistake finds out immediately. See .env/.env.example
 // for the full rationale on both vars.
+//
+// export const dynamic = 'force-dynamic': without this, `next build` prerenders the route once,
+// statically, using whichever value these two env vars happen to have AT BUILD TIME (the Docker
+// build stage never sets either — only Stripe's build-arg placeholders) — baking in a permanent
+// 404 regardless of what's later set in the running container's real environment. That defeated
+// the entire point of a runtime-flippable operator flag: confirmed 2026-09-01 via `next build`'s
+// own route legend, which listed this route as `○ (Static)` — prerendered at build time — before
+// this fix, meaning flipping both vars in prod .env alone would have had no effect.
+export const dynamic = 'force-dynamic';
+
 function isFlagEnabled(value: string | undefined): boolean {
   return value === 'true' || value === '1';
 }
@@ -70,13 +74,23 @@ function VsInstantlyMisconfigured() {
   );
 }
 
-export const metadata: Metadata = pageSeo({
-  title: 'WarmHawk vs Instantly — real placement sampling vs a self-reported warmup score',
-  description:
-    'WarmHawk vs Instantly compared: self-hosted infrastructure with a 30-day guarantee and founder-staffed support, versus Instantly’s warmup “heat score,” reported double billing, and slow support at ~$400/month.',
-  path: '/vs/instantly',
-  noIndex: true,
-});
+// generateMetadata(), not a static `export const metadata`, for the same reason as `dynamic`
+// above: noIndex must reflect the actual runtime flags, not a value baked in at build time. Stays
+// noIndex'd whenever the page itself would 404 or render the misconfigured state — there is
+// nothing worth indexing in either case.
+export async function generateMetadata(): Promise<Metadata> {
+  const isLive =
+    isFlagEnabled(process.env.ENABLE_VS_INSTANTLY) &&
+    isFlagEnabled(process.env.SEED_PLACEMENT_LIVE_IN_PRODUCTION);
+
+  return pageSeo({
+    title: 'WarmHawk vs Instantly — real placement sampling vs a self-reported warmup score',
+    description:
+      'WarmHawk vs Instantly compared: self-hosted infrastructure with a 30-day guarantee and founder-staffed support, versus Instantly’s warmup “heat score,” reported double billing, and slow support at ~$400/month.',
+    path: '/vs/instantly',
+    noIndex: !isLive,
+  });
+}
 
 const faqItems = [
   {
@@ -100,11 +114,6 @@ const faqItems = [
       'Can I get double-billed or denied a refund on WarmHawk like some Instantly users report?',
     answer:
       'Structurally, no — WarmHawk is self-hosted with no metered platform billing layer to double-charge in the first place, and every plan includes a 30-day money-back guarantee.',
-  },
-  {
-    question: 'Why hasn’t this page been made public yet?',
-    answer:
-      'It’s marked noindex and isn’t linked from the site because the placement-sampling feature it describes hasn’t shipped yet. We don’t publish comparison pages ahead of the feature they depend on.',
   },
 ];
 
@@ -133,7 +142,6 @@ export default function VsInstantlyPage() {
 
   return (
     <>
-      <DoNotPublishComment />
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger

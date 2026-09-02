@@ -125,7 +125,7 @@ its own public key before storing it.
   (`#0a100d`/`#135c40`/`#eaf6ee`) on every theme, matching the design
   exactly.
 - **Fonts:** Lora (display/headings) + Work Sans (body).
-- **Shared components:** `Nav`, `Footer`, `DraftBanner` (legal pages),
+- **Shared components:** `Nav`, `Footer`,
   `ComparisonCallout` (the standing "own infrastructure" block on every
   `/vs/*` page), `FaqSection` (renders both the visible FAQ and its
   `FAQPage` JSON-LD schema), `PricingTable`, `AnswerBlock` (AEO 40–60 word
