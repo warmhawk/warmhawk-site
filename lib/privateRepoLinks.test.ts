@@ -8,17 +8,22 @@ import path from 'node:path';
  * 41 pages carried a link that served GitHub's 404 page — plus two CHANGELOG.md links on
  * /docs/reference/faq-and-changelog. All three targets are repos an anonymous visitor cannot open.
  *
- * Repo visibility is the thing to keep straight here, and it is not the same for all three:
+ * Repo visibility is the thing to keep straight here, and it is not the same for both remaining
+ * private-by-default repos:
  *
  * | Repo                          | Visibility                                  |
  * |-------------------------------|---------------------------------------------|
  * | warmhawk-core-engine          | open source (BSL 1.1), public at go-live    |
+ * | warmhawk-site                 | public at go-live (this repo)               |
  * | warmhawk-enterprise-operator  | proprietary — private permanently           |
- * | warmhawk-site                 | proprietary — private permanently           |
  *
- * So core-engine links are fine but must stay gated behind `coreEngineRepoPublic` until the repo
- * actually flips; the other two must never be linked at all, under any flag. A reader who follows
- * one lands on a 404 that reads, to a buyer running diligence, like the product isn't real.
+ * core-engine links are fine but must stay gated behind `coreEngineRepoPublic` until the repo
+ * actually flips; warmhawk-enterprise-operator must never be linked at all, under any flag. A
+ * reader who follows a link to a still-private repo lands on a 404 that reads, to a buyer running
+ * diligence, like the product isn't real — which is exactly what happened here before this guard
+ * existed. (warmhawk-site itself is going public alongside core-engine — nothing currently links
+ * to this repo's own GitHub URL from within its own pages, so there's no equivalent gated link to
+ * add here, just no reason left to forbid one.)
  *
  * Scanned as source text rather than rendered markup because these URLs are spread across page
  * components, config, and metadata — a render-based test would have to mount all 41 pages to cover
@@ -42,7 +47,7 @@ const SCANNED_DIRS = ['components', 'lib', 'app'];
  */
 const EXCLUDED = [path.join('app', 'install'), path.join('app', 'api')];
 
-const PERMANENTLY_PRIVATE = ['warmhawk-enterprise-operator', 'warmhawk-site'];
+const PERMANENTLY_PRIVATE = ['warmhawk-enterprise-operator'];
 
 function sourceFiles(dir: string): string[] {
   if (EXCLUDED.includes(dir)) return [];
