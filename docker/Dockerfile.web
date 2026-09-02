@@ -1,10 +1,6 @@
-# Same shape as jitterflow-core-app's docker/Dockerfile.admin (also a
-# dynamic Next.js app deployed via the "own repo, git-pull" pattern, not a
-# static export) — builder stage runs the real build + `npm prune
-# --omit=dev`, runtime stage copies only what `next start` needs. Replaces
-# Coolify's Nixpacks buildpack (decommissioned 2026-08-25): this repo has no
-# Dockerfile of its own before this, since Coolify built it from git source
-# directly.
+# Dynamic Next.js app deployed via the "own repo, git-pull" pattern, not a
+# static export — builder stage runs the real build + `npm prune
+# --omit=dev`, runtime stage copies only what `next start` needs.
 FROM node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293 AS builder
 WORKDIR /app
 # Not needed to build/run this app — installed only to pick up whatever

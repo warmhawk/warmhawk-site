@@ -2,9 +2,7 @@ import type { CheckStatus } from '@/components/CheckBadge';
 
 /**
  * Pluggable status-check abstraction for the /status page, wired to a
- * self-hosted Uptime Kuma instance — the same monitoring stack
- * `outreach-infra` already runs on `KS-Primary` via Coolify (see that
- * repo's `docs/deployment.md`) — not a third-party SaaS status provider.
+ * self-hosted Uptime Kuma instance — not a third-party SaaS status provider.
  * Speaks Uptime Kuma's real public status-page API directly:
  *
  *   GET {STATUS_KUMA_BASE_URL}/api/status-page/{STATUS_KUMA_SLUG}

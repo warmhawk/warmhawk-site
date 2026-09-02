@@ -6,9 +6,7 @@
 # after this field's original "warmhawk-site" name caused every deploy to
 # fail with "not found") — no rebuild on deploy. Deployed
 # via plain `docker compose -p warmhawk-site up -d` (the "own repo,
-# git-pull" pattern — see jitterflow-core-app/docker/docker-compose.deploy.yml
-# for the original of this shape, and its docs/ for why: no PaaS control
-# plane since Coolify's decommission on 2026-08-25).
+# git-pull" pattern — no rebuild-on-deploy PaaS control plane involved).
 #
 # Single stateless service, no database/cache of its own — this app has no
 # persistent state to survive a redeploy. It declares an `external: true`
