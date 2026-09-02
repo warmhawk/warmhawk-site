@@ -54,7 +54,8 @@ describe('buildInstallCommand', () => {
 });
 
 describe('buildLicenseEmailText', () => {
-  const command = 'curl -fsSL https://warmhawk.com/install | bash -s -- --license tok --domain <your-domain> --owner-email owner@example.com';
+  const command =
+    'curl -fsSL https://warmhawk.com/install | bash -s -- --license tok --domain <your-domain> --owner-email owner@example.com';
 
   it('omits the environment note on production (envNote = null)', () => {
     const text = buildLicenseEmailText('Self-Hosted Pro', null, command);
@@ -85,7 +86,8 @@ describe('buildLicenseEmailText', () => {
 });
 
 describe('buildLicenseEmailHtml', () => {
-  const command = 'curl -fsSL https://warmhawk.com/install | bash -s -- --license tok --domain <your-domain> --owner-email owner@example.com';
+  const command =
+    'curl -fsSL https://warmhawk.com/install | bash -s -- --license tok --domain <your-domain> --owner-email owner@example.com';
 
   it('declares a UTF-8 charset (regression: an em dash rendered as mojibake without this)', () => {
     const html = buildLicenseEmailHtml('Self-Hosted Pro', null, command);
@@ -104,7 +106,11 @@ describe('buildLicenseEmailHtml', () => {
   });
 
   it('escapes the install command rather than injecting it raw', () => {
-    const html = buildLicenseEmailHtml('Self-Hosted Pro', null, '--license <script>alert(1)</script>');
+    const html = buildLicenseEmailHtml(
+      'Self-Hosted Pro',
+      null,
+      '--license <script>alert(1)</script>',
+    );
     expect(html).not.toContain('<script>alert(1)</script>');
     expect(html).toContain('&lt;script&gt;');
   });

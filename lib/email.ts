@@ -105,7 +105,11 @@ export function tierLabelFor(tier: LicenseEmailInput['tier']): string {
 /** Plain-text body — the fallback every client can render, and the only version sent if HTML
  *  rendering is ever dropped. Kept in sync with buildLicenseEmailHtml by hand; both take the same
  *  three inputs so there's nothing else that could drift between them. */
-export function buildLicenseEmailText(tierLabel: string, envNote: string | null, installCommand: string): string {
+export function buildLicenseEmailText(
+  tierLabel: string,
+  envNote: string | null,
+  installCommand: string,
+): string {
   return [
     `Thanks for subscribing to WarmHawk (${tierLabel}).`,
     ...(envNote ? [`(sent from ${envNote})`] : []),
@@ -115,7 +119,7 @@ export function buildLicenseEmailText(tierLabel: string, envNote: string | null,
     '1. Replace <your-domain> below with the domain your dashboard should be',
     '   reachable at.',
     '2. Your email is pre-filled with the address you signed up with —',
-    '   edit it if you\'d like a different account to own the dashboard.',
+    "   edit it if you'd like a different account to own the dashboard.",
     '3. Then run this on the server you want to install WarmHawk on:',
     '',
     installCommand,
@@ -138,7 +142,11 @@ export function buildLicenseEmailText(tierLabel: string, envNote: string | null,
  *  isn't achievable inside the email itself — this is the ceiling for an email-only approach.
  *  Colors match the site's own palette (globals.css's `:root` in warmhawk-enterprise-operator, the
  *  same source-of-truth artifact this site's own Tailwind config is built from). */
-export function buildLicenseEmailHtml(tierLabel: string, envNote: string | null, installCommand: string): string {
+export function buildLicenseEmailHtml(
+  tierLabel: string,
+  envNote: string | null,
+  installCommand: string,
+): string {
   return `<!doctype html>
 <html>
   <head>
