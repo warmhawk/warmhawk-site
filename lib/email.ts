@@ -43,6 +43,26 @@ function smtpConfigured(): boolean {
   return Boolean(process.env.SMTP_HOST);
 }
 
+/** The deploy's own site URL, shown in the email only when it isn't the real production domain —
+ *  so a test/stage purchase's email is never mistaken for a real customer's. Production shows
+ *  nothing extra at all: zero added friction for real customers. `NEXT_PUBLIC_SITE_URL` is already
+ *  set per-deployment (production is the only one that should ever equal the real domain), so this
+ *  needs no new env var. */
+export function environmentNote(): string | null {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (!siteUrl || siteUrl === 'https://warmhawk.com') return null;
+  return siteUrl;
+}
+
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 let cachedTransporter: Transporter | null = null;
 
 function getTransporter(): Transporter {
@@ -74,8 +94,83 @@ function getTransporter(): Transporter {
  *  made every emailed install command fail validation the moment `/api/install` existed. Unlike
  *  `--domain`, the owner's email IS already known at issuance time (it's the same address this
  *  email is being sent to), so it's embedded as a real value here, not a placeholder. */
-function buildInstallCommand(licenseToken: string, ownerEmail: string): string {
+export function buildInstallCommand(licenseToken: string, ownerEmail: string): string {
   return `curl -fsSL https://warmhawk.com/install | bash -s -- --license ${licenseToken} --domain <your-domain> --owner-email ${ownerEmail}`;
+}
+
+export function tierLabelFor(tier: LicenseEmailInput['tier']): string {
+  return tier === 'tier_2' ? 'Enterprise DFY' : 'Self-Hosted Pro';
+}
+
+/** Plain-text body — the fallback every client can render, and the only version sent if HTML
+ *  rendering is ever dropped. Kept in sync with buildLicenseEmailHtml by hand; both take the same
+ *  three inputs so there's nothing else that could drift between them. */
+export function buildLicenseEmailText(tierLabel: string, envNote: string | null, installCommand: string): string {
+  return [
+    `Thanks for subscribing to WarmHawk (${tierLabel}).`,
+    ...(envNote ? [`(sent from ${envNote})`] : []),
+    '',
+    '------------------------------------------------------------',
+    '',
+    '1. Replace <your-domain> below with the domain your dashboard should be',
+    '   reachable at.',
+    '2. Your email is pre-filled with the address you signed up with —',
+    '   edit it if you\'d like a different account to own the dashboard.',
+    '3. Then run this on the server you want to install WarmHawk on:',
+    '',
+    installCommand,
+    '',
+    '------------------------------------------------------------',
+    '',
+    'Questions? Reply to this email or reach us at support@warmhawk.com.',
+    '',
+    'User Support,',
+    'WarmHawk.com',
+    // TODO(pre-launch): a valid physical postal address is required here for CAN-SPAM
+    // compliance on commercial email (a PO Box or CMRA address is sufficient — no home
+    // address). Add it once a business mailing address exists.
+  ].join('\n');
+}
+
+/** HTML body — same content as buildLicenseEmailText, styled so the install command sits in its
+ *  own monospace block (one line, wraps rather than truncates) for an easy triple-click/select-all
+ *  copy. No copy-to-clipboard button: email clients strip all JavaScript, so a real one-click copy
+ *  isn't achievable inside the email itself — this is the ceiling for an email-only approach.
+ *  Colors match the site's own palette (globals.css's `:root` in warmhawk-enterprise-operator, the
+ *  same source-of-truth artifact this site's own Tailwind config is built from). */
+export function buildLicenseEmailHtml(tierLabel: string, envNote: string | null, installCommand: string): string {
+  return `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body style="margin:0;padding:24px 0;background:#f3eee1;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#251d14;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center" style="padding:0 16px;">
+          <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:100%;table-layout:fixed;background:#fbf8f1;border-radius:8px;">
+            <tr>
+              <td style="padding:32px;box-sizing:border-box;">
+                <p style="margin:0 0 4px;font-size:16px;">Thanks for subscribing to WarmHawk (${escapeHtml(tierLabel)}).</p>
+                ${envNote ? `<p style="margin:0 0 20px;font-size:13px;color:#6b6354;">(sent from ${escapeHtml(envNote)})</p>` : '<div style="height:16px;"></div>'}
+                <p style="margin:0 0 8px;font-size:14px;">
+                  1. Replace <code style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;">&lt;your-domain&gt;</code> below with the domain your dashboard should be reachable at.<br>
+                  2. Your email is pre-filled with the address you signed up with — edit it if you'd like a different account to own the dashboard.<br>
+                  3. Then run this on the server you want to install WarmHawk on:
+                </p>
+                <p style="margin:12px 0 4px;font-size:12px;color:#6b6354;">The command below — select all and copy it:</p>
+                <pre style="width:100%;box-sizing:border-box;background:#f3eee1;border:1px solid #d9cdaf;border-radius:6px;padding:14px 16px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:normal;overflow-wrap:anywhere;margin:0 0 24px;">${escapeHtml(installCommand)}</pre>
+                <p style="margin:0 0 24px;font-size:14px;">Questions? Reply to this email or reach us at <a href="mailto:support@warmhawk.com" style="color:#b94b27;">support@warmhawk.com</a>.</p>
+                <p style="margin:0;font-size:14px;">User Support,<br><a href="https://warmhawk.com" style="color:#251d14;">WarmHawk.com</a></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
 }
 
 class SmtpEmailSender implements EmailSender {
@@ -93,22 +188,15 @@ class SmtpEmailSender implements EmailSender {
       return;
     }
 
+    const envNote = environmentNote();
+    const tierLabel = tierLabelFor(input.tier);
+
     await getTransporter().sendMail({
       from: process.env.SMTP_FROM || siteConfig.defaultFrom,
       to: input.toEmail,
       subject: 'Your WarmHawk install command',
-      text: [
-        `Thanks for subscribing to WarmHawk (${input.tier === 'tier_2' ? 'Enterprise DFY' : 'Self-Hosted Pro'}).`,
-        '',
-        'Run this command on the server you want to install WarmHawk on — replace <your-domain>',
-        'with the domain you want your dashboard reachable at:',
-        '',
-        installCommand,
-        '',
-        'Questions? Reply to this email or reach us at support@warmhawk.com.',
-        '',
-        `WarmHawk, ${siteConfig.physicalAddress}`,
-      ].join('\n'),
+      text: buildLicenseEmailText(tierLabel, envNote, installCommand),
+      html: buildLicenseEmailHtml(tierLabel, envNote, installCommand),
     });
   }
 
