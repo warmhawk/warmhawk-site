@@ -166,17 +166,17 @@ export default function PricingComparisonPage() {
             WarmHawk has three tiers, and the split is deliberate: Tier 0 is a free,
             fully-functional sending engine you run yourself. Tier 1 (Self-Hosted Pro) is $199/mo
             flat for the operator dashboard and a founder-staffed support SLA on top of that same
-            engine. Tier 2 (Enterprise DFY) is $999 one-time plus $300/mo for WarmHawk to deploy
-            and operate it for you. Billing for Tier 1 runs entirely through Stripe — Checkout to
-            start, the Stripe Customer Portal to manage cards, invoices, upgrades, and cancellations
+            engine. Tier 2 (Enterprise DFY) is $999 one-time plus $300/mo for WarmHawk to deploy and
+            operate it for you. Billing for Tier 1 runs entirely through Stripe — Checkout to start,
+            the Stripe Customer Portal to manage cards, invoices, upgrades, and cancellations
             afterward.
           </p>
           <AnswerBlock>
             WarmHawk has three tiers: Tier 0 is free and open, giving you the full sending engine
             via API with no dashboard or SLA. Tier 1 is $199/mo flat for the operator dashboard,
             live monitoring, and a founder support SLA — unlimited users and domains, no per-seat
-            pricing. Tier 2 is $999 + $300/mo for WarmHawk to deploy, migrate, and operate the
-            same software for you.
+            pricing. Tier 2 is $999 + $300/mo for WarmHawk to deploy, migrate, and operate the same
+            software for you.
           </AnswerBlock>
           <p className="text-base leading-relaxed text-ink-muted">
             Every tier runs the identical sending, queueing, and AI-personalization engine —{' '}
@@ -311,9 +311,7 @@ export default function PricingComparisonPage() {
             backend. It is self-hosted software with a support contract, not a hosted service.
           </p>
 
-          <h3 className="font-display text-xl font-semibold mt-10 mb-3">
-            Tier 2 — $999 + $300/mo
-          </h3>
+          <h3 className="font-display text-xl font-semibold mt-10 mb-3">Tier 2 — $999 + $300/mo</h3>
           <p className="text-base leading-relaxed text-ink-muted mb-4">
             The $999 one-time fee is founder-hours: DNS configuration, dedicated IP setup,
             white-glove migration off whatever you were running before, and doing the deployment
