@@ -106,6 +106,8 @@ class SmtpEmailSender implements EmailSender {
         installCommand,
         '',
         'Questions? Reply to this email or reach us at support@warmhawk.com.',
+        '',
+        `WarmHawk, ${siteConfig.physicalAddress}`,
       ].join('\n'),
     });
   }

@@ -22,6 +22,17 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // OpenTelemetry's auto-instrumentation patches Node's own require() at runtime to wrap http/dns/
+  // etc. — webpack bundling that code (the default for anything imported under app/ or, via
+  // instrumentation.ts, the server runtime) breaks that patching. This is Next's own documented
+  // fix: listing the packages here makes Next require() them natively via Node instead of bundling
+  // them. Only takes effect when instrumentation.ts's register() actually loads them (see that
+  // file) — OTEL_EXPORTER_OTLP_ENDPOINT unset, the default, skips it entirely.
+  serverExternalPackages: [
+    '@opentelemetry/sdk-node',
+    '@opentelemetry/auto-instrumentations-node',
+    '@opentelemetry/exporter-trace-otlp-http',
+  ],
   async headers() {
     return [
       {

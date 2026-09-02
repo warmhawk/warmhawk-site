@@ -1,9 +1,28 @@
 import type { MetadataRoute } from 'next';
 import { siteConfig } from '@/lib/siteConfig';
 
-// /vs/instantly carries its own page-level noindex meta tag too
-// (belt-and-suspenders) — see Go-Live Checklist, "Content accuracy."
-const DISALLOW = ['/vs/instantly', '/api/'];
+function isFlagEnabled(value: string | undefined): boolean {
+  return value === 'true' || value === '1';
+}
+
+// Without this, `next build` prerenders robots.txt once, statically, using build-time env (the
+// Docker build stage never sets either vs/instantly flag) — see app/vs/instantly/page.tsx's own
+// `dynamic` export comment for the full story; same bug, same fix, applies here for the same
+// reason getDisallow() below reads those two flags. Computing DISALLOW inside a function (called
+// fresh per request, and fresh per test) rather than as a module-level constant is what actually
+// makes `dynamic` meaningful here — a top-level `const` would still only read process.env once,
+// at module-import time.
+export const dynamic = 'force-dynamic';
+
+// Matches app/vs/instantly/page.tsx's own two-flag gate exactly. Disallowed here only until both
+// are true — once live it carries its own generateMetadata() index:true instead (belt-and-
+// suspenders while gated, not a second independent noindex once published).
+function getDisallow(): string[] {
+  const vsInstantlyLive =
+    isFlagEnabled(process.env.ENABLE_VS_INSTANTLY) &&
+    isFlagEnabled(process.env.SEED_PLACEMENT_LIVE_IN_PRODUCTION);
+  return [...(vsInstantlyLive ? [] : ['/vs/instantly']), '/api/'];
+}
 
 // Named allow rules for AI/answer-engine crawlers (AEO/GEO baseline) — the
 // `*` rule below already allows everyone, so these are a signal of intent,
@@ -30,10 +49,11 @@ const AI_CRAWLER_USER_AGENTS = [
 ];
 
 export default function robots(): MetadataRoute.Robots {
+  const disallow = getDisallow();
   return {
     rules: [
-      { userAgent: '*', allow: '/', disallow: DISALLOW },
-      ...AI_CRAWLER_USER_AGENTS.map((userAgent) => ({ userAgent, allow: '/', disallow: DISALLOW })),
+      { userAgent: '*', allow: '/', disallow },
+      ...AI_CRAWLER_USER_AGENTS.map((userAgent) => ({ userAgent, allow: '/', disallow })),
     ],
     sitemap: `${siteConfig.url}/sitemap.xml`,
   };
