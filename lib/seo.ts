@@ -90,7 +90,7 @@ export function organizationSchema() {
   };
 }
 
-// Strips a tier's display price ("$0", "$199", "$1,500") down to the plain
+// Strips a tier's display price ("$0", "$199", "$999") down to the plain
 // numeric string schema.org's `Offer.price` expects — no currency symbol or
 // thousands separator.
 function parsePrice(priceAmount: string): string {
