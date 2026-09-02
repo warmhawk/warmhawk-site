@@ -5,7 +5,7 @@ import { CheckoutTabs } from '@/components/CheckoutTabs';
 export const metadata: Metadata = pageSeo({
   title: 'Checkout',
   description:
-    'Start Tier 1 (Self-Hosted Pro, $199/mo) via Stripe Checkout, or reach out about Tier 2 (Enterprise DFY, $1,500 + $300/mo) — a custom-scoped engagement handled directly by WarmHawk’s founder.',
+    'Start Tier 1 (Self-Hosted Pro, $199/mo) via Stripe Checkout, or reach out about Tier 2 (Enterprise DFY, $999 + $300/mo) — a custom-scoped engagement handled directly by WarmHawk’s founder.',
   path: '/checkout',
 });
 

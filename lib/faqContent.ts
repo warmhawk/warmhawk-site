@@ -74,6 +74,11 @@ export const pricingFaqItems: FaqItem[] = [
     answer:
       "No — be precise about this one. Unlimited users on Tier 1/2 means your team shares one account with flat permissions, not that each of your agency's clients gets walled-off data from each other. Per-client data isolation is a tracked, unbuilt future item, not a shipped feature.",
   },
+  {
+    question: 'What if I need something Tier 2 doesn’t cover — a custom feature or integration?',
+    answer:
+      'That’s a Custom Build engagement, starting at $1,999 one-time — scoped development work for things that don’t exist yet in the product, like a bespoke integration or per-client data isolation. It’s not a listed checkout tier; mention what you need in the Tier 2 contact form and WarmHawk’s founder will scope and quote it directly.',
+  },
 ];
 
 export const domainCheckFaqItems: FaqItem[] = [

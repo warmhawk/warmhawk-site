@@ -97,13 +97,13 @@ export const tiers: TierDefinition[] = [
   {
     id: 'enterprise-dfy',
     name: 'Enterprise DFY',
-    price: '$1,500',
+    price: '$999',
     priceDetail: 'one-time + $300/mo retainer',
     ctaLabel: 'Talk to us',
     ctaHref: '/checkout?tier=2',
     tierLabel: 'Tier 2 — Enterprise DFY',
     priceName: 'Done-For-You',
-    priceAmount: '$1,500',
+    priceAmount: '$999',
     priceSuffix: '+ $300/mo',
     priceNote: 'One-time setup, then a retainer',
     features: [
