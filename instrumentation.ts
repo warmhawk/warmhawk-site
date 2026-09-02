@@ -23,7 +23,9 @@ export async function register(): Promise<void> {
 
   const sdk = new NodeSDK({
     serviceName: process.env.OTEL_SERVICE_NAME || 'warmhawk-site',
-    traceExporter: new OTLPTraceExporter({ url: `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces` }),
+    traceExporter: new OTLPTraceExporter({
+      url: `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces`,
+    }),
     instrumentations: [
       getNodeAutoInstrumentations({
         // Same exclusion jitterflow makes and for the same reason: every dist/*.js require and
