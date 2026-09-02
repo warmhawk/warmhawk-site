@@ -1,0 +1,46 @@
+title = "warmhawk-site gitleaks config"
+
+# `.env/.env.example` deliberately ships a real, working (test-only, never used in production) RSA
+# private key so local dev/CI can sign+verify a license end-to-end without running
+# scripts/generate-license-keypair.sh first — see that file's own header comment and
+# scripts/generate-license-keypair.sh's. Without this allowlist, gitleaks correctly flags it as
+# real key material on every run; this tells it that specific, documented exception is expected,
+# not a leak. tests/fixtures/license-keypair.ts carries the same value for the same reason (proving
+# the checked-in .env/.env.example values actually interoperate, not just that some keypair
+# round-trips) and is imported by every suite that needs to sign or verify a real token.
+#
+# Scope stays tight on purpose: only these two known files, only the one rule gitleaks uses to
+# detect PEM private keys. A real secret landing anywhere else, or under a different rule, still
+# gets caught.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Documented test-only license-signing keypair (LICENSE_SIGNING_PRIVATE_KEY)"
+targetRules = ["private-key"]
+paths = [
+  '''^\.env/\.env\.example$''',
+  '''^tests/fixtures/license-keypair\.ts$''',
+]
+
+# CI's clone step fetches at --depth=1 (confirmed live 2026-08-29 by reading the clone step's own
+# log), so `gitleaks detect` only ever sees a single commit — there's no real git history to walk.
+# That makes a commit-SHA-keyed .gitleaksignore useless here: every finding gets attributed to
+# whatever the current tip commit happens to be, which changes on every push, so a baseline entry
+# can never match twice. A content-level allowlist is the only suppression that survives a push.
+[[allowlists]]
+description = "app/docs/** code samples use the literal placeholder token name YOUR_API_KEY, never a real credential. curl-auth-header matches on entropy alone and can't tell them apart from a real Bearer token."
+targetRules = ["curl-auth-header"]
+regexes = ['''YOUR_API_KEY''']
+
+# The IndexNow key is deliberately public, not a secret — IndexNow's own verification model
+# requires hosting it at public/<key>.txt so the API can fetch it back and prove domain ownership
+# (see scripts/submit-indexnow.mjs's own header comment). generic-api-key matches on entropy alone
+# and can't tell a published verification token from a real credential.
+[[allowlists]]
+description = "IndexNow verification key — intentionally public, mirrors public/<key>.txt"
+targetRules = ["generic-api-key"]
+paths = [
+  '''^scripts/submit-indexnow\.mjs$''',
+]

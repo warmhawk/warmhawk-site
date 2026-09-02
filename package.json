@@ -1,0 +1,67 @@
+{
+  "name": "warmhawk-site",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WarmHawk marketing/informational site — public, unauthenticated. No product code lives here.",
+  "scripts": {
+    "dev": "next dev -p 4800",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "generate:og-image": "node scripts/generate-og-image.mjs",
+    "submit:indexnow": "node scripts/submit-indexnow.mjs",
+    "test": "vitest run -c tests/vitest.config.mts",
+    "test:coverage": "vitest run -c tests/vitest.config.mts --coverage",
+    "test:unit": "vitest run -c tests/vitest.config.mts --exclude \"**/*.integration.test.ts\"",
+    "test:integration": "vitest run -c tests/vitest.config.mts integration.test",
+    "test:e2e": "playwright test -c tests/playwright.config.ts",
+    "test:e2e:docker": "bash scripts/e2e-docker-up.sh && npx playwright test -c tests/playwright.config.ts && bash scripts/e2e-docker-down.sh || (bash scripts/e2e-docker-down.sh; exit 1)",
+    "test:e2e:docker:down": "bash scripts/e2e-docker-down.sh",
+    "test:human": "playwright test -c tests/human-journeys/human.config.ts"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/auto-instrumentations-node": "^0.79.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.221.0",
+    "@opentelemetry/sdk-node": "^0.221.0",
+    "next": "15.5.24",
+    "nodemailer": "^9.0.6",
+    "posthog-js": "^1.422.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "stripe": "16.12.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "3.1.0",
+    "@playwright/test": "^1.62.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "20.16.11",
+    "@types/nodemailer": "^8.0.1",
+    "@types/react": "18.3.11",
+    "@types/react-dom": "18.3.1",
+    "@vitest/coverage-v8": "^4.1.11",
+    "autoprefixer": "10.4.20",
+    "dotenv": "^17.2.3",
+    "eslint": "8.57.1",
+    "eslint-config-next": "15.5.24",
+    "jsdom": "^29.1.1",
+    "postcss": "8.5.26",
+    "prettier": "3.3.3",
+    "sharp": "^0.35.3",
+    "tailwindcss": "3.4.13",
+    "typescript": "5.6.3",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "8.5.26"
+    }
+  }
+}

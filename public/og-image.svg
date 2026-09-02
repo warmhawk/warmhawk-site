@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#faf5ee"/>
+  <rect x="0" y="0" width="1200" height="630" fill="none" stroke="#e3d5c1" stroke-width="2"/>
+  <path d="M150 400 L230 300 L260 340 L340 290 L310 370 L340 450 L260 420 L230 470 Z" stroke="#c1531f" stroke-width="6" stroke-linejoin="round" fill="#c1531f" fill-opacity="0.16"/>
+  <text x="400" y="330" font-family="Georgia, serif" font-size="64" font-weight="700" fill="#332a22">WarmHawk</text>
+  <text x="400" y="390" font-family="Arial, sans-serif" font-size="26" fill="#7a6b5c">Self-hosted cold email infrastructure</text>
+  <text x="400" y="430" font-family="Arial, sans-serif" font-size="22" fill="#7a6b5c">Your own server. Zero per-seat fees. Real deliverability data.</text>
+</svg>

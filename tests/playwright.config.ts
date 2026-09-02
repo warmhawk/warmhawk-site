@@ -1,0 +1,41 @@
+import { defineConfig, devices } from '@playwright/test';
+
+// Mirrors the sibling warmhawk-enterprise-operator repo's
+// apps/web/playwright.config.ts (same testDir shape, fullyParallel/
+// forbidOnly/retries/reporter conventions, baseURL-from-env-with-fallback
+// pattern, single chromium project) for consistency across the warmhawk
+// repos' Playwright setups.
+//
+// Unlike that sibling config, this repo's site is already running as a
+// built, standalone artifact (a Docker container started separately this
+// session, `docker run -d --name warmhawk-site -p 4801:4600 ...` from
+// docker/Dockerfile.web in this repo) rather than something Playwright
+// should launch itself — there is no `webServer` block here on purpose.
+// Start the container (or `npm run build && npm run start` for a non-Docker
+// equivalent) before running `npm run test:e2e`.
+export default defineConfig({
+  // Relative to this config file's own location (tests/, since the
+  // 2026-08-28 root-folder cleanup) — was './tests/e2e' when this config
+  // lived at the repo root.
+  testDir: './e2e',
+  fullyParallel: true,
+  // The CI runner (2 vCPU/4GB) also runs this stack's own containers plus
+  // whatever else the pipeline has going concurrently — Playwright's CI
+  // default of 1 worker leaves real speed on the table for these mostly
+  // I/O-bound tests, but this box is too small to push much further without
+  // risking flakiness from CPU contention.
+  workers: process.env.CI ? 2 : undefined,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  reporter: [['list']],
+  use: {
+    baseURL: process.env.E2E_BASE_URL || 'http://localhost:4801',
+    trace: 'on-first-retry',
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+  ],
+});
