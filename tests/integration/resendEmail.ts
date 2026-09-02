@@ -4,9 +4,9 @@
  * external network calls" build policy that governs the `*.test.ts` unit suite — see
  * lib/stripe.ts's / lib/email.ts's header comments, which still apply to that suite only).
  *
- * Modeled on the general shape of jitterflow-core-app's own tests/human-journeys/resendEmail.ts
- * helper (same job: a transactional email send isn't synchronous with "arrived and retrievable via
- * the provider's API", so callers poll rather than assume it landed immediately).
+ * Modeled on the general shape of a similar polling helper used elsewhere for the same job: a
+ * transactional email send isn't synchronous with "arrived and retrievable via the provider's
+ * API", so callers poll rather than assume it landed immediately.
  *
  * Endpoint shapes below follow Resend's documented REST API conventions
  * (https://resend.com/docs/api-reference/emails) — `GET /emails/:id` (retrieve a single sent

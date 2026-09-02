@@ -56,7 +56,7 @@ ever needing to compare the private key itself):
   $FINGERPRINT
 
 Next steps:
-  1. In warmhawk-site's deployment secrets (a Woodpecker secret, NOT committed to .env/.env.example),
+  1. In warmhawk-site's deployment secrets (a CI secret, NOT committed to .env/.env.example),
      set:
        LICENSE_SIGNING_PRIVATE_KEY="$PRIVATE_ESCAPED"
 

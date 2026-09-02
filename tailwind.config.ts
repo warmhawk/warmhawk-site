@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 // "Warm Signal" palette — exact hex values from the source design artifact
-// (KS-LLC/build-sas-products-ideas/1. WarmHawk B2B/warmhawk-full-prototype.html
+// (warmhawk-full-prototype.html
 // `:root`), not an approximation of it. Previous values here were a
 // close-but-not-identical hand reinterpretation; corrected to match 1:1,
 // including the `amber` accent that didn't exist as a token at all before.

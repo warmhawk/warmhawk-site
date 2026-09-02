@@ -5,7 +5,8 @@
 // neither NEXT_PUBLIC_GA4_MEASUREMENT_ID nor NEXT_PUBLIC_POSTHOG_KEY set
 // this is inert, which is the state local dev and every test tier build in.
 //
-// Mirrors sibling product Jitterflow's apps/web/src/components/Analytics.tsx.
+// Follows the same consent-gated analytics-boot pattern used in a similar Analytics.tsx
+// component elsewhere.
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';

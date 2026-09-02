@@ -37,8 +37,8 @@ const nextConfig = {
     return [
       {
         // Security headers baseline (Phase 1 production hardening table),
-        // built fresh here since outreach-infra never had a `next.config.js`
-        // hardening pass to port from.
+        // built fresh here — no prior config to port a hardening pass
+        // from.
         source: '/:path*',
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },

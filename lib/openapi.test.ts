@@ -8,8 +8,8 @@ import { docsSections } from './docsNav';
  * public/openapi.json (served at https://warmhawk.com/openapi.json) is a
  * hand-authored, static machine-readable description of
  * warmhawk-core-engine's real /v1 API and its one public endpoint — GEO
- * baseline, for coding agents and API clients, matching sibling product
- * Jitterflow's own `/openapi.json`. It's static rather than generated
+ * baseline, for coding agents and API clients, matching the same convention
+ * used elsewhere in this product family's own `/openapi.json`. It's static rather than generated
  * (unlike llms.txt) because the API it describes lives in a different
  * repo, not in any data this repo already renders from — so these tests
  * only confirm the file is valid and internally consistent, not that it's

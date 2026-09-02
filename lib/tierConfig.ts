@@ -7,8 +7,8 @@
  * imported at runtime by `warmhawk-enterprise-operator`'s `LicenseGate`.
  * `warmhawk-site` is a separate, static-leaning repo with no dependency on
  * either other repo's runtime (Repo Architecture), so it cannot import
- * that TypeScript file directly — this is the one place, like jitterflow's
- * own `llms.txt` and legal pages, that has to stay hand-synced instead.
+ * that TypeScript file directly — this is the one place, like the equivalent
+ * `llms.txt` and legal pages elsewhere in this product family, that has to stay hand-synced instead.
  *
  * RULE: before every release, diff this file's numbers against
  * `warmhawk-core-engine`'s `packages/tier-config/src/constants.ts` by hand.

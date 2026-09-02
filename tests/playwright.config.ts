@@ -19,12 +19,11 @@ export default defineConfig({
   // lived at the repo root.
   testDir: './e2e',
   fullyParallel: true,
-  // KS-CI-Runner (2 vCPU/4GB) also runs this stack's own containers plus
+  // The CI runner (2 vCPU/4GB) also runs this stack's own containers plus
   // whatever else the pipeline has going concurrently — Playwright's CI
   // default of 1 worker leaves real speed on the table for these mostly
   // I/O-bound tests, but this box is too small to push much further without
-  // risking flakiness from CPU contention. See jitterflow-core-app's
-  // tests/e2e/playwright.docker.config.ts for the same reasoning.
+  // risking flakiness from CPU contention.
   workers: process.env.CI ? 2 : undefined,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

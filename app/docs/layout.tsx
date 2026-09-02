@@ -8,8 +8,8 @@ import { breadcrumbSchema } from '@/lib/seo';
 
 /**
  * Two-column docs shell — sidebar nav + article content — matching the
- * artifact's `.docs-shell` (`KS-LLC/build-sas-products-ideas/1. WarmHawk
- * B2B/warmhawk-redesign V2 Small update.html`, `#page-docs`). The `/docs`
+ * artifact's `.docs-shell` (`warmhawk-redesign V2 Small update.html`,
+ * `#page-docs`). The `/docs`
  * index itself keeps its existing full-width card-grid layout (it's an
  * overview/directory page, not an article), so this only wraps everything
  * *underneath* it.
