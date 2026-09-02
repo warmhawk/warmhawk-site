@@ -7,16 +7,14 @@ import { waitForResendEmail } from './resendEmail';
 /**
  * Full real-purchase journey: /checkout -> real Stripe Checkout Session -> real test-mode card
  * payment -> real invoice.paid webhook -> real license issuance -> real Resend email -> extract +
- * cryptographically verify the license token. Mirrors jitterflow-core-app's own
- * tests/human-journeys/signup-to-dashboard.spec.ts convention (a real dependency round trip, never
- * mocked) — for warmhawk-site, since there's no database, "real dependency" means Stripe's real
- * test-mode API and Resend's real API/SMTP relay.
+ * cryptographically verify the license token. Follows the established human-journey testing
+ * convention of a real dependency round trip, never mocked — for warmhawk-site, since there's no
+ * database, "real dependency" means Stripe's real test-mode API and Resend's real API/SMTP relay.
  *
  * Drives Stripe's real hosted Checkout page end-to-end (completeStripeCheckoutViaBrowser below)
  * rather than confirming the Checkout Session via the Stripe API directly — that shortcut is
  * confirmed impossible: Stripe never creates the underlying PaymentIntent/SetupIntent until a
- * client actually engages the hosted page (per jitterflow-core-app's own
- * tests/human-journeys/signup-to-dashboard.spec.ts header comment, confirmed live 2026-08-26).
+ * client actually engages the hosted page (confirmed live 2026-08-26).
  * That same investigation found headless Chromium was never the problem — the real blocker was
  * Stripe's own "I am an AI agent acting on behalf of someone else" agentic-commerce disclosure
  * (a real, sanctioned consent flow, not a CAPTCHA/bot-block), which reveals a second required
@@ -24,21 +22,20 @@ import { waitForResendEmail } from './resendEmail';
  * headless Chromium — no xvfb/headed-mode dependency.
  *
  * This test creates a REAL Stripe test-mode subscription every run it actually executes. Stripe
- * test-mode data has no real financial cost and needs no automated cleanup (same as jitterflow's
- * own signup-to-dashboard.spec.ts convention) — the project owner may want to periodically clear
- * old test subscriptions from the Stripe test dashboard by hand.
+ * test-mode data has no real financial cost and needs no automated cleanup — the project owner may
+ * want to periodically clear old test subscriptions from the Stripe test dashboard by hand.
  *
  * Selector provenance (see task report for what to double-check once real secrets exist):
  *  - The AI-agent disclosure checkboxes, the card accordion, #cardNumber/#cardExpiry/#cardCvc/
  *    #billingName/#billingPostalCode, #enableStripePass (Link "save my info"), and the
  *    `hosted-payment-submit-button` testid are all CONFIRMED against a live Stripe hosted Checkout
- *    page (jitterflow-core-app's own investigation, 2026-08-26) — this is generic Stripe hosted
- *    Checkout page behavior, not specific to that product, so it carries over directly.
+ *    page (confirmed 2026-08-26) — this is generic Stripe hosted Checkout page behavior, not
+ *    specific to any one product, so it carries over directly.
  *  - `#email` is NOT confirmed the same way: warmhawk-site's Checkout Session (see
  *    app/api/checkout/session/route.ts) does not set `customer_email`, so Stripe's hosted page
- *    should render an editable email field rather than a prefilled one (unlike jitterflow's flow,
- *    which already ties the session to a known customer and never needs to fill this field itself)
- *    — `#email` is Stripe's standard hosted-Checkout field id for it, but unverified live here.
+ *    should render an editable email field rather than a prefilled one (unlike a flow that already
+ *    ties the session to a known customer and never needs to fill this field itself) — `#email` is
+ *    Stripe's standard hosted-Checkout field id for it, but unverified live here.
  *
  * COVERAGE AUDIT (Human Journey Gate task 1): warmhawk-site's only other real conversion path is
  * the Tier 2 (Enterprise DFY) contact-sales form — deliberately NOT given a human-journey spec.
@@ -62,10 +59,10 @@ import { waitForResendEmail } from './resendEmail';
  * already creates, rather than a second file needing its own real purchase to get a token from.
  */
 // Synthetic-data marker (Human Journey Gate task 3) — establishes the `+wh-synth-` convention for
-// warmhawk-site, mirroring jitterflow's own `+jf-synth-` tag so a future cleanup job can find every
-// real Stripe test-mode customer this suite ever created. It can't live in the Stripe customer's
-// email field: that field does double duty as BOTH the real Checkout `#email` input AND the
-// recipient `waitForResendEmail` polls below, and it must stay the exact literal
+// warmhawk-site, following the same plus-addressed synthetic-data tag pattern used elsewhere so a
+// future cleanup job can find every real Stripe test-mode customer this suite ever created. It
+// can't live in the Stripe customer's email field: that field does double duty as BOTH the real
+// Checkout `#email` input AND the recipient `waitForResendEmail` polls below, and it must stay the exact literal
 // `delivered@resend.dev` — Resend's own documented simulation sink — for the whole real
 // checkout -> webhook -> email round trip to work at all (an untested plus-addressed variant risks
 // silently breaking that mechanism). The Stripe billing NAME has no such constraint and is exactly
@@ -158,9 +155,8 @@ test.describe('Human journey: real checkout -> real license email', () => {
 
 // Drives Stripe's own hosted Checkout page for real, using their documented test card
 // (docs.stripe.com/testing) — completes the payment rather than just verifying the page renders.
-// Ported from jitterflow-core-app's tests/human-journeys/signup-to-dashboard.spec.ts
-// completeStripeCheckoutViaBrowser(), adapted to warmhawk-site's own success-URL shape (this repo
-// redirects back to /compare/pricing?checkout=success, not a /welcome/ activation page — see
+// Adapted to warmhawk-site's own success-URL shape (this repo redirects back to
+// /compare/pricing?checkout=success, not a /welcome/ activation page — see
 // app/api/checkout/session/route.ts's success_url, so there's no page-side activation poll to wait
 // on here; the caller polls Resend for the license email instead).
 async function completeStripeCheckoutViaBrowser(page: Page) {

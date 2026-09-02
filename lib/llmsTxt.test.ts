@@ -7,7 +7,7 @@ import { homeFaqItems } from './faqContent';
 
 /**
  * Covers the GEO-baseline content served at https://warmhawk.com/llms.txt.
- * Unlike Jitterflow's hand-maintained static copy, this content is
+ * Unlike the hand-maintained static copy used elsewhere in this product family, this content is
  * generated from `docsSections`/`vsPages`/`tiers`, so these tests assert
  * it actually reflects those sources (and would fail if a future
  * doc/tier/vs-page were added there but this builder silently fell out of

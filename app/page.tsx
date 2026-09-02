@@ -14,7 +14,7 @@ export const metadata: Metadata = pageSeo({
 });
 
 // Copy below is matched section-by-section against the source design artifact
-// (KS-LLC/build-sas-products-ideas/1. WarmHawk B2B/warmhawk-full-prototype.html
+// (warmhawk-full-prototype.html
 // `#page-home`) — its exact headline, stat-strip, five-reasons list, compare
 // table, FAQ, and closing CTA, not a paraphrase of them. The one deliberate
 // departure: the artifact's hero/closing command boxes show a stylized

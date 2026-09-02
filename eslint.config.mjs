@@ -16,8 +16,8 @@ const eslintConfig = [
   },
   {
     // scripts/load-env.js is CJS and tests/human-journeys/human.config.ts require()'s it
-    // (must run before Playwright forks workers, same convention as jitterflow-core-app's own
-    // scripts/load-env.js — see that repo's eslint.config.mjs for the identical exception).
+    // (must run before Playwright forks workers, same convention used elsewhere in this product
+    // family's scripts/load-env.js — see that repo's eslint.config.mjs for the identical exception).
     files: ['scripts/load-env.js', 'tests/human-journeys/human.config.ts'],
     rules: {
       '@typescript-eslint/no-require-imports': 'off',

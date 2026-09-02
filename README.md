@@ -48,9 +48,10 @@ npm run typecheck # tsc --noEmit
 > in the PC-wide local-dev port registry — `4800` (`npm run dev`) and `4801`
 > (`npm run test:e2e:docker`'s throwaway container, see
 > `scripts/e2e-docker-up.sh`). The old `4402` default silently collided with
-> `jitterflow-core-app`'s `webhook-echo` container (also `4402` by default) —
-> this repo previously claimed to avoid jitterflow's ports based on a stale,
-> incomplete list. Check the registry memory before picking a new port here.
+> another product in this family's `webhook-echo` container (also `4402` by
+> default) — this repo previously claimed to avoid that product's ports based
+> on a stale, incomplete list. Check the registry memory before picking a new
+> port here.
 
 ---
 
@@ -200,7 +201,7 @@ HUMAN_ENV=stage npm run test:human
 fallback to, `.env/.env.local`/`.env/.env.example` (see `scripts/load-env.js`, wired into
 `tests/human-journeys/human.config.ts`). Copy `.env/.env.stage.example` (committed, placeholders
 only) to `.env/.env.stage` (gitignored) and fill in real Stripe test-mode + Resend + license-signing
-values by hand — this is for local/dev parity only and never changes how Woodpecker CI injects
+values by hand — this is for local/dev parity only and never changes how CI injects
 secrets into the deployed stage server itself (`from_secret` there stays authoritative).
 
 `prod` is accepted by `targets.ts` but the real-purchase test itself hard-skips whenever
@@ -210,8 +211,8 @@ secrets into the deployed stage server itself (`from_secret` there stays authori
 
 ## 🔁 CI/CD
 
-No pipeline config lives in this repo — like every other KS-LLC-org repo, it runs on
-self-hosted Woodpecker, generated centrally from `ks-woodpecker-config`'s `repo-map.ts`
+No pipeline config lives in this repo — like every repo in this product family, it runs on
+a self-hosted CI runner, with the pipeline generated centrally from a shared repo-map config
 (`warmhawk/warmhawk-site` entry). Push-to-`main` builds the image (`docker/Dockerfile.web`),
 pushes it to `ghcr.io/warmhawk/web`, and deploys via `docker/docker-compose.deploy.yml`
 (the "own repo, git-pull" pattern — pulls the pushed image, no on-box rebuild). This repo is

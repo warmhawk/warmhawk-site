@@ -1,8 +1,8 @@
 // Client-side analytics — GA4 for acquisition, PostHog for the funnel. Both
 // are entirely optional: with the NEXT_PUBLIC_* IDs unset (local dev, stage,
 // e2e) nothing loads and every call here is a no-op, so this module is safe
-// to import from anywhere without a guard. Mirrors sibling product
-// Jitterflow's apps/web/src/lib/analytics.ts, adapted to WarmHawk's own
+// to import from anywhere without a guard. Mirrors the equivalent analytics
+// module used elsewhere in this product family, adapted to WarmHawk's own
 // funnel (no signup flow here — the free tier needs no account, so the
 // funnel runs landing -> pricing -> checkout instead).
 //

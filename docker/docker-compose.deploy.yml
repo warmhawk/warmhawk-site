@@ -1,6 +1,6 @@
 # Deploy compose file for warmhawk-site — NOT used for local dev (that's
 # `npm run dev`, no Docker involved at all). Pulls the prebuilt image
-# Woodpecker's build-push-web workflow already built and pushed to
+# CI's build-push-web workflow already built and pushed to
 # ghcr.io/warmhawk/web:<git-sha> (package name is "web", matching the
 # Dockerfile/service name — not "warmhawk-site"; confirmed live 2026-08-29
 # after this field's original "warmhawk-site" name caused every deploy to
@@ -10,7 +10,7 @@
 #
 # Single stateless service, no database/cache of its own — this app has no
 # persistent state to survive a redeploy. It declares an `external: true`
-# network, matching jitterflow's deploy compose file, so the shared edge
+# network, matching the deploy compose file pattern used elsewhere in this product family, so the shared edge
 # proxy on the same host reaches this container by name — no host port
 # published (previously 4600, redundant once the edge moved to container-name
 # routing; dropped). CONTAINER_PREFIX still exists as a knob (matches the

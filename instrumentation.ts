@@ -1,7 +1,7 @@
 // Next.js's own hook for exactly this purpose (stable since 13.4, no config flag needed on
 // 15.5.24) — called once per server instance, before any route handler runs. Adapted from
-// jitterflow-core-app's ops/otel/tracing.js (same org-wide SigNoz collector, same
-// "OTEL_EXPORTER_OTLP_ENDPOINT unset = SDK never loads, zero overhead" contract), rewritten as
+// the same tracing setup used elsewhere in this product family (same org-wide SigNoz collector,
+// same "OTEL_EXPORTER_OTLP_ENDPOINT unset = SDK never loads, zero overhead" contract), rewritten as
 // instrumentation.ts because this is a Next.js app: there's no separate entry-point file to
 // `node -r` a bootstrap script ahead of, so register() is the framework's equivalent hook.
 //
@@ -18,7 +18,8 @@ export async function register(): Promise<void> {
   const { OTLPTraceExporter } = await import('@opentelemetry/exporter-trace-otlp-http');
 
   // Silent by default (fire-and-forget export errors go nowhere without this) — WARN surfaces a
-  // broken endpoint instead of just "no traces show up" with zero clue why. Same as jitterflow.
+  // broken endpoint instead of just "no traces show up" with zero clue why. Same convention used
+  // elsewhere in this product family.
   diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.WARN);
 
   const sdk = new NodeSDK({
@@ -28,10 +29,11 @@ export async function register(): Promise<void> {
     }),
     instrumentations: [
       getNodeAutoInstrumentations({
-        // Same exclusion jitterflow makes and for the same reason: every dist/*.js require and
-        // every log write shows up as a span otherwise — noisy, low-signal. http/fetch/dns stay on,
-        // which is what actually matters for a Next.js app (route handlers, the Stripe SDK's own
-        // outbound calls, the domain-check tool's fetch to core-engine's public API).
+        // Same exclusion made elsewhere in this product family and for the same reason: every
+        // dist/*.js require and every log write shows up as a span otherwise — noisy, low-signal.
+        // http/fetch/dns stay on, which is what actually matters for a Next.js app (route handlers,
+        // the Stripe SDK's own outbound calls, the domain-check tool's fetch to core-engine's
+        // public API).
         '@opentelemetry/instrumentation-fs': { enabled: false },
       }),
     ],

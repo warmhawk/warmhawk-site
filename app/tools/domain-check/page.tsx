@@ -14,7 +14,7 @@ export const metadata: Metadata = pageSeo({
 });
 
 // Hero eyebrow/h1 and the result-card framing are matched against the source design artifact
-// (KS-LLC/build-sas-products-ideas/1. WarmHawk B2B/warmhawk-full-prototype.html `#page-domain-check`,
+// (warmhawk-full-prototype.html `#page-domain-check`,
 // lines 684-712) — its eyebrow, exact h1 ("Check any sending domain's deliverability setup,
 // free."), and closing line ("See this monitored continuously for all your sending domains, with
 // alerts the moment something changes.") are carried over close to verbatim. The one deliberate

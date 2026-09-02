@@ -10,7 +10,7 @@ export const metadata: Metadata = pageSeo({
 });
 
 // Matched against the source design artifact's #page-checkout section
-// (KS-LLC/build-sas-products-ideas/1. WarmHawk B2B/warmhawk-full-prototype.html, lines 1048-1119):
+// (warmhawk-full-prototype.html, lines 1048-1119):
 // same eyebrow ("Checkout"), same exact h1 ("Get your license."), same Tier 1 / Tier 2 tab
 // structure and the same two side cards ("What's included", "Questions before you buy?"). The one
 // deliberate departure is the tab-panel content itself — the artifact mocks up raw card-number/

@@ -29,8 +29,8 @@ function getDisallow(): string[] {
 // not a behavior change. A crawler that matches a named user-agent group
 // uses ONLY that group's rules, ignoring the `*` group entirely — so every
 // entry below repeats DISALLOW, or these crawlers would silently see pages
-// the wildcard rule blocks. Same list as sibling product jitterflow.io's
-// `app/robots.ts`.
+// the wildcard rule blocks. This same list is used consistently elsewhere
+// for the equivalent crawler allow-list.
 const AI_CRAWLER_USER_AGENTS = [
   'GPTBot',
   'OAI-SearchBot', // ChatGPT Search's own crawler — separate from GPTBot, not covered by it

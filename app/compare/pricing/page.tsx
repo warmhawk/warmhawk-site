@@ -16,7 +16,7 @@ export const metadata: Metadata = pageSeo({
 });
 
 // Hero headline/subhead, the feature-matrix framing, and the closing CTA are matched against the
-// source design artifact (KS-LLC/build-sas-products-ideas/1. WarmHawk B2B/warmhawk-full-prototype.html
+// source design artifact (warmhawk-full-prototype.html
 // `#page-compare-pricing`, lines 646-683) — its eyebrow, exact h1 ("No credits. No per-seat math.
 // One flat fee."), the "unlimited users" precision callout, and closing line ("Pick the tier that
 // matches how much you want to run yourself.") are carried over close to verbatim. The pricing

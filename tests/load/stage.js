@@ -1,8 +1,8 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
-// Read-only marketing/docs page load test — added for CI-tier parity with jitterflow-core-app's
-// own k6 load test, per an explicit product-owner decision, despite this being a low-backend-logic
+// Read-only marketing/docs page load test — added for CI-tier parity with an established k6 load
+// test convention, per an explicit product-owner decision, despite this being a low-backend-logic
 // marketing site. Self-contained (no `.k6-lib` import — this repo has no shared k6 library file).
 //
 // Deliberately excludes /api/checkout/session: creating real Stripe Checkout Sessions under load
@@ -11,8 +11,8 @@ import { check, sleep } from 'k6';
 // app/api/checkout/session/route.integration.test.ts). This tier only exercises the app's own
 // static/SSR page rendering.
 //
-// K6_BASE_URL, same env var name as jitterflow's own k6 script — defaults to the e2e-docker
-// container's mapped port shape (see scripts/e2e-docker-up.sh) so this can run against a
+// K6_BASE_URL, the conventional env var name for this kind of k6 script — defaults to the
+// e2e-docker container's mapped port shape (see scripts/e2e-docker-up.sh) so this can run against a
 // locally-built container with zero extra config.
 const BASE_URL = __ENV.K6_BASE_URL || 'http://localhost:4600';
 

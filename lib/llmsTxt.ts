@@ -7,7 +7,7 @@ import { homeFaqItems, pricingFaqItems, domainCheckFaqItems } from './faqContent
  * Builds the content served at https://warmhawk.com/llms.txt — the
  * llms.txt convention (https://llmstxt.org) for pointing AI crawlers and
  * answer engines at a curated, machine-readable index of the site (GEO
- * baseline). Sibling product Jitterflow ships this as a hand-maintained
+ * baseline). Another product in this family ships this as a hand-maintained
  * static file under `public/llms.txt` (see its own header comment on the
  * pricing section: "This file is static and cannot import
  * packages/plan-limits/src/constants.ts — keep these numbers in sync with

@@ -1,7 +1,7 @@
 /**
  * Resolves HUMAN_ENV ('local' | 'stage' | 'prod', default 'local') to the base URL
- * tests/human-journeys/*.spec.ts should run against — mirrors jitterflow-core-app's own
- * tests/human-journeys/ convention of a live-deploy target resolved from one env var.
+ * tests/human-journeys/*.spec.ts should run against — follows the convention used elsewhere in
+ * this product family's test suites of a live-deploy target resolved from one env var.
  *
  * "local" resolves to `npm run dev`'s port (4800), not the e2e-docker container's port (4801):
  * this suite needs a running app process with REAL Stripe/Resend secrets wired into its own
