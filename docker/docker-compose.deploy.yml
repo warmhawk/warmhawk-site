@@ -16,6 +16,29 @@
 # routing; dropped). CONTAINER_PREFIX still exists as a knob (matches the
 # fleet-wide convention) even though there's only ever one container to
 # prefix.
+configs:
+  # A registry:2 pull-through cache verifies token-auth JWTs against a PEM file on disk
+  # (REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE below) -- unlike every other secret in this file, there is
+  # no way to hand it a PEM string directly as an environment variable, so `content:` (Compose
+  # Spec's inline-config feature, Compose v2.23.1+) is what turns REGISTRY_TOKEN_SIGNING_PUBLIC_KEY
+  # into a mounted file without introducing a host bind-mount path this otherwise host-agnostic
+  # compose file would have to assume exists. Only the PUBLIC half ever reaches this container --
+  # see the `registry` service's own comment.
+  #
+  # MUST be a self-signed X.509 CERTIFICATE (-----BEGIN CERTIFICATE-----), not a raw public key --
+  # registry:2's token-auth middleware parses this file as a certificate bundle and resolves a
+  # token's signing key by matching its `kid` header against each cert's libtrust key ID; a raw SPKI
+  # public key PEM parses to zero certs and every `docker login`/`pull` fails with "token auth
+  # requires at least one token signing root certificate". Generate it from
+  # REGISTRY_TOKEN_SIGNING_PRIVATE_KEY with:
+  #   openssl req -new -x509 -key registry-token-signing-key.pem -days 3650 \
+  #     -subj "/CN=warmhawk-registry-token-signer" -out registry-token-public-cert.pem
+  # -- it is not an independent secret, just a derived artifact of the one private key env var Task
+  # 1 actually introduces, safe to regenerate any time (lib/registryToken.ts's `derivePublicKeyPem`
+  # is NOT this value -- see that function's own doc comment).
+  registry_token_public_key:
+    content: ${REGISTRY_TOKEN_SIGNING_PUBLIC_KEY:?REGISTRY_TOKEN_SIGNING_PUBLIC_KEY is required}
+
 services:
   web:
     container_name: ${CONTAINER_PREFIX:?CONTAINER_PREFIX is required}-web
@@ -28,6 +51,11 @@ services:
       STRIPE_PRICE_SELF_HOSTED_PRO_ANNUAL: ${STRIPE_PRICE_SELF_HOSTED_PRO_ANNUAL:?STRIPE_PRICE_SELF_HOSTED_PRO_ANNUAL is required}
       STRIPE_PRICE_TIER_2: ${STRIPE_PRICE_TIER_2:?STRIPE_PRICE_TIER_2 is required}
       LICENSE_SIGNING_PRIVATE_KEY: ${LICENSE_SIGNING_PRIVATE_KEY:?LICENSE_SIGNING_PRIVATE_KEY is required}
+      # Signs the short-lived registry pull tokens app/api/registry/token issues -- a separate
+      # keypair from LICENSE_SIGNING_PRIVATE_KEY above by design (lib/registryToken.ts's module doc
+      # explains why), verified by the `registry` service below via its public half.
+      REGISTRY_TOKEN_SIGNING_PRIVATE_KEY: ${REGISTRY_TOKEN_SIGNING_PRIVATE_KEY:?REGISTRY_TOKEN_SIGNING_PRIVATE_KEY is required}
+      OPERATOR_RELEASE_READ_TOKEN: ${OPERATOR_RELEASE_READ_TOKEN:?OPERATOR_RELEASE_READ_TOKEN is required}
       SMTP_HOST: ${SMTP_HOST:-smtp.resend.com}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER:-resend}
@@ -45,6 +73,45 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
+
+  # Registry pull-through cache + token-auth front door for
+  # ghcr.io/warmhawk/enterprise-operator -- what a customer's `docker login
+  # registry.warmhawk.com` / `docker pull` (per warmhawk-enterprise-operator's own install.sh)
+  # actually talks to. warmhawk-enterprise-operator's real image source stays GHCR; this proxies to
+  # it rather than mirroring so there is nothing here to keep in sync with a real push pipeline.
+  #
+  # Official registry:2 config keys used below (each env var is registry:2's own
+  # REGISTRY_<UPPERCASED_DOTTED_CONFIG_PATH> mapping over its config.yml -- see
+  # https://distribution.github.io/distribution/about/configuration/):
+  #   proxy.remoteurl/username/password  -- https://distribution.github.io/distribution/about/configuration/#proxy
+  #     (pull-through cache: transparently proxies + caches blobs from a real upstream registry;
+  #     GHCR requires Basic auth even for a public image pull at any volume, hence username+password)
+  #   auth.token.*                       -- https://distribution.github.io/distribution/about/configuration/#token
+  #     (this registry accepts ONLY bearer tokens matching realm/service/issuer/rootcertbundle below
+  #     -- issued exclusively by app/api/registry/token, which itself requires a currently-valid
+  #     WarmHawk license. A request with no token, or one from anywhere else, is rejected before it
+  #     ever reaches the proxy.remoteurl upstream.)
+  registry:
+    container_name: ${CONTAINER_PREFIX:?CONTAINER_PREFIX is required}-registry
+    image: registry:2
+    restart: unless-stopped
+    environment:
+      REGISTRY_PROXY_REMOTEURL: https://ghcr.io
+      REGISTRY_PROXY_USERNAME: ${GHCR_PROXY_USERNAME:?GHCR_PROXY_USERNAME is required}
+      REGISTRY_PROXY_PASSWORD: ${GHCR_PROXY_PAT:?GHCR_PROXY_PAT is required}
+      REGISTRY_AUTH_TOKEN_REALM: https://warmhawk.com/api/registry/token
+      REGISTRY_AUTH_TOKEN_SERVICE: registry.warmhawk.com
+      # Must exactly match lib/registryToken.ts's REGISTRY_TOKEN_ISSUER constant -- registry:2
+      # rejects a token whose `iss` claim doesn't match this.
+      REGISTRY_AUTH_TOKEN_ISSUER: warmhawk.com
+      # The registry's mechanism for verifying tokens minted by app/api/registry/token: the PUBLIC
+      # half of REGISTRY_TOKEN_SIGNING_PRIVATE_KEY, mounted below via `configs:` from
+      # REGISTRY_TOKEN_SIGNING_PUBLIC_KEY. Only the public key ever needs to reach this container --
+      # it verifies signatures, it never signs anything itself.
+      REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE: /certs/registry-token-public.pem
+    configs:
+      - source: registry_token_public_key
+        target: /certs/registry-token-public.pem
 
 networks:
   default:
