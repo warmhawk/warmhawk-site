@@ -1,11 +1,41 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { generateKeyPairSync, createSign } from 'node:crypto';
+import { generateKeyPairSync, createSign, createPublicKey, createHash } from 'node:crypto';
 import {
   mintRegistryToken,
   verifyRegistryToken,
   derivePublicKeyPem,
   REGISTRY_TOKEN_ISSUER,
 } from './registryToken';
+
+/** Independent reimplementation of libtrust's key-ID algorithm (see registryToken.ts's own
+ *  `libtrustKeyId` doc comment for the spec reference) -- kept separate from the production
+ *  function under test so this test can't pass by construction if that function's algorithm were
+ *  ever broken in a way that's still internally self-consistent. */
+function expectedLibtrustKeyId(publicKeyPem: string): string {
+  const spkiDer = createPublicKey(publicKeyPem).export({ type: 'spki', format: 'der' });
+  const digest = createHash('sha256').update(spkiDer).digest().subarray(0, 30);
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  let bits = 0;
+  let value = 0;
+  let base32 = '';
+  for (const byte of digest) {
+    value = (value << 8) | byte;
+    bits += 8;
+    while (bits >= 5) {
+      base32 += alphabet[(value >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+  }
+  if (bits > 0) {
+    base32 += alphabet[(value << (5 - bits)) & 31];
+  }
+  return base32.match(/.{1,4}/g)!.join(':');
+}
+
+function decodeHeader(token: string): { typ: string; alg: string; kid?: string } {
+  const [encodedHeader] = token.split('.');
+  return JSON.parse(Buffer.from(encodedHeader!, 'base64url').toString('utf8'));
+}
 
 /**
  * Tests lib/registryToken.ts's RS256 sign/verify round trip -- the Docker Registry v2 Token
@@ -180,6 +210,20 @@ describe('registry token mint/verify (RS256, Docker Registry v2 Token Authentica
     if (!result.valid) {
       expect(result.reason).toBe('malformed');
     }
+  });
+
+  it('sets a `kid` header matching libtrust\'s key ID for the signing key -- registry:2 resolves a ' +
+    'token\'s verification cert by `kid`, not by trying every cert in the bundle, so a token minted ' +
+    'without one is rejected ("unable to get token signing key") even against a correctly-configured ' +
+    'REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE', () => {
+    const token = mintRegistryToken({
+      subject: 'whk_live_test123',
+      service: 'registry.warmhawk.com',
+      privateKeyPem: TEST_PRIVATE_KEY,
+    });
+    const header = decodeHeader(token);
+
+    expect(header.kid).toBe(expectedLibtrustKeyId(TEST_PUBLIC_KEY));
   });
 });
 
