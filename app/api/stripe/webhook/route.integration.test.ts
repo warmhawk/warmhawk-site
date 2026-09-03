@@ -139,6 +139,9 @@ describe.skipIf(!canRunLiveWebhookTest)(
       // one canonical issuance implementation. The token this test extracts is real-shaped but
       // harmless: it is signed with whatever LICENSE_SIGNING_PRIVATE_KEY this test run configured
       // (a test keypair — see .env/.env.example) and is never activated against a real product install.
+      // This same token also serves as the registry pull credential now (see
+      // app/api/registry/token/route.ts's verifyLicense() call) -- no separate credential is
+      // minted at webhook time for that, by design, so there is nothing new for this test to cover.
       const licenseToken = installCommandMatch![1];
       expect(licenseToken).toMatch(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
     });
