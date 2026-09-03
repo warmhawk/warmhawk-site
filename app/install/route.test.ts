@@ -94,16 +94,30 @@ describe('GET /install', () => {
     expect(script).toContain('--owner-email "$OWNER_EMAIL"');
   });
 
-  it('supports repo-source overrides via env vars, defaulting to the real public GitHub repos', async () => {
+  it('supports a core-engine-source override via env var, defaulting to the real public GitHub repo', async () => {
     const script = await (await GET()).text();
     expect(script).toContain(
       'CORE_REPO_SOURCE="${WARMHAWK_CORE_REPO_URL:-https://github.com/warmhawk/warmhawk-core-engine.git}"',
     );
-    expect(script).toContain(
-      'OPERATOR_REPO_SOURCE="${WARMHAWK_OPERATOR_REPO_URL:-https://github.com/warmhawk/warmhawk-enterprise-operator.git}"',
-    );
     expect(script).toContain('--core-engine-source) CORE_REPO_SOURCE="$2"; shift 2 ;;');
-    expect(script).toContain('--operator-source) OPERATOR_REPO_SOURCE="$2"; shift 2 ;;');
+  });
+
+  it('fetches the operator deploy-tooling tarball instead of cloning warmhawk-enterprise-operator — that repo is private forever', async () => {
+    const script = await (await GET()).text();
+    // No git clone of the operator repo anywhere in this script -- only core-engine's is a real
+    // `fetch_source` git-or-local-path call.
+    expect(script).not.toContain('WARMHAWK_OPERATOR_REPO_URL');
+    expect(script).not.toContain('OPERATOR_REPO_SOURCE');
+    expect(script).not.toContain('--operator-source');
+    expect(script).toContain(
+      'OPERATOR_DEPLOY_TOOLING_URL="${OPERATOR_DEPLOY_TOOLING_URL:-https://warmhawk.com/api/operator-deploy-tooling}"',
+    );
+    expect(script).toContain(
+      '--operator-deploy-tooling-url) OPERATOR_DEPLOY_TOOLING_URL="$2"; shift 2 ;;',
+    );
+    expect(script).toContain(
+      'curl -fsSL "$OPERATOR_DEPLOY_TOOLING_URL" | tar -xz -C "$OPERATOR_DIR"',
+    );
   });
 
   it('does not print its own setup-link message, letting the operator install.sh output flow through', async () => {
