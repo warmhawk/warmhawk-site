@@ -134,7 +134,9 @@ describe('GET /api/operator-deploy-tooling', () => {
   it('returns 429 once a single source IP exceeds the rate limit, without calling GitHub again', async () => {
     process.env.OPERATOR_RELEASE_READ_TOKEN = 'test-read-token';
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    const fetchSpy = vi.fn().mockResolvedValue({ ok: false, status: 404, json: () => Promise.resolve({}) });
+    const fetchSpy = vi
+      .fn()
+      .mockResolvedValue({ ok: false, status: 404, json: () => Promise.resolve({}) });
     vi.stubGlobal('fetch', fetchSpy);
     const req = requestFrom(); // fixed IP reused for every call below, unlike the other tests
 
