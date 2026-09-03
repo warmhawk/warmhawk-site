@@ -1,4 +1,4 @@
-import { createSign, createVerify, createPublicKey, randomUUID } from 'node:crypto';
+import { createSign, createVerify, createPublicKey, createHash, randomUUID } from 'node:crypto';
 
 /**
  * Mints and verifies short-lived RS256 JWTs for the Docker Registry v2 Token Authentication
@@ -87,6 +87,37 @@ function base64UrlEncodeJson(value: unknown): string {
   return Buffer.from(JSON.stringify(value), 'utf8').toString('base64url');
 }
 
+/** registry:2's token-auth middleware resolves a JWT's signing key by `kid`, not by trying every
+ *  cert in REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE -- a token with no `kid` header fails verification
+ *  ("unable to get token signing key") even when the right cert is present in the bundle. The `kid`
+ *  it expects is libtrust's key ID: SHA256 over the DER-encoded SPKI public key, first 30 bytes,
+ *  base32-encoded (RFC 4648, no padding), grouped into ':'-separated 4-character chunks. See
+ *  https://distribution.github.io/distribution/spec/auth/token/#json-web-token and libtrust's
+ *  `keyIDFromCryptoKey` (github.com/docker/libtrust/key.go) -- reimplemented here rather than
+ *  imported since libtrust is unmaintained and this is the entire algorithm. */
+function libtrustKeyId(privateKeyPem: string): string {
+  const spkiDer = createPublicKey(privateKeyPem).export({ type: 'spki', format: 'der' });
+  const digest = createHash('sha256').update(spkiDer).digest().subarray(0, 30);
+
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  let bits = 0;
+  let value = 0;
+  let base32 = '';
+  for (const byte of digest) {
+    value = (value << 8) | byte;
+    bits += 8;
+    while (bits >= 5) {
+      base32 += alphabet[(value >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+  }
+  if (bits > 0) {
+    base32 += alphabet[(value << (5 - bits)) & 31];
+  }
+
+  return base32.match(/.{1,4}/g)!.join(':');
+}
+
 /** Signs a fixed-access registry pull token. Called only from
  *  `app/api/registry/token/route.ts`, and only after that route has independently verified the
  *  caller presented a currently-valid WarmHawk license -- this function itself performs no
@@ -97,7 +128,7 @@ export function mintRegistryToken({
   privateKeyPem,
 }: MintRegistryTokenOptions): string {
   const nowSeconds = Math.floor(Date.now() / 1000);
-  const header = { typ: 'JWT', alg: 'RS256' };
+  const header = { typ: 'JWT', alg: 'RS256', kid: libtrustKeyId(privateKeyPem) };
   const payload: RegistryTokenPayload = {
     iss: REGISTRY_TOKEN_ISSUER,
     sub: subject,
@@ -174,16 +205,24 @@ export function verifyRegistryToken(
   return { valid: true, expired: false, payload };
 }
 
-/** Derives the PEM public half from the signing private key -- identical technique to
+/** Derives the raw PEM public half from the signing private key -- identical technique to
  *  `lib/license.ts`'s own `derivePublicKeyPem` (RSA private keys embed their own public
  *  modulus/exponent, so this is a pure local derivation, no I/O). Duplicated rather than imported
  *  from `lib/license.ts`: this module's whole reason to exist is to be independent of that file's
  *  key material (see module doc's "SEPARATE KEYPAIR" note), and reaching across to import a
  *  license.ts helper -- however generic -- would read as exactly the kind of coupling between the
- *  two keys this Task was designed to avoid. Ops uses this once, by hand, when provisioning
- *  REGISTRY_TOKEN_SIGNING_PRIVATE_KEY, to also produce the public PEM that
- *  docker-compose.deploy.yml's `registry` service needs mounted at
- *  REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE -- see that file's own comment. */
+ *  two keys this Task was designed to avoid. Used by this file's own tests to verify a minted
+ *  token's signature (plain RSA-SHA256 verify, which only needs the raw public key).
+ *
+ *  NOT what belongs at REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE -- registry:2's token-auth middleware
+ *  parses that file as a bundle of X.509 certificates (`-----BEGIN CERTIFICATE-----`), not raw
+ *  SPKI public keys, and resolves a token's signing key by `kid` against each cert's libtrust key
+ *  ID (see `libtrustKeyId` above) -- a raw public key PEM parses to zero certs and every login
+ *  fails with "token auth requires at least one token signing root certificate". Ops provisioning
+ *  REGISTRY_TOKEN_SIGNING_PRIVATE_KEY must instead self-sign a certificate over it, e.g.:
+ *  `openssl req -new -x509 -key registry-token-signing-key.pem -days 3650 -subj "/CN=warmhawk-registry-token-signer" -out registry-token-public.pem`
+ *  -- that cert (not this function's output) is what docker-compose.deploy.yml's `registry`
+ *  service needs mounted at REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE; see that file's own comment. */
 export function derivePublicKeyPem(privateKeyPem: string): string {
   return createPublicKey(privateKeyPem).export({ type: 'spki', format: 'pem' }).toString();
 }
