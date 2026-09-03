@@ -77,7 +77,9 @@ function tokenRequest(
   const url = new URL('http://localhost/api/registry/token');
   if (options.service !== undefined) url.searchParams.set('service', options.service);
   if (options.scope !== undefined) url.searchParams.set('scope', options.scope);
-  const headers: Record<string, string> = { 'x-real-ip': options.ip ?? `203.0.113.${++testIpCounter}` };
+  const headers: Record<string, string> = {
+    'x-real-ip': options.ip ?? `203.0.113.${++testIpCounter}`,
+  };
   if (options.authorization !== undefined) headers.authorization = options.authorization;
   return new NextRequest(url, { headers });
 }
