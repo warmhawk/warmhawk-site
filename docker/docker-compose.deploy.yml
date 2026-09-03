@@ -23,10 +23,19 @@ configs:
   # Spec's inline-config feature, Compose v2.23.1+) is what turns REGISTRY_TOKEN_SIGNING_PUBLIC_KEY
   # into a mounted file without introducing a host bind-mount path this otherwise host-agnostic
   # compose file would have to assume exists. Only the PUBLIC half ever reaches this container --
-  # see the `registry` service's own comment. Derive it from REGISTRY_TOKEN_SIGNING_PRIVATE_KEY with
-  # lib/registryToken.ts's `derivePublicKeyPem` (same technique as `LICENSE_SIGNING_PRIVATE_KEY` /
-  # `derivePublicKeyPem` in lib/license.ts) -- it is not an independent secret, just a derived
-  # artifact of the one env var Task 1 actually introduces, safe to regenerate any time.
+  # see the `registry` service's own comment.
+  #
+  # MUST be a self-signed X.509 CERTIFICATE (-----BEGIN CERTIFICATE-----), not a raw public key --
+  # registry:2's token-auth middleware parses this file as a certificate bundle and resolves a
+  # token's signing key by matching its `kid` header against each cert's libtrust key ID; a raw SPKI
+  # public key PEM parses to zero certs and every `docker login`/`pull` fails with "token auth
+  # requires at least one token signing root certificate". Generate it from
+  # REGISTRY_TOKEN_SIGNING_PRIVATE_KEY with:
+  #   openssl req -new -x509 -key registry-token-signing-key.pem -days 3650 \
+  #     -subj "/CN=warmhawk-registry-token-signer" -out registry-token-public-cert.pem
+  # -- it is not an independent secret, just a derived artifact of the one private key env var Task
+  # 1 actually introduces, safe to regenerate any time (lib/registryToken.ts's `derivePublicKeyPem`
+  # is NOT this value -- see that function's own doc comment).
   registry_token_public_key:
     content: ${REGISTRY_TOKEN_SIGNING_PUBLIC_KEY:?REGISTRY_TOKEN_SIGNING_PUBLIC_KEY is required}
 
