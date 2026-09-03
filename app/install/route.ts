@@ -36,13 +36,20 @@ import { NextResponse } from 'next/server';
  * own `--domain` examples), unless the customer overrides one explicitly with
  * `--api-domain`/`--dashboard-domain`.
  *
- * Repo-source resolution (both product repos are PRIVATE as of this build, pre-launch): the
- * defaults below are the real, permanent public GitHub URLs these repos will live at once they go
- * public — nothing here needs to change when that happens. Until then, or for internal
- * staging/testing, override via `WARMHAWK_CORE_REPO_URL` / `WARMHAWK_OPERATOR_REPO_URL` (same
- * pattern as rustup's `RUSTUP_UPDATE_ROOT` or Homebrew's `HOMEBREW_BREW_GIT_REMOTE`) — a git
- * remote URL is cloned; a local filesystem path is copied as-is (including uncommitted working-
- * tree state, useful for testing a not-yet-committed change to either repo before it's public).
+ * Repo-source resolution differs by product, and that is permanent, not a pre-launch stopgap:
+ *
+ *   - warmhawk-core-engine is BSL 1.1 and going public at go-live — CORE_REPO_SOURCE below defaults
+ *     to the real, permanent public GitHub URL it will live at, and needs no change once that
+ *     happens. Override via `WARMHAWK_CORE_REPO_URL` (same pattern as rustup's
+ *     `RUSTUP_UPDATE_ROOT` or Homebrew's `HOMEBREW_BREW_GIT_REMOTE`) — a git remote URL is cloned; a
+ *     local filesystem path is copied as-is (including uncommitted working-tree state, useful for
+ *     testing a not-yet-committed change before it's public).
+ *   - warmhawk-enterprise-operator is PRIVATE FOREVER — that repo's source is never fetched by this
+ *     script at all, not now, not after go-live. What the customer's box gets instead is a small
+ *     "deploy tooling" tarball (install.sh, docker-compose.yml, nginx config — no application code)
+ *     from `app/api/operator-deploy-tooling`, plus a prebuilt image pulled from a registry proxy
+ *     (`app/api/registry/token`) authenticated with the customer's own `--license` token acting as
+ *     the pull credential. See those two routes' own doc comments for the full design.
  */
 const INSTALL_SCRIPT = `#!/usr/bin/env bash
 #
@@ -65,11 +72,16 @@ const INSTALL_SCRIPT = `#!/usr/bin/env bash
 #   short whk_live_ identifier printed alongside it.
 #
 # Optional overrides:
-#   --api-domain <domain>        (default: api.<domain>)
-#   --dashboard-domain <domain>  (default: dashboard.<domain>)
-#   --core-engine-source <src>   (default: \$WARMHAWK_CORE_REPO_URL or the public GitHub repo)
-#   --operator-source <src>      (default: \$WARMHAWK_OPERATOR_REPO_URL or the public GitHub repo)
-#   --install-dir <path>         (default: \$WARMHAWK_INSTALL_DIR or ~/warmhawk)
+#   --api-domain <domain>                (default: api.<domain>)
+#   --dashboard-domain <domain>          (default: dashboard.<domain>)
+#   --core-engine-source <src>           (default: \$WARMHAWK_CORE_REPO_URL or the public GitHub repo)
+#   --operator-deploy-tooling-url <url>  (default: \$OPERATOR_DEPLOY_TOOLING_URL or
+#                                         https://warmhawk.com/api/operator-deploy-tooling --
+#                                         install.sh/docker-compose.yml/nginx config only, never
+#                                         warmhawk-enterprise-operator's application source, which
+#                                         stays in that permanently-private repo and never reaches
+#                                         this script at all)
+#   --install-dir <path>                 (default: \$WARMHAWK_INSTALL_DIR or ~/warmhawk)
 set -euo pipefail
 
 log()  { echo "[warmhawk-install] \$*"; }
@@ -78,10 +90,14 @@ fail() {
   exit 1
 }
 
-# Real, permanent defaults -- these become correct with zero changes once both repos go public.
-# Override for internal staging/testing (a git remote is cloned; a local path is copied as-is).
+# CORE_REPO_SOURCE: real, permanent default -- becomes correct with zero changes once
+# warmhawk-core-engine goes public. Override for internal staging/testing (a git remote is cloned;
+# a local path is copied as-is).
 CORE_REPO_SOURCE="\${WARMHAWK_CORE_REPO_URL:-https://github.com/warmhawk/warmhawk-core-engine.git}"
-OPERATOR_REPO_SOURCE="\${WARMHAWK_OPERATOR_REPO_URL:-https://github.com/warmhawk/warmhawk-enterprise-operator.git}"
+# OPERATOR_DEPLOY_TOOLING_URL: NOT a repo source -- warmhawk-enterprise-operator is private forever
+# and this script never clones it. This is this repo's own endpoint serving just the deploy tooling
+# tarball (install.sh/docker-compose.yml/nginx config); see app/api/operator-deploy-tooling/route.ts.
+OPERATOR_DEPLOY_TOOLING_URL="\${OPERATOR_DEPLOY_TOOLING_URL:-https://warmhawk.com/api/operator-deploy-tooling}"
 INSTALL_DIR="\${WARMHAWK_INSTALL_DIR:-\$HOME/warmhawk}"
 
 LICENSE=""
@@ -98,9 +114,9 @@ while [ \$# -gt 0 ]; do
     --api-domain) API_DOMAIN="\$2"; shift 2 ;;
     --dashboard-domain) DASHBOARD_DOMAIN="\$2"; shift 2 ;;
     --core-engine-source) CORE_REPO_SOURCE="\$2"; shift 2 ;;
-    --operator-source) OPERATOR_REPO_SOURCE="\$2"; shift 2 ;;
+    --operator-deploy-tooling-url) OPERATOR_DEPLOY_TOOLING_URL="\$2"; shift 2 ;;
     --install-dir) INSTALL_DIR="\$2"; shift 2 ;;
-    *) fail "Unknown argument: \$1 (expected --license, --domain, --owner-email, and optionally --api-domain/--dashboard-domain/--core-engine-source/--operator-source/--install-dir)" ;;
+    *) fail "Unknown argument: \$1 (expected --license, --domain, --owner-email, and optionally --api-domain/--dashboard-domain/--core-engine-source/--operator-deploy-tooling-url/--install-dir)" ;;
   esac
 done
 
@@ -116,8 +132,9 @@ fi
 API_DOMAIN="\${API_DOMAIN:-api.\$DOMAIN}"
 DASHBOARD_DOMAIN="\${DASHBOARD_DOMAIN:-dashboard.\$DOMAIN}"
 
-command -v git >/dev/null 2>&1 || fail "git is not installed -- required to fetch the WarmHawk packages. Install git first."
+command -v git >/dev/null 2>&1 || fail "git is not installed -- required to fetch warmhawk-core-engine. Install git first."
 command -v curl >/dev/null 2>&1 || fail "curl is not installed."
+command -v tar >/dev/null 2>&1 || fail "tar is not installed -- required to extract the operator deploy-tooling tarball."
 
 mkdir -p "\$INSTALL_DIR"
 
@@ -174,8 +191,19 @@ CORE_SERVICE_TOKEN="\$(grep -m1 '^OPERATOR_SERVICE_TOKEN=' "\$CORE_ENV" | cut -d
 [ -n "\$CORE_SERVICE_TOKEN" ] || fail "Could not read OPERATOR_SERVICE_TOKEN from \${CORE_ENV} after install -- check: cat \${CORE_ENV}"
 
 # --- 3. warmhawk-enterprise-operator (dashboard, license-gated) --------------------------------
+# NOT a git clone -- that repo is permanently private and its application source must never reach
+# a customer's box (see this file's module doc). What lands here is deploy tooling only
+# (install.sh/docker-compose.yml/nginx config), fetched from THIS repo's own endpoint; the actual
+# application ships as a prebuilt image that install.sh below pulls straight from the registry
+# proxy, authenticated with \$LICENSE itself -- see app/api/registry/token/route.ts.
 OPERATOR_DIR="\$INSTALL_DIR/warmhawk-enterprise-operator"
-fetch_source "\$OPERATOR_REPO_SOURCE" "\$OPERATOR_DIR" "warmhawk-enterprise-operator"
+mkdir -p "\$OPERATOR_DIR"
+if [ -d "\$OPERATOR_DIR" ] && [ -n "\$(ls -A "\$OPERATOR_DIR" 2>/dev/null)" ]; then
+  log "warmhawk-enterprise-operator deploy tooling already present -- reusing it."
+else
+  log "Fetching warmhawk-enterprise-operator deploy tooling (install.sh/docker-compose.yml/nginx config only -- application source never leaves WarmHawk's private repo)..."
+  curl -fsSL "\$OPERATOR_DEPLOY_TOOLING_URL" | tar -xz -C "\$OPERATOR_DIR"
+fi
 
 log "Installing WarmHawk Enterprise Operator (dashboard) at https://\${DASHBOARD_DOMAIN}/ ..."
 ( cd "\$OPERATOR_DIR" && ./scripts/install.sh \\

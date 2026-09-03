@@ -112,6 +112,9 @@ describe('POST /api/stripe/webhook', () => {
 
     expect(res.status).toBe(200);
     expect(json.received).toBe(true);
+    // This same token now does double duty as the registry pull credential -- see
+    // app/api/registry/token/route.ts's verifyLicense() call. No new credential is minted at
+    // webhook time for that; nothing here needs to change on that account.
     expect(issueLicenseMock).toHaveBeenCalledWith(
       expect.objectContaining({ customerId: 'cus_test_123', tier: 'tier_1' }),
       'test-private-key-pem',
