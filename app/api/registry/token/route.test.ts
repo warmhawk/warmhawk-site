@@ -17,8 +17,22 @@ import { TEST_PRIVATE_KEY as LICENSE_TEST_PRIVATE_KEY } from '@/tests/fixtures/l
  * REGISTRY_TOKEN_SIGNING_PRIVATE_KEY gets its own throwaway keypair (generated fresh here, not the
  * checked-in tests/fixtures/license-keypair.ts) — same reasoning as lib/registryToken.test.ts's own
  * header comment: this module's whole point is independence from the license keypair.
+ *
+ * `@/lib/stripe` IS mocked here (unlike the crypto above) — same `subscriptions.list` shape as
+ * app/api/license/refresh/route.test.ts — defaulted to an entitling subscription so every
+ * pre-existing test below keeps exercising the real lib/stripeEntitlement.ts check rather than
+ * silently relying on its fail-open path. Each test also sends a distinct `x-real-ip` (via
+ * `tokenRequest`) so the route's module-scoped rate limiter can't let one test's request count
+ * bleed into another's.
  */
 const DAY = 60 * 60 * 24;
+let testIpCounter = 0;
+
+const subscriptionsListMock = vi.fn();
+
+vi.mock('@/lib/stripe', () => ({
+  getStripeClient: () => ({ subscriptions: { list: subscriptionsListMock } }),
+}));
 
 let REGISTRY_TEST_PRIVATE_KEY: string;
 let REGISTRY_TEST_PUBLIC_KEY: string;
@@ -57,12 +71,13 @@ function tokenRequest(
     service?: string;
     scope?: string;
     authorization?: string;
+    ip?: string;
   } = {},
 ) {
   const url = new URL('http://localhost/api/registry/token');
   if (options.service !== undefined) url.searchParams.set('service', options.service);
   if (options.scope !== undefined) url.searchParams.set('scope', options.scope);
-  const headers: Record<string, string> = {};
+  const headers: Record<string, string> = { 'x-real-ip': options.ip ?? `203.0.113.${++testIpCounter}` };
   if (options.authorization !== undefined) headers.authorization = options.authorization;
   return new NextRequest(url, { headers });
 }
@@ -74,6 +89,8 @@ describe('GET /api/registry/token', () => {
   beforeEach(() => {
     process.env.LICENSE_SIGNING_PRIVATE_KEY = LICENSE_TEST_PRIVATE_KEY;
     process.env.REGISTRY_TOKEN_SIGNING_PRIVATE_KEY = REGISTRY_TEST_PRIVATE_KEY;
+    subscriptionsListMock.mockReset();
+    subscriptionsListMock.mockResolvedValue({ data: [{ id: 'sub_test', status: 'active' }] });
   });
 
   afterEach(() => {
@@ -219,5 +236,75 @@ describe('GET /api/registry/token', () => {
         { type: 'repository', name: 'warmhawk/enterprise-operator', actions: ['pull'] },
       ]);
     }
+  });
+
+  it('returns 401 and mints no token when the customer has no entitling Stripe subscription', async () => {
+    subscriptionsListMock.mockResolvedValue({ data: [{ id: 'sub_test', status: 'canceled' }] });
+
+    const res = await GET(
+      tokenRequest({
+        service: 'registry.warmhawk.com',
+        authorization: basicAuthHeader(licenseToken()),
+      }),
+    );
+    const json = (await res.json()) as { error?: string; token?: string };
+
+    expect(res.status).toBe(401);
+    expect(json.token).toBeUndefined();
+    expect(subscriptionsListMock).toHaveBeenCalledWith(
+      expect.objectContaining({ customer: 'cus_test_123' }),
+    );
+  });
+
+  it('returns 401 when the customer has no Stripe subscriptions at all', async () => {
+    subscriptionsListMock.mockResolvedValue({ data: [] });
+
+    const res = await GET(
+      tokenRequest({
+        service: 'registry.warmhawk.com',
+        authorization: basicAuthHeader(licenseToken()),
+      }),
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it('fails open (still mints a token) when the Stripe entitlement lookup itself errors', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    subscriptionsListMock.mockRejectedValue(new Error('Stripe is down'));
+
+    const res = await GET(
+      tokenRequest({
+        service: 'registry.warmhawk.com',
+        authorization: basicAuthHeader(licenseToken()),
+      }),
+    );
+    expect(res.status).toBe(200);
+  });
+
+  it('returns 429 once a single source IP exceeds the rate limit', async () => {
+    const ip = '203.0.113.250';
+
+    for (let i = 0; i < 60; i++) {
+      const res = await GET(
+        tokenRequest({
+          service: 'registry.warmhawk.com',
+          authorization: basicAuthHeader(licenseToken()),
+          ip,
+        }),
+      );
+      expect(res.status).toBe(200);
+    }
+
+    const limited = await GET(
+      tokenRequest({
+        service: 'registry.warmhawk.com',
+        authorization: basicAuthHeader(licenseToken()),
+        ip,
+      }),
+    );
+    const json = (await limited.json()) as { error?: string };
+
+    expect(limited.status).toBe(429);
+    expect(json.error).toMatch(/too many/i);
   });
 });
