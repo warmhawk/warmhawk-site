@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyLicense, derivePublicKeyPem } from '@/lib/license';
 import { mintRegistryToken } from '@/lib/registryToken';
+import { isCustomerEntitled } from '@/lib/stripeEntitlement';
+import { createRateLimiter, clientIp } from '@/lib/rateLimit';
 
 /**
  * `auth.token.realm` for the registry pull-through proxy (`registry` service in
@@ -29,6 +31,10 @@ import { mintRegistryToken } from '@/lib/registryToken';
  * `scope` is read only to log a mismatch, never to decide what gets granted -- see
  * lib/registryToken.ts's module doc ("FIXED ACCESS, NOT CALLER-SUPPLIED"). Every valid license gets
  * the exact same grant: pull access to the one private image this whole design exists to gate.
+ *
+ * A valid, unexpired signature is also re-checked live against Stripe (lib/stripeEntitlement.ts)
+ * before minting -- defense-in-depth so a cancelled/refunded subscription stops new pulls within
+ * one token TTL, rather than only once the license's own (much longer) `expiresAt` arrives.
  */
 
 /** Matches lib/registryToken.ts's GRANTED_ACCESS exactly (repository:name:actions, comma-joined
@@ -43,7 +49,19 @@ const GRANTED_SCOPE = 'repository:warmhawk/enterprise-operator:pull';
  *  token's own `exp` claim is what actually governs. */
 const REGISTRY_TOKEN_TTL_SECONDS = 300;
 
+/** Defense-in-depth flood protection, not a primary control -- install.sh/update.sh's docker
+ *  login+pull can legitimately hit this route several times per run (once per layer/retry), and
+ *  the real e2e CI tier exercises it repeatedly across two install passes. Generous on purpose. */
+const rateLimiter = createRateLimiter({ maxRequests: 60, windowMs: 5 * 60 * 1000 });
+
 export async function GET(request: NextRequest) {
+  if (!rateLimiter.check(clientIp(request))) {
+    return NextResponse.json(
+      { error: 'Too many registry token requests from this address — try again shortly.' },
+      { status: 429 },
+    );
+  }
+
   const { searchParams } = request.nextUrl;
   const service = searchParams.get('service') ?? '';
   const requestedScope = searchParams.get('scope');
@@ -81,6 +99,17 @@ export async function GET(request: NextRequest) {
   if (!licenseResult.valid) {
     return NextResponse.json(
       { error: 'That license is invalid or expired — cannot authorize a registry pull.' },
+      { status: 401 },
+    );
+  }
+
+  const entitled = await isCustomerEntitled(licenseResult.payload.customerId);
+  if (!entitled) {
+    return NextResponse.json(
+      {
+        error:
+          "This license's subscription is no longer active — cannot authorize a registry pull.",
+      },
       { status: 401 },
     );
   }
