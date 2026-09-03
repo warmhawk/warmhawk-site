@@ -212,19 +212,22 @@ describe('registry token mint/verify (RS256, Docker Registry v2 Token Authentica
     }
   });
 
-  it('sets a `kid` header matching libtrust\'s key ID for the signing key -- registry:2 resolves a ' +
-    'token\'s verification cert by `kid`, not by trying every cert in the bundle, so a token minted ' +
-    'without one is rejected ("unable to get token signing key") even against a correctly-configured ' +
-    'REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE', () => {
-    const token = mintRegistryToken({
-      subject: 'whk_live_test123',
-      service: 'registry.warmhawk.com',
-      privateKeyPem: TEST_PRIVATE_KEY,
-    });
-    const header = decodeHeader(token);
+  it(
+    "sets a `kid` header matching libtrust's key ID for the signing key -- registry:2 resolves a " +
+      "token's verification cert by `kid`, not by trying every cert in the bundle, so a token minted " +
+      'without one is rejected ("unable to get token signing key") even against a correctly-configured ' +
+      'REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE',
+    () => {
+      const token = mintRegistryToken({
+        subject: 'whk_live_test123',
+        service: 'registry.warmhawk.com',
+        privateKeyPem: TEST_PRIVATE_KEY,
+      });
+      const header = decodeHeader(token);
 
-    expect(header.kid).toBe(expectedLibtrustKeyId(TEST_PUBLIC_KEY));
-  });
+      expect(header.kid).toBe(expectedLibtrustKeyId(TEST_PUBLIC_KEY));
+    },
+  );
 });
 
 describe('derivePublicKeyPem', () => {
