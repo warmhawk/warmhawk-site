@@ -4,7 +4,7 @@ import { siteConfig } from '@/lib/siteConfig';
 
 /**
  * Creates a Stripe Checkout Session for Tier 1 (Self-Hosted Pro, recurring) or Tier 2 (Enterprise
- * DFY, one-time setup fee).
+ * DFY, one-time setup fee PLUS the same recurring software fee).
  *
  * Per Phase 4 (Commercial Licensing, Billing, Onboarding & Account
  * Security): "Stripe integration in warmhawk-site's checkout flow for
@@ -14,14 +14,22 @@ import { siteConfig } from '@/lib/siteConfig';
  * request against Stripe's documented shape — it is never invoked against
  * a real Stripe account from this build/test environment.
  *
- * 2026-09-03: Tier 2 was repriced from a custom-scoped "Talk to us" engagement to a flat $1,999
- * one-time setup fee, sold self-serve like Tier 1. Added a `tier` field to the request body so
- * this one route now covers both — `tier: 'tier_2'` builds a `mode: 'payment'` Session instead of
- * `mode: 'subscription'`. Existing callers that only send `{ interval }` (Tier 1's CheckoutButtons)
- * are unaffected: `tier` defaults to `'tier_1'`.
+ * 2026-09-03/04: Tier 2 was repriced from a custom-scoped "Talk to us" engagement ($999 one-time +
+ * $300/mo retainer) to a self-serve $1,999 one-time setup fee PLUS the same $199/mo software fee
+ * Tier 1 pays — not a pure one-time charge. It is still `mode: 'subscription'` like Tier 1 (a first
+ * commit tried `mode: 'payment'` with no recurring component at all, which was wrong and never
+ * shipped past review), just with a second, one-time line item for the setup fee: Stripe adds a
+ * one-time Price to a subscription-mode Session as an invoice item on the first invoice only, which
+ * is exactly "charge the setup fee once, then bill monthly forever" without needing two separate
+ * Checkout flows. Added a `tier` field to the request body so this one route covers both — `tier:
+ * 'tier_2'` adds the setup-fee line item and stamps `metadata.tier`/`subscription_data.metadata.tier
+ * = 'tier_2'` (read back by both `/api/stripe/webhook`'s `invoice.paid` handler and
+ * `/api/license/refresh`, since Tier 2's recurring price is now IDENTICAL to Tier 1's — price ID
+ * alone can no longer tell the tiers apart). Existing callers that only send `{ interval }` (Tier
+ * 1's CheckoutButtons) are unaffected: `tier` defaults to `'tier_1'`.
  *
  * Body: { tier?: "tier_1" | "tier_2", interval?: "monthly" | "annual" } — `interval` is read only
- * for `tier_1`; Tier 2 has no billing interval.
+ * for `tier_1`; Tier 2 is monthly-only (no annual Tier 2 price exists).
  */
 export async function POST(request: NextRequest) {
   let interval: BillingInterval = 'monthly';
@@ -37,10 +45,15 @@ export async function POST(request: NextRequest) {
   const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL ?? siteConfig.url;
 
   if (tier === 'tier_2') {
-    const priceId = STRIPE_PRICE_IDS.tier2;
-    if (!priceId) {
+    const setupFeePriceId = STRIPE_PRICE_IDS.tier2;
+    const softwarePriceId = STRIPE_PRICE_IDS.selfHostedProMonthly;
+    if (!setupFeePriceId || !softwarePriceId) {
       return NextResponse.json(
-        { error: 'Stripe price ID not configured for this environment. Set STRIPE_PRICE_TIER_2.' },
+        {
+          error:
+            'Stripe price ID not configured for this environment. Set STRIPE_PRICE_TIER_2 and ' +
+            'STRIPE_PRICE_SELF_HOSTED_PRO_MONTHLY.',
+        },
         { status: 500 },
       );
     }
@@ -48,25 +61,37 @@ export async function POST(request: NextRequest) {
     try {
       const stripe = getStripeClient();
 
-      // `mode: 'payment'` — a single one-time charge, no subscription created. Unlike
-      // `mode: 'subscription'` (which always attaches a Customer automatically),
-      // `customer_creation: 'always'` is required here so the webhook has a Customer object to
-      // persist the issued license onto (see app/api/stripe/webhook/route.ts's
-      // `persistLicenseOnCustomer`) — without it, Stripe only creates a Customer for
-      // one-time-payment mode when the buyer is later billed again, which never happens for a
-      // true one-time fee.
+      // `mode: 'subscription'` — same as Tier 1, with a second, ONE-TIME line item for the setup
+      // fee. Stripe bills a one-time Price inside a subscription-mode Session as an invoice item on
+      // the first invoice only; every invoice after that carries just the recurring software price,
+      // identical in shape to a Tier 1 invoice. `customer_creation` is not needed here (unlike a
+      // `mode: 'payment'` Session): `mode: 'subscription'` always attaches a Customer automatically.
       const session = await stripe.checkout.sessions.create({
-        mode: 'payment',
-        line_items: [{ price: priceId, quantity: 1 }],
-        customer_creation: 'always',
+        mode: 'subscription',
+        line_items: [
+          { price: setupFeePriceId, quantity: 1 },
+          { price: softwarePriceId, quantity: 1 },
+        ],
         success_url: `${siteOrigin}/checkout?tier=2&checkout=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${siteOrigin}/checkout?tier=2&checkout=cancelled`,
+        allow_promotion_codes: true,
         billing_address_collection: 'auto',
         metadata: {
-          // Read directly by the webhook's `checkout.session.completed` branch — Tier 2's one-time
-          // payment never generates an Invoice, so unlike Tier 1 there is no `invoice.paid` event
-          // to resolve tier/expiry from. See app/api/stripe/webhook/route.ts.
           tier: 'tier_2',
+          billingInterval: 'monthly',
+        },
+        // V13 fix (see the tier_1 branch below) applies here too: a Checkout Session's own
+        // `metadata` does not propagate onto the invoices Stripe generates for the resulting
+        // subscription — only `subscription_data.metadata` does, and `invoice.paid` is what
+        // resolves tier/expiry (see app/api/stripe/webhook/route.ts). This is now load-bearing for
+        // TIER itself, not just billingInterval: Tier 2's recurring price is identical to Tier 1's,
+        // so metadata is the only way `invoice.paid` (and `/api/license/refresh`) can tell them
+        // apart.
+        subscription_data: {
+          metadata: {
+            tier: 'tier_2',
+            billingInterval: 'monthly',
+          },
         },
       });
 

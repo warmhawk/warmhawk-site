@@ -4,7 +4,6 @@ import { getStripeClient } from '@/lib/stripe';
 import {
   generateLicenseKey,
   issueLicense,
-  tierForPriceId,
   computeExpiry,
   type LicensePayload,
 } from '@/lib/license';
@@ -21,31 +20,35 @@ import { emailSender } from '@/lib/email';
  * `stripeSubscriptionId`/a hardcoded `tier: 'self-hosted-pro'` literal) that matched neither
  * warmhawk-core-engine's nor warmhawk-enterprise-operator's license code, and signed over the
  * base64-encoded payload string instead of the raw JSON — a different scheme entirely. It now uses
- * the one canonical `LicensePayload` shape/signing scheme (see `lib/license.ts`) and supports both
- * tier_1 and tier_2 via `tierForPriceId`, ported from warmhawk-core-engine's now-removed
- * `stripeWebhook.ts` (which had this part right).
+ * the one canonical `LicensePayload` shape/signing scheme (see `lib/license.ts`).
  *
- * V13 fix: issues a license on `invoice.paid` ONLY now, not `checkout.session.completed` too.
- * Both events fire for a `mode: 'subscription'` Checkout's first billing cycle, so acting on both
+ * V13 fix: issues a license on `invoice.paid` ONLY, not `checkout.session.completed` too. Both
+ * events fire for a `mode: 'subscription'` Checkout's first billing cycle, so acting on both
  * double-issued a license (and a duplicate email) for every real purchase. `invoice.paid` alone
  * already covers the first invoice AND every renewal — Stripe's own documented pattern for
  * provisioning subscription access — so nothing is lost by dropping the other. This also fixes a
- * second, previously-inert bug: `checkout.session.completed`'s `metadata` does NOT propagate to
- * the invoices Stripe generates for that subscription (confirmed against Stripe's own object
- * model), so the old code's `object.metadata?.billingInterval` read was live for the
- * (now-removed) checkout-session branch but would have silently resolved to the `'monthly'`
- * fallback for every `invoice.paid` event — mis-expiring every annual subscriber's license. Fixed
- * by having `app/api/checkout/session/route.ts` set that metadata under `subscription_data`
- * instead, which Stripe DOES copy onto every invoice the subscription generates.
+ * second, previously-inert bug: a Checkout Session's own `metadata` does NOT propagate to the
+ * invoices Stripe generates for that subscription (confirmed against Stripe's own object model), so
+ * reading `object.metadata` directly off a `checkout.session.completed` event would silently
+ * resolve to defaults on every `invoice.paid` event that actually matters. Fixed by having
+ * `app/api/checkout/session/route.ts` set metadata under `subscription_data` instead, which Stripe
+ * DOES copy onto every invoice the subscription generates.
  *
- * Handles exactly the events Phase 4 specifies, plus one addition:
- *  - invoice.paid -> issue a signed license, email the install command to the customer. Tier 1
- *    (Self-Hosted Pro) only — a recurring subscription always generates invoices.
- *  - checkout.session.completed (tier_2 one-time payment only, see below) -> issue a lifetime
- *    license, email the install command. Added 2026-09-03 when Tier 2 (Enterprise DFY) became a
- *    self-serve $1,999 one-time setup fee instead of a custom-scoped "Talk to us" engagement — a
- *    `mode: 'payment'` Checkout Session never generates an Invoice, so there is no `invoice.paid`
- *    to hang issuance on for it.
+ * 2026-09-03/04: Tier 2 (Enterprise DFY) went through two designs. The first — a pure one-time
+ * $1,999 charge via `mode: 'payment'`, issuing a non-expiring "lifetime" license off
+ * `checkout.session.completed` — was wrong and never merged: Tier 2 actually charges that $1,999
+ * setup fee ONCE plus the same $199/mo software fee Tier 1 pays, forever after. It is `mode:
+ * 'subscription'` like Tier 1, with the setup fee as a second one-time line item (see
+ * app/api/checkout/session/route.ts), so it generates invoices and issues through `invoice.paid`
+ * exactly like Tier 1 — no separate `checkout.session.completed` handling needed or present. The
+ * one wrinkle: Tier 2's recurring price is IDENTICAL to Tier 1's, so an invoice's price ID can no
+ * longer tell the tiers apart (this used to be `tierForPriceId`, now removed) — tier is read from
+ * `invoice.metadata.tier` instead, propagated from `subscription_data.metadata` at checkout time
+ * exactly like `billingInterval` already was.
+ *
+ * Handles exactly the events Phase 4 specifies:
+ *  - invoice.paid -> issue a signed license, email the install command to the customer. Both Tier 1
+ *    and Tier 2 — both are real recurring subscriptions, so both always generate invoices.
  *  - invoice.payment_failed / customer.subscription.deleted -> no active revocation; the
  *    previously-issued license simply expires at its embedded date, and LicenseGate's periodic
  *    re-validation on the dashboard side naturally locks out after that.
@@ -74,8 +77,9 @@ async function persistLicenseOnSubscription(
   const subscriptionId =
     typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
   if (!subscriptionId) {
-    // A one-off invoice with no subscription (e.g. a hand-raised Tier 2 setup fee) has nowhere
-    // durable to hang this. Log the token itself so it is at least recoverable from logs.
+    // A one-off invoice with no subscription (e.g. a hand-raised invoice from the Stripe
+    // dashboard) has nowhere durable to hang this. Log the token itself so it is at least
+    // recoverable from logs.
     console.warn('Issued license for an invoice with no subscription — storing in logs only', {
       licenseKey: payload.licenseKey,
       licenseToken: token,
@@ -99,36 +103,6 @@ async function persistLicenseOnSubscription(
     metadata: {
       // Existing keys (tier, billingInterval) are preserved: Stripe merges metadata updates,
       // only overwriting the keys named here.
-      warmhawk_license_key: payload.licenseKey,
-      warmhawk_license_expires_at: new Date(payload.expiresAt * 1000).toISOString(),
-      warmhawk_license_token_1: token.slice(0, METADATA_CHUNK_SIZE),
-      warmhawk_license_token_2: token.slice(METADATA_CHUNK_SIZE, METADATA_CHUNK_SIZE * 2),
-    },
-  });
-}
-
-/**
- * Writes the issued license onto the Stripe CUSTOMER's metadata — the durable home for a Tier 2
- * license, which (unlike Tier 1's) has no subscription to hang it on. Every Tier 2 Checkout Session
- * sets `customer_creation: 'always'` (see app/api/checkout/session/route.ts) specifically so this
- * customer object exists to write to.
- */
-async function persistLicenseOnCustomer(
-  customerId: string,
-  token: string,
-  payload: LicensePayload,
-): Promise<void> {
-  if (token.length > METADATA_CHUNK_SIZE * 2) {
-    console.error('License token exceeds the two-chunk metadata budget — not persisting it', {
-      licenseKey: payload.licenseKey,
-      tokenLength: token.length,
-    });
-    return;
-  }
-
-  const stripe = getStripeClient();
-  await stripe.customers.update(customerId, {
-    metadata: {
       warmhawk_license_key: payload.licenseKey,
       warmhawk_license_expires_at: new Date(payload.expiresAt * 1000).toISOString(),
       warmhawk_license_token_1: token.slice(0, METADATA_CHUNK_SIZE),
@@ -172,8 +146,12 @@ export async function POST(request: NextRequest) {
           break;
         }
 
-        const priceId = invoice.lines?.data?.[0]?.price?.id;
-        const tier = tierForPriceId(priceId);
+        // Tier 2's recurring price is IDENTICAL to Tier 1's (same $199/mo software fee) — only its
+        // one-time setup-fee line item differs, and that line item is absent from every renewal
+        // invoice after the first. Price ID cannot disambiguate the tiers, so tier is read from
+        // `subscription_data.metadata` (propagated onto every invoice by Stripe), exactly like
+        // `billingInterval` below.
+        const tier = invoice.metadata?.tier === 'tier_2' ? 'tier_2' : 'tier_1';
         const interval = invoice.metadata?.billingInterval === 'annual' ? 'annual' : 'monthly';
 
         const now = Math.floor(Date.now() / 1000);
@@ -215,67 +193,6 @@ export async function POST(request: NextRequest) {
         const toEmail = invoice.customer_email ?? undefined;
         if (toEmail) {
           await emailSender.sendLicenseEmail({ toEmail, licenseToken: token, tier });
-        } else {
-          console.error('Issued license but no customer email was resolvable on the event', {
-            eventId: event.id,
-            licenseKey: payload.licenseKey,
-          });
-        }
-        break;
-      }
-
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
-
-        // Scoped strictly to Tier 2's one-time setup fee. `mode: 'subscription'` Checkout
-        // Sessions ALSO fire this event, but Tier 1 issuance stays on `invoice.paid` alone (V13
-        // fix, above) — acting on both would double-issue a license for every Tier 1 purchase.
-        // A Tier 1 fixture has no `mode`/`metadata.tier` set to `'payment'`/`'tier_2'`, so this
-        // condition never matches it.
-        if (session.mode !== 'payment' || session.metadata?.tier !== 'tier_2') break;
-
-        const customerId =
-          typeof session.customer === 'string' ? session.customer : session.customer?.id;
-
-        if (!customerId) {
-          console.error(`${event.type} (tier_2) missing a resolvable customer id`, {
-            eventId: event.id,
-          });
-          break;
-        }
-
-        const now = Math.floor(Date.now() / 1000);
-        const payload: LicensePayload = {
-          licenseKey: generateLicenseKey(),
-          customerId,
-          tier: 'tier_2',
-          issuedAt: now,
-          expiresAt: computeExpiry(new Date(), 'lifetime'),
-        };
-
-        const privateKeyPem = process.env.LICENSE_SIGNING_PRIVATE_KEY;
-        if (!privateKeyPem) {
-          console.error('LICENSE_SIGNING_PRIVATE_KEY is not configured — cannot issue a license', {
-            eventId: event.id,
-          });
-          break;
-        }
-
-        const { token } = issueLicense(payload, privateKeyPem);
-
-        await persistLicenseOnCustomer(customerId, token, payload).catch((error) => {
-          console.error('Could not persist license to Stripe customer metadata', {
-            eventId: event.id,
-            error,
-          });
-        });
-
-        // Checkout Session objects carry `customer_details.email` (unlike Invoice objects, which
-        // use `customer_email` — see the invoice.paid branch above; the two object types just name
-        // this field differently).
-        const toEmail = session.customer_details?.email ?? undefined;
-        if (toEmail) {
-          await emailSender.sendLicenseEmail({ toEmail, licenseToken: token, tier: 'tier_2' });
         } else {
           console.error('Issued license but no customer email was resolvable on the event', {
             eventId: event.id,
