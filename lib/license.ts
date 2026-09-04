@@ -127,13 +127,13 @@ export function verifyLicense(token: string, publicKeyPem: string): LicenseVerif
   return { valid: true, payload, expired: false };
 }
 
-/** Maps a Stripe Price ID to a WarmHawk tier. Tier 1 (Self-Hosted Pro) is sold self-serve through
- *  `app/api/checkout/session`; Tier 2 (Enterprise DFY) is "a custom-scoped one-time + retainer
- *  engagement, not a self-serve subscription toggle" (Monetization & Tiering Strategy) — sold via
- *  the "Talk to us" contact flow, not this repo's Checkout Session route — but the founder may
- *  still set the retainer up as a Stripe subscription by hand against `STRIPE_PRICE_TIER_2`, and
- *  this webhook must still recognize that event and issue a tier_2 license when it fires. Ported
- *  from warmhawk-core-engine's now-removed `stripeWebhook.ts`, which had this pattern right. */
+/** Maps a Stripe Price ID to a WarmHawk tier. Used by the `invoice.paid` branch of
+ *  `app/api/stripe/webhook`, which only ever fires for Tier 1's recurring subscription — Tier 2's
+ *  one-time setup fee (`mode: 'payment'`) never generates an Invoice, so that branch resolves its
+ *  tier directly from the Checkout Session's own `metadata.tier` instead (see that route's
+ *  `checkout.session.completed` case). This function is kept for Tier 1 resolution and as a safety
+ *  net in case Tier 2's Price ID is ever also billed through an Invoice. Ported from
+ *  warmhawk-core-engine's now-removed `stripeWebhook.ts`, which had this pattern right. */
 export function tierForPriceId(priceId: string | undefined): LicenseTier {
   if (priceId && priceId === process.env.STRIPE_PRICE_TIER_2) return 'tier_2';
   return 'tier_1';
@@ -191,12 +191,20 @@ export function authenticateLicenseToken(
 
 const BILLING_PERIOD_SECONDS = 31 * 24 * 60 * 60; // ~1 month grace beyond a 30-day cycle
 const ANNUAL_PERIOD_SECONDS = 366 * 24 * 60 * 60; // ~1 year grace beyond a 365-day cycle
+/** Tier 2 (Enterprise DFY) is a one-time setup fee with no recurring billing to renew from, so
+ *  there is no natural "current billing period" to expire at. `LicensePayload.expiresAt` is a
+ *  required field across the whole product family (core-engine's `LicenseGate` and this repo both
+ *  read it), so rather than special-case a nullable expiry across repo boundaries this uses a
+ *  100-year horizon as a practical "does not expire" value. */
+const LIFETIME_PERIOD_SECONDS = 100 * 365 * 24 * 60 * 60;
 
 /** One current billing-period expiry (unix epoch seconds), computed from `now`, matching whichever
  *  interval the Checkout Session was created with (see `app/api/checkout/session`). Renewal
  *  (`invoice.paid` on the next cycle) re-issues a license with a fresh `expiresAt` rather than
- *  extending the old one in place. */
-export function computeExpiry(now: Date, interval: 'monthly' | 'annual'): number {
+ *  extending the old one in place. `'lifetime'` is Tier 2's one-time-purchase case — see
+ *  `LIFETIME_PERIOD_SECONDS` above. */
+export function computeExpiry(now: Date, interval: 'monthly' | 'annual' | 'lifetime'): number {
   const nowSeconds = Math.floor(now.getTime() / 1000);
+  if (interval === 'lifetime') return nowSeconds + LIFETIME_PERIOD_SECONDS;
   return nowSeconds + (interval === 'annual' ? ANNUAL_PERIOD_SECONDS : BILLING_PERIOD_SECONDS);
 }

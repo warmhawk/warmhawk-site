@@ -57,7 +57,8 @@ export default function StripeWebhooksPage() {
 
       <h2 className="font-display text-2xl font-semibold mb-4">What the webhook actually does</h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
-        WarmHawk listens for a small set of Stripe subscription events and reacts to each one
+        WarmHawk listens for a small set of Stripe events &mdash; Tier 1&rsquo;s recurring
+        subscription plus Tier 2&rsquo;s one-time purchase &mdash; and reacts to each one
         differently:
       </p>
       <ul className="list-disc pl-6 space-y-3 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
@@ -78,6 +79,14 @@ export default function StripeWebhooksPage() {
           <strong className="text-ink">customer.subscription.deleted</strong> &mdash; same
           treatment: no active revocation. The most recently issued license simply expires at its
           embedded date and isn&rsquo;t renewed again.
+        </li>
+        <li>
+          <strong className="text-ink">checkout.session.completed</strong> (Tier 2 only) &mdash;
+          fires once, when a one-time $1,999 Tier 2 setup-fee payment completes. Issues a Tier 2
+          license (no recurring expiry) and sends the same install-command email Tier 1 gets on
+          <code className="font-mono">invoice.paid</code>. Ignored entirely for Tier 1&rsquo;s
+          subscription checkouts &mdash; <code className="font-mono">invoice.paid</code> stays the
+          sole issuance trigger there.
         </li>
       </ul>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
