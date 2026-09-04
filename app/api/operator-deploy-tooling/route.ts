@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { createRateLimiter, clientIp } from '@/lib/rateLimit';
 
 /**
  * Serves warmhawk-enterprise-operator's DEPLOY TOOLING only (install.sh, docker-compose.yml, nginx
@@ -24,10 +25,19 @@ import { NextResponse } from 'next/server';
  *
  * No GitHub SDK: this repo has no existing GitHub API client to reuse (checked), and one `fetch`
  * call each for the release lookup and the asset download doesn't justify adding a dependency.
+ *
+ * RATE LIMITED PER SOURCE IP (lib/rateLimit.ts). This route being unauthenticated is exactly why it
+ * needs its own flood protection: every hit spends two calls against OPERATOR_RELEASE_READ_TOKEN's
+ * shared GitHub API rate limit, and an anonymous flood could exhaust that budget for every real
+ * customer install running at the same time.
  */
 const OPERATOR_REPO = 'warmhawk/warmhawk-enterprise-operator';
 const DEPLOY_TOOLING_ASSET_NAME = 'deploy-tooling.tar.gz';
 const GITHUB_API_VERSION = '2022-11-28';
+
+/** A real install/update run fetches this once; generous headroom is for retries after a transient
+ *  failure, not repeat legitimate use. */
+const rateLimiter = createRateLimiter({ maxRequests: 20, windowMs: 10 * 60 * 1000 });
 
 interface GithubReleaseAsset {
   name: string;
@@ -38,7 +48,14 @@ interface GithubRelease {
   assets: GithubReleaseAsset[];
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  if (!rateLimiter.check(clientIp(request))) {
+    return NextResponse.json(
+      { error: 'Too many deploy-tooling requests from this address — try again shortly.' },
+      { status: 429 },
+    );
+  }
+
   const readToken = process.env.OPERATOR_RELEASE_READ_TOKEN;
   if (!readToken) {
     console.error('OPERATOR_RELEASE_READ_TOKEN is not configured — cannot fetch deploy tooling');
