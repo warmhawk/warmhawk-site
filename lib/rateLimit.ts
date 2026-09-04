@@ -59,7 +59,7 @@ export function createRateLimiter(opts: { maxRequests: number; windowMs: number 
 }
 
 /**
- * The genuine client IP -- trustworthy only because ks-nginx-edge-proxy's saas-production config
+ * The genuine client IP -- trustworthy only because the edge nginx config in front of this app
  * resolves Cloudflare's CF-Connecting-IP into $remote_addr (via set_real_ip_from/real_ip_header)
  * before forwarding it as X-Real-IP (see nginx.conf.template). Falls back to X-Forwarded-For's
  * first hop, then a constant for local dev / direct-connection requests carrying neither header.
