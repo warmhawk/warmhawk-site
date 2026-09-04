@@ -1,9 +1,8 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { generateKeyPairSync } from 'node:crypto';
 import {
   issueLicense,
   verifyLicense,
-  tierForPriceId,
   generateLicenseKey,
   computeExpiry,
   type LicensePayload,
@@ -94,25 +93,6 @@ describe('RSA license sign/verify (canonical scheme)', () => {
   });
 });
 
-describe('tierForPriceId', () => {
-  const ORIGINAL_ENV = process.env.STRIPE_PRICE_TIER_2;
-
-  afterEach(() => {
-    process.env.STRIPE_PRICE_TIER_2 = ORIGINAL_ENV;
-  });
-
-  it('defaults to tier_1 for the self-serve monthly/annual price', () => {
-    process.env.STRIPE_PRICE_TIER_2 = 'price_tier2_test';
-    expect(tierForPriceId('price_self_hosted_pro_monthly')).toBe('tier_1');
-    expect(tierForPriceId(undefined)).toBe('tier_1');
-  });
-
-  it('resolves tier_2 only for the configured STRIPE_PRICE_TIER_2', () => {
-    process.env.STRIPE_PRICE_TIER_2 = 'price_tier2_test';
-    expect(tierForPriceId('price_tier2_test')).toBe('tier_2');
-  });
-});
-
 describe('computeExpiry', () => {
   it('returns a unix-seconds expiry roughly 31 days out for monthly', () => {
     const now = new Date('2026-01-01T00:00:00.000Z');
@@ -126,5 +106,12 @@ describe('computeExpiry', () => {
     const expiry = computeExpiry(now, 'annual');
     const days = (expiry - Math.floor(now.getTime() / 1000)) / 86_400;
     expect(days).toBeCloseTo(366, 0);
+  });
+
+  it('applies the same monthly expiry to Tier 2 — it bills monthly too, just with an extra one-time setup fee on the first invoice', () => {
+    const now = new Date('2026-01-01T00:00:00.000Z');
+    const expiry = computeExpiry(now, 'monthly');
+    const days = (expiry - Math.floor(now.getTime() / 1000)) / 86_400;
+    expect(days).toBeCloseTo(31, 0);
   });
 });

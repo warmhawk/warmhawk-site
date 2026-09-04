@@ -37,9 +37,9 @@ test.describe('Contact-sales form (Tier 2) submission', () => {
       .getByLabel('Anything else we should know')
       .fill('Migrating off Instantly next quarter.');
 
-    await page.getByRole('button', { name: 'Request a call' }).click();
+    await page.getByRole('button', { name: 'Send setup details' }).click();
 
-    await expect(page.getByText(/thanks — we.ll be in touch/i)).toBeVisible();
+    await expect(page.getByText(/thanks — details received/i)).toBeVisible();
     // The success card replaces the form outright.
     await expect(page.getByLabel('Company')).toHaveCount(0);
     expect(capturedBody).toEqual({
@@ -70,7 +70,7 @@ test.describe('Contact-sales form (Tier 2) submission', () => {
     await page.getByLabel('Work email').fill('alex@acme-outreach.test');
     await page.getByLabel('Approx. client domains / mailboxes').fill('24 domains, 60 mailboxes');
 
-    await page.getByRole('button', { name: 'Request a call' }).click();
+    await page.getByRole('button', { name: 'Send setup details' }).click();
 
     await expect(
       page.getByText(
@@ -79,6 +79,6 @@ test.describe('Contact-sales form (Tier 2) submission', () => {
     ).toBeVisible();
     // The form stays up (not swapped for the success card) so the visitor can retry.
     await expect(page.getByLabel('Company')).toHaveValue('Acme Outreach Agency');
-    await expect(page.getByRole('button', { name: 'Request a call' })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Send setup details' })).toBeEnabled();
   });
 });

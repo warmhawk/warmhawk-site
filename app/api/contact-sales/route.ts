@@ -2,15 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { emailSender } from '@/lib/email';
 
 /**
- * Tier 2 (Enterprise DFY) contact form receiver — /checkout's Tier 2 tab.
+ * Tier 2 (Enterprise DFY) async setup-intake form receiver — /checkout's Tier 2 tab.
  *
- * Per the Monetization & Tiering Strategy: Tier 2 is "a custom-scoped one-time + retainer
- * engagement, not a self-serve subscription toggle" — this creates a SALES INQUIRY, never a
- * charge. It must never be wired to Stripe Checkout (see app/api/checkout/session, which only
- * ever sells Tier 1). On a valid submission it notifies the sales inbox via lib/email.ts's
- * sendSalesInquiryEmail, reusing the exact SMTP mechanism app/api/stripe/webhook already uses for
- * license delivery, sent to siteConfig.helloEmail (the same address tier2's old mailto CTA used —
- * no new env var invented for this).
+ * 2026-09-03: Tier 2 became a self-serve $1,999 one-time Stripe Checkout purchase (see
+ * app/api/checkout/session/route.ts's `tier: 'tier_2'` branch) instead of a custom-scoped "Talk to
+ * us" engagement. This route is NOT that purchase and never charges a card — it's a separate,
+ * optional intake questionnaire (no calendar link, no scoping call) that hands the founder what
+ * they need to start the setup work. A visitor can buy Tier 2 without ever submitting this form,
+ * and submitting this form never buys anything. On a valid submission it notifies the sales inbox
+ * via lib/email.ts's sendSalesInquiryEmail, reusing the exact SMTP mechanism
+ * app/api/stripe/webhook already uses for license delivery, sent to siteConfig.helloEmail (the
+ * same address tier2's old mailto CTA used — no new env var invented for this).
  *
  * Body: { company, name, email, volume, notes? }
  */

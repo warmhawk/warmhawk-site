@@ -36,6 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/vs/lemlist',
     '/vs/woodpecker',
     '/vs/custom-n8n',
+    '/vs/inframail',
     '/compare/pricing',
     '/tools/domain-check',
     ...docRoutes,

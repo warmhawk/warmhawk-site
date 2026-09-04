@@ -20,8 +20,9 @@ import { waitForResendEmail } from '@/tests/integration/resendEmail';
  * configured yet, so this is a safe no-op under `npm test` / `npm run test:unit`.
  *
  * IMPORTANT (carried over from the route's own V13 fix comment): `invoice.paid` is the ONLY event
- * that issues a license — `checkout.session.completed` is deliberately not exercised here; that
- * regression case is already covered by the existing mocked route.test.ts.
+ * that issues a license, for both Tier 1 and Tier 2 — the route does not act on
+ * `checkout.session.completed` at all. This test only exercises Tier 1's shape; Tier 2's
+ * metadata-based tier resolution is covered by the mocked route.test.ts instead.
  */
 const hasRealStripeTestKey = Boolean(process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_'));
 const canRunLiveWebhookTest =

@@ -5,6 +5,7 @@ import { homeFaqItems } from '@/lib/faqContent';
 import { FaqSection } from '@/components/FaqSchema';
 import { PricingTable } from '@/components/PricingTable';
 import { CompareTable } from '@/components/CompareTable';
+import { StatCite } from '@/components/StatCite';
 
 export const metadata: Metadata = pageSeo({
   title: 'WarmHawk — Self-hosted cold email infrastructure, one server per account',
@@ -195,6 +196,28 @@ export default function HomePage() {
             </svg>
             <p className="text-[11px] text-ink-muted mt-2">Illustrative example, not live data.</p>
           </div>
+        </div>
+      </div>
+
+      {/* GMAIL ENFORCEMENT URGENCY STRIP — moved here from /tools/domain-check (2026-09-03 copy
+          audit): this is the one hard deadline on the whole site, so it belongs where every
+          visitor sees it, not buried on a tools subpage. */}
+      <div className="border-t border-b border-border bg-cream-elevated">
+        <div className="wrap py-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-[13.5px] leading-relaxed text-ink-muted">
+            As of November 2025,{' '}
+            <StatCite source="Gmail/Yahoo bulk-sender requirements, 2024-2026">
+              Gmail escalated its non-compliant bulk-sender enforcement from throttling to permanent
+              rejection for senders missing one-click unsubscribe headers
+            </StatCite>
+            . A domain that passed a deliverability check a year ago can silently fail it today.
+          </p>
+          <Link
+            href="/tools/domain-check"
+            className="text-rust font-semibold text-[13.5px] whitespace-nowrap"
+          >
+            Check your domain, free &rarr;
+          </Link>
         </div>
       </div>
 

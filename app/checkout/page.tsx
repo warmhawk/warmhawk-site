@@ -5,19 +5,15 @@ import { CheckoutTabs } from '@/components/CheckoutTabs';
 export const metadata: Metadata = pageSeo({
   title: 'Checkout',
   description:
-    'Start Tier 1 (Self-Hosted Pro, $199/mo) via Stripe Checkout, or reach out about Tier 2 (Enterprise DFY, $999 + $300/mo) — a custom-scoped engagement handled directly by WarmHawk’s founder.',
+    'Start Tier 1 (Self-Hosted Pro, $199/mo) or Tier 2 (Enterprise DFY, $1,999 one-time setup fee plus the same $199/mo software fee) via Stripe Checkout — both self-serve, no scoping call required.',
   path: '/checkout',
 });
 
-// Matched against the source design artifact's #page-checkout section
-// (warmhawk-full-prototype.html, lines 1048-1119):
-// same eyebrow ("Checkout"), same exact h1 ("Get your license."), same Tier 1 / Tier 2 tab
-// structure and the same two side cards ("What's included", "Questions before you buy?"). The one
-// deliberate departure is the tab-panel content itself — the artifact mocks up raw card-number/
-// expiry/CVC input fields, but this is a real Stripe integration (see CheckoutButtons.tsx and
-// app/api/checkout/session/route.ts), so Tier 1 renders a hosted-Checkout-redirect button instead
-// of fake PCI-scope-triggering card fields, and Tier 2 posts to a real /api/contact-sales endpoint
-// instead of a static form. See components/CheckoutTabs.tsx for the full artifact cross-reference.
+// Both tiers are real Stripe Checkout integrations (see CheckoutButtons.tsx,
+// Tier2CheckoutButton.tsx, and app/api/checkout/session/route.ts): Tier 1 is a $199/mo
+// subscription, Tier 2 the same $199/mo subscription plus a one-time $1,999 setup fee on the first
+// invoice. ContactSalesForm alongside Tier 2 is an optional setup-intake form only — it never gates
+// or replaces the Stripe purchase. See components/CheckoutTabs.tsx for the tab structure.
 
 interface CheckoutPageProps {
   // Next.js 15+: searchParams is a Promise — see the Next.js 15 upgrade

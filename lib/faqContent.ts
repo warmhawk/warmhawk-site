@@ -25,7 +25,7 @@ export const homeFaqItems: FaqItem[] = [
   {
     question: 'What’s the difference between Tier 1 and Tier 2?',
     answer:
-      'Tier 1 is self-hosted by you — you run the one-command install. Tier 2 has WarmHawk’s founder handle DNS, migration, and deployment for you, plus ongoing operational ownership for a monthly retainer.',
+      'Tier 1 is self-hosted by you — you run the one-command install, for $199/mo. Tier 2 has WarmHawk’s founder handle DNS, dedicated IPs, migration, and the deployment itself as a one-time $1,999 setup fee, plus that same $199/mo software fee. Once it’s handed over, you run it day to day, on the same support@warmhawk.com SLA as Tier 1.',
   },
   {
     question: 'If it’s single-tenant, is each of my clients isolated too?',
@@ -35,7 +35,7 @@ export const homeFaqItems: FaqItem[] = [
   {
     question: 'What if I don’t want to manage a server myself?',
     answer:
-      'That’s what Tier 2 is for — a one-time setup fee plus a monthly retainer, and WarmHawk’s founder runs the deployment on your behalf.',
+      'Tier 2 is a $1,999 one-time setup service plus the same $199/mo software fee Tier 1 pays — WarmHawk’s founder handles DNS, dedicated IPs, migration, and the deployment itself, then hands you the keys. It’s done-for-you at setup, not run-for-you ongoing: from there you operate it yourself, the same as a Tier 1 customer would.',
   },
   {
     question: 'Is there a guarantee?',
@@ -62,12 +62,12 @@ export const pricingFaqItems: FaqItem[] = [
   {
     question: 'What does the 30-day guarantee actually cover?',
     answer:
-      "Tier 1 (Self-Hosted Pro) only. Cancel within 30 days of your first charge and WarmHawk refunds it in full, no questions asked. Tier 2 is a custom-scoped, founder-delivered engagement — it's covered by its own agreement, not this blanket guarantee.",
+      "The $199/mo software fee — Tier 1's, or Tier 2's identical one. Cancel within 30 days of your first charge and WarmHawk refunds that fee in full, no questions asked. Tier 2's $1,999 setup fee is a separate, one-time payment for founder-delivered work, not a subscription, so this guarantee doesn't cover it the same way — email support@warmhawk.com if setup didn't go as expected.",
   },
   {
     question: 'Do you offer invoicing instead of a credit card?',
     answer:
-      'Tier 1 runs through Stripe Checkout and the Stripe Customer Portal, card-based by default. Tier 2 engagements are scoped directly with the founder over email and can be invoiced to match how your agency or company actually pays its vendors.',
+      'Tier 1 and Tier 2 both run through Stripe Checkout, card-based by default — Tier 2’s checkout combines the $1,999 one-time setup fee with the same $199/mo software subscription Tier 1 uses, in one self-serve session, not a quoted invoice. If you need a custom build beyond Tier 2’s standard setup, that’s scoped directly with the founder and can be invoiced separately.',
   },
   {
     question: "Does 'unlimited users' mean I can host separate clients with isolated data?",
@@ -77,7 +77,7 @@ export const pricingFaqItems: FaqItem[] = [
   {
     question: 'What if I need something Tier 2 doesn’t cover — a custom feature or integration?',
     answer:
-      'That’s a Custom Build engagement, starting at $1,999 one-time — scoped development work for things that don’t exist yet in the product, like a bespoke integration or per-client data isolation. It’s not a listed checkout tier; mention what you need in the Tier 2 contact form and WarmHawk’s founder will scope and quote it directly.',
+      'That’s a Custom Build engagement, starting at $1,999 one-time — scoped development work for things that don’t exist yet in the product, like a bespoke integration or per-client data isolation. It’s not a listed checkout tier; use the custom-build contact form on the checkout page and WarmHawk’s founder will scope and quote it directly.',
   },
 ];
 

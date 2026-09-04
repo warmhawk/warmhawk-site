@@ -127,18 +127,6 @@ export function verifyLicense(token: string, publicKeyPem: string): LicenseVerif
   return { valid: true, payload, expired: false };
 }
 
-/** Maps a Stripe Price ID to a WarmHawk tier. Tier 1 (Self-Hosted Pro) is sold self-serve through
- *  `app/api/checkout/session`; Tier 2 (Enterprise DFY) is "a custom-scoped one-time + retainer
- *  engagement, not a self-serve subscription toggle" (Monetization & Tiering Strategy) — sold via
- *  the "Talk to us" contact flow, not this repo's Checkout Session route — but the founder may
- *  still set the retainer up as a Stripe subscription by hand against `STRIPE_PRICE_TIER_2`, and
- *  this webhook must still recognize that event and issue a tier_2 license when it fires. Ported
- *  from warmhawk-core-engine's now-removed `stripeWebhook.ts`, which had this pattern right. */
-export function tierForPriceId(priceId: string | undefined): LicenseTier {
-  if (priceId && priceId === process.env.STRIPE_PRICE_TIER_2) return 'tier_2';
-  return 'tier_1';
-}
-
 /** Generates a production-shaped license identifier. Only ever called from the live webhook
  *  handler — test/CI code must use an obviously-fake shape instead (see e.g.
  *  warmhawk-core-engine's `generateTestLicenseKey`).
@@ -195,7 +183,9 @@ const ANNUAL_PERIOD_SECONDS = 366 * 24 * 60 * 60; // ~1 year grace beyond a 365-
 /** One current billing-period expiry (unix epoch seconds), computed from `now`, matching whichever
  *  interval the Checkout Session was created with (see `app/api/checkout/session`). Renewal
  *  (`invoice.paid` on the next cycle) re-issues a license with a fresh `expiresAt` rather than
- *  extending the old one in place. */
+ *  extending the old one in place. Tier 2 (Enterprise DFY) bills monthly too — its one-time $1,999
+ *  setup fee rides alongside the same recurring software price Tier 1 pays, so it uses this same
+ *  `'monthly'` interval, not a separate non-expiring case. */
 export function computeExpiry(now: Date, interval: 'monthly' | 'annual'): number {
   const nowSeconds = Math.floor(now.getTime() / 1000);
   return nowSeconds + (interval === 'annual' ? ANNUAL_PERIOD_SECONDS : BILLING_PERIOD_SECONDS);

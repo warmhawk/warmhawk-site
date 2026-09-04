@@ -92,7 +92,7 @@ signature _is_ the record, so every step below is stateless and verifiable offli
 
 | Step                   | Route                                    | What happens                                                                                                                                               |
 | ---------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Issue**              | `app/api/stripe/webhook`                 | `checkout.session.completed` / `invoice.paid` mints a token and emails the install command.                                                                |
+| **Issue**              | `app/api/stripe/webhook`                 | `invoice.paid` mints a token and emails the install command — both Tier 1 and Tier 2 (a one-time setup fee riding on an otherwise-normal subscription).    |
 | **Persist**            | (same webhook)                           | The token is written back onto the Stripe **subscription's metadata**, split across `warmhawk_license_1`/`_2` (Stripe caps a metadata value at 500 chars). |
 | **Refresh**            | `app/api/license/refresh`                | The dashboard presents its **current, possibly expired** token; entitlement is re-derived from the live subscription and a fresh token comes back.         |
 | **Self-serve billing** | `app/account/billing` → `app/api/portal` | Paste the token, land in the Stripe Customer Portal — card, invoices, monthly ⇄ annual, cancel.                                                            |

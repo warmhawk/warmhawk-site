@@ -48,6 +48,7 @@ function subscription(overrides: Record<string, unknown> = {}) {
     id: 'sub_test_1',
     status: 'active',
     items: { data: [{ price: { id: 'price_tier1_monthly', recurring: { interval: 'month' } } }] },
+    metadata: { tier: 'tier_1' },
     ...overrides,
   };
 }
@@ -205,6 +206,37 @@ describe('POST /api/license/refresh', () => {
 
     const daysOut = (new Date(json.expiresAt).getTime() - Date.now()) / (1000 * DAY);
     expect(daysOut).toBeGreaterThan(300);
+  });
+
+  it('resolves tier_2 from the subscription’s own metadata — its recurring price is identical to Tier 1’s, so price id alone can’t tell them apart', async () => {
+    subscriptionsListMock.mockResolvedValue({
+      data: [
+        subscription({
+          // Same price a Tier 1 subscription item uses — the regression this guards against: a
+          // price-id-based lookup would silently resolve this to tier_1.
+          items: {
+            data: [{ price: { id: 'price_tier1_monthly', recurring: { interval: 'month' } } }],
+          },
+          metadata: { tier: 'tier_2' },
+        }),
+      ],
+    });
+
+    const res = await POST(postRequest({ licenseToken: tokenFor({ tier: 'tier_2' }) }));
+    const json = (await res.json()) as { tier?: string };
+
+    expect(res.status).toBe(200);
+    expect(json.tier).toBe('tier_2');
+  });
+
+  it('defaults to tier_1 when the subscription carries no tier metadata at all', async () => {
+    subscriptionsListMock.mockResolvedValue({ data: [subscription({ metadata: {} })] });
+
+    const res = await POST(postRequest({ licenseToken: tokenFor() }));
+    const json = (await res.json()) as { tier?: string };
+
+    expect(res.status).toBe(200);
+    expect(json.tier).toBe('tier_1');
   });
 
   it('preserves boundDomain across a refresh so the reuse signal keeps working', async () => {

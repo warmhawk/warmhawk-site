@@ -13,10 +13,14 @@ import { POST } from './route';
 const constructEventMock = vi.fn();
 const sendLicenseEmailMock = vi.fn();
 const issueLicenseMock = vi.fn();
+const subscriptionsUpdateMock = vi.fn();
 const computeExpiryMock = vi.fn<(date: Date, interval: string) => number>(() => 1893456000);
 
 vi.mock('@/lib/stripe', () => ({
-  getStripeClient: () => ({ webhooks: { constructEvent: constructEventMock } }),
+  getStripeClient: () => ({
+    webhooks: { constructEvent: constructEventMock },
+    subscriptions: { update: subscriptionsUpdateMock },
+  }),
 }));
 
 vi.mock('@/lib/license', () => ({
@@ -25,8 +29,6 @@ vi.mock('@/lib/license', () => ({
     issueLicenseMock(...args);
     return { token: 'signed.test.token' };
   },
-  tierForPriceId: (priceId: string | undefined) =>
-    priceId === 'price_tier2_test' ? 'tier_2' : 'tier_1',
   computeExpiry: (date: Date, interval: string) => computeExpiryMock(date, interval),
 }));
 
@@ -72,6 +74,7 @@ describe('POST /api/stripe/webhook', () => {
     constructEventMock.mockReset();
     sendLicenseEmailMock.mockReset();
     issueLicenseMock.mockReset();
+    subscriptionsUpdateMock.mockReset();
     computeExpiryMock.mockClear();
     process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test';
     process.env.LICENSE_SIGNING_PRIVATE_KEY = 'test-private-key-pem';
@@ -126,9 +129,14 @@ describe('POST /api/stripe/webhook', () => {
     });
   });
 
-  it('resolves tier_2 for the configured Tier 2 price id', async () => {
+  it('resolves tier_2 from invoice metadata — Tier 2’s recurring price is identical to Tier 1’s, so price id can’t disambiguate them', async () => {
     constructEventMock.mockReturnValue(
-      invoicePaidEvent({ lines: { data: [{ price: { id: 'price_tier2_test' } }] } }),
+      invoicePaidEvent({
+        // Same price id a Tier 1 invoice would carry — this is the whole point of the regression
+        // guard: tier resolution must come from metadata, not this field.
+        lines: { data: [{ price: { id: 'price_monthly_test' } }] },
+        metadata: { tier: 'tier_2', billingInterval: 'monthly' },
+      }),
     );
 
     await POST(webhookRequest('{}'));
@@ -139,22 +147,63 @@ describe('POST /api/stripe/webhook', () => {
     );
   });
 
-  it('resolves the annual expiry from invoice metadata (propagated via subscription_data, not Checkout Session metadata)', async () => {
+  it('issues a Tier 2 license on its FIRST invoice — the one that also carries the one-time $1,999 setup fee', async () => {
     constructEventMock.mockReturnValue(
-      invoicePaidEvent({ metadata: { billingInterval: 'annual' } }),
+      invoicePaidEvent({
+        customer: 'cus_test_tier2',
+        customer_email: 'buyer@example.com',
+        // First invoice of a Tier 2 subscription carries both line items.
+        lines: {
+          data: [{ price: { id: 'price_tier2_test' } }, { price: { id: 'price_monthly_test' } }],
+        },
+        metadata: { tier: 'tier_2', billingInterval: 'monthly' },
+      }),
     );
 
-    await POST(webhookRequest('{}'));
+    const res = await POST(webhookRequest('{}'));
 
-    expect(computeExpiryMock).toHaveBeenCalledWith(expect.any(Date), 'annual');
+    expect(res.status).toBe(200);
+    expect(issueLicenseMock).toHaveBeenCalledWith(
+      expect.objectContaining({ customerId: 'cus_test_tier2', tier: 'tier_2' }),
+      'test-private-key-pem',
+    );
+    expect(computeExpiryMock).toHaveBeenCalledWith(expect.any(Date), 'monthly');
+    expect(sendLicenseEmailMock).toHaveBeenCalledWith({
+      toEmail: 'buyer@example.com',
+      licenseToken: 'signed.test.token',
+      tier: 'tier_2',
+    });
   });
 
-  it('regression: does not double-issue a license on checkout.session.completed — invoice.paid is the sole issuance trigger', async () => {
+  it('issues a Tier 2 license on a RENEWAL invoice too, even with no setup-fee line item present', async () => {
+    constructEventMock.mockReturnValue(
+      invoicePaidEvent({
+        customer: 'cus_test_tier2',
+        customer_email: 'buyer@example.com',
+        // Renewal invoices only ever carry the recurring line — the one-time setup fee billed
+        // once, on the first invoice only.
+        lines: { data: [{ price: { id: 'price_monthly_test' } }] },
+        metadata: { tier: 'tier_2', billingInterval: 'monthly' },
+      }),
+    );
+
+    const res = await POST(webhookRequest('{}'));
+
+    expect(res.status).toBe(200);
+    expect(issueLicenseMock).toHaveBeenCalledWith(
+      expect.objectContaining({ tier: 'tier_2' }),
+      expect.anything(),
+    );
+  });
+
+  it('ignores checkout.session.completed entirely — invoice.paid is the sole issuance trigger for both tiers now that Tier 2 is a real subscription', async () => {
     constructEventMock.mockReturnValue({
       id: 'evt_test_checkout',
       type: 'checkout.session.completed',
       data: {
         object: {
+          mode: 'subscription',
+          metadata: { tier: 'tier_2' },
           customer: 'cus_test_123',
           customer_details: { email: 'customer@example.com' },
         },
@@ -168,6 +217,16 @@ describe('POST /api/stripe/webhook', () => {
     expect(json.received).toBe(true);
     expect(issueLicenseMock).not.toHaveBeenCalled();
     expect(sendLicenseEmailMock).not.toHaveBeenCalled();
+  });
+
+  it('resolves the annual expiry from invoice metadata (propagated via subscription_data, not Checkout Session metadata)', async () => {
+    constructEventMock.mockReturnValue(
+      invoicePaidEvent({ metadata: { billingInterval: 'annual' } }),
+    );
+
+    await POST(webhookRequest('{}'));
+
+    expect(computeExpiryMock).toHaveBeenCalledWith(expect.any(Date), 'annual');
   });
 
   it('skips issuing a license (but still returns 200) when the event has no resolvable customer id', async () => {
