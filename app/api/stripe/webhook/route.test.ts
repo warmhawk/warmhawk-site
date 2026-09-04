@@ -154,10 +154,7 @@ describe('POST /api/stripe/webhook', () => {
         customer_email: 'buyer@example.com',
         // First invoice of a Tier 2 subscription carries both line items.
         lines: {
-          data: [
-            { price: { id: 'price_tier2_test' } },
-            { price: { id: 'price_monthly_test' } },
-          ],
+          data: [{ price: { id: 'price_tier2_test' } }, { price: { id: 'price_monthly_test' } }],
         },
         metadata: { tier: 'tier_2', billingInterval: 'monthly' },
       }),
