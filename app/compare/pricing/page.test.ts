@@ -5,10 +5,11 @@ import PricingComparisonPage from './page';
 import { pricingFaqItems } from '@/lib/faqContent';
 
 /**
- * Copy audit (2026-09-03) regression coverage: Tier 2 was repriced from "$999 setup + $300/mo
- * retainer" to a flat $1,999 one-time setup fee with no ongoing subscription, and a cost-at-scale
- * comparison table was added so the page backs up its "one flat fee" claim with real numbers
- * instead of just asserting it.
+ * Copy audit regression coverage: Tier 2 was repriced from "$999 setup + $300/mo retainer" (an
+ * early draft) through a briefly-shipped "flat $1,999 one-time, no ongoing subscription" model,
+ * to its correct final shape — a $1,999 one-time setup fee plus the same $199/mo software fee
+ * Tier 1 pays. A cost-at-scale comparison table was added so the page backs up its "one flat fee"
+ * claim with real numbers instead of just asserting it.
  */
 describe('PricingComparisonPage (app/compare/pricing/page.tsx)', () => {
   afterEach(() => {
@@ -27,11 +28,16 @@ describe('PricingComparisonPage (app/compare/pricing/page.tsx)', () => {
     expect(bodyText).toContain('$1,999');
   });
 
-  it('labels the Tier 2 matrix column and the 30-day guarantee row as one-time, not a subscription', () => {
+  it('labels the Tier 2 matrix column and the 30-day guarantee row as setup fee + $199/mo', () => {
     render(createElement(PricingComparisonPage));
 
-    expect(screen.getAllByText('Tier 2 — $1,999 one-time').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByText('N/A — one-time setup fee, not a subscription')).toBeInTheDocument();
+    expect(screen.getByText('Tier 2 — $1,999 one-time + $199/mo')).toBeInTheDocument();
+    expect(screen.getByText('Tier 2 — $1,999 one-time setup + $199/mo')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Yes — on the $199/mo fee; the $1,999 setup fee is separate and non-refundable',
+      ),
+    ).toBeInTheDocument();
   });
 
   it('renders the cost-at-scale comparison table with the solo and large-agency figures', () => {

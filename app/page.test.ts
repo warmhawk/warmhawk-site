@@ -40,8 +40,8 @@ describe('HomePage (app/page.tsx)', () => {
   it('never describes Tier 2 as a $300/mo retainer anywhere on the page', () => {
     render(createElement(HomePage));
 
-    // The FAQ legitimately says "There's no retainer" — a denial, not a charge — so assert the
-    // specific bad pattern (a dollar figure paired with "retainer") is absent, not the word itself.
+    // Guards against the old $300/mo-retainer framing resurfacing; assert the specific bad
+    // pattern (a dollar figure paired with "retainer") is absent, not the word "retainer" itself.
     const bodyText = document.body.textContent ?? '';
     expect(bodyText).not.toMatch(/\$300\/mo/);
     expect(bodyText).not.toMatch(/\$\d[\d,]*\s*(?:\/\s*mo|per month)?\s*retainer/i);
