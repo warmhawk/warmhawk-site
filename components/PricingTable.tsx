@@ -21,11 +21,6 @@ export function PricingTable() {
               : 'relative flex flex-col bg-paper border border-border rounded-[18px] p-[26px]'
           }
         >
-          {tier.highlight && (
-            <span className="absolute -top-[13px] left-[26px] bg-rust text-paper font-mono text-[11px] tracking-[0.08em] uppercase px-[10px] py-[5px] rounded-[6px]">
-              Most agencies start here
-            </span>
-          )}
           <div
             className={`font-mono text-xs tracking-[0.1em] uppercase ${tier.highlight ? 'text-amber' : 'text-rust'}`}
           >
