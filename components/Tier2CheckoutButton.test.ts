@@ -6,7 +6,7 @@ import { Tier2CheckoutButton } from './Tier2CheckoutButton';
 /**
  * Regression guard for the Tier 2 self-serve checkout trigger — mirrors CheckoutButtons.test.ts's
  * pattern (this repo's established shape for a POST /api/checkout/session → redirect/error flow),
- * minus the interval toggle since Tier 2 is a single one-time $1,999 payment.
+ * minus the interval toggle since Tier 2 is monthly-only (no annual price exists for it).
  */
 describe('Tier2CheckoutButton', () => {
   const originalLocation = window.location;
@@ -85,7 +85,9 @@ describe('Tier2CheckoutButton', () => {
         'Stripe price ID not configured for this environment. Set STRIPE_PRICE_TIER_2.',
       ),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /get started — \$1,999 \+ \$199\/mo/i })).toBeEnabled();
+    expect(
+      screen.getByRole('button', { name: /get started — \$1,999 \+ \$199\/mo/i }),
+    ).toBeEnabled();
   });
 
   it('falls back to a generic message when the API returns neither a url nor an error', async () => {

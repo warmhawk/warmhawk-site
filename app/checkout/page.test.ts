@@ -27,7 +27,9 @@ describe('CheckoutPage (app/checkout/page.tsx)', () => {
       'aria-selected',
       'true',
     );
-    expect(screen.getByRole('button', { name: 'Get started — $1,999 + $199/mo' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Get started — $1,999 + $199/mo' }),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText('Company')).toBeInTheDocument();
   });
 
