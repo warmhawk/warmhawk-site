@@ -3,7 +3,8 @@ import { getStripeClient, STRIPE_PRICE_IDS, type BillingInterval } from '@/lib/s
 import { siteConfig } from '@/lib/siteConfig';
 
 /**
- * Creates a Stripe Checkout Session for Tier 1 (Self-Hosted Pro).
+ * Creates a Stripe Checkout Session for Tier 1 (Self-Hosted Pro, recurring) or Tier 2 (Enterprise
+ * DFY, one-time setup fee).
  *
  * Per Phase 4 (Commercial Licensing, Billing, Onboarding & Account
  * Security): "Stripe integration in warmhawk-site's checkout flow for
@@ -13,15 +14,67 @@ import { siteConfig } from '@/lib/siteConfig';
  * request against Stripe's documented shape — it is never invoked against
  * a real Stripe account from this build/test environment.
  *
- * Body: { interval: "monthly" | "annual" }
+ * 2026-09-03: Tier 2 was repriced from a custom-scoped "Talk to us" engagement to a flat $1,999
+ * one-time setup fee, sold self-serve like Tier 1. Added a `tier` field to the request body so
+ * this one route now covers both — `tier: 'tier_2'` builds a `mode: 'payment'` Session instead of
+ * `mode: 'subscription'`. Existing callers that only send `{ interval }` (Tier 1's CheckoutButtons)
+ * are unaffected: `tier` defaults to `'tier_1'`.
+ *
+ * Body: { tier?: "tier_1" | "tier_2", interval?: "monthly" | "annual" } — `interval` is read only
+ * for `tier_1`; Tier 2 has no billing interval.
  */
 export async function POST(request: NextRequest) {
   let interval: BillingInterval = 'monthly';
+  let tier: 'tier_1' | 'tier_2' = 'tier_1';
   try {
-    const body = (await request.json()) as { interval?: BillingInterval };
+    const body = (await request.json()) as { interval?: BillingInterval; tier?: string };
     if (body.interval === 'annual') interval = 'annual';
+    if (body.tier === 'tier_2') tier = 'tier_2';
   } catch {
-    // No body / not JSON — default to monthly.
+    // No body / not JSON — default to Tier 1 monthly.
+  }
+
+  const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL ?? siteConfig.url;
+
+  if (tier === 'tier_2') {
+    const priceId = STRIPE_PRICE_IDS.tier2;
+    if (!priceId) {
+      return NextResponse.json(
+        { error: 'Stripe price ID not configured for this environment. Set STRIPE_PRICE_TIER_2.' },
+        { status: 500 },
+      );
+    }
+
+    try {
+      const stripe = getStripeClient();
+
+      // `mode: 'payment'` — a single one-time charge, no subscription created. Unlike
+      // `mode: 'subscription'` (which always attaches a Customer automatically),
+      // `customer_creation: 'always'` is required here so the webhook has a Customer object to
+      // persist the issued license onto (see app/api/stripe/webhook/route.ts's
+      // `persistLicenseOnCustomer`) — without it, Stripe only creates a Customer for
+      // one-time-payment mode when the buyer is later billed again, which never happens for a
+      // true one-time fee.
+      const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        line_items: [{ price: priceId, quantity: 1 }],
+        customer_creation: 'always',
+        success_url: `${siteOrigin}/checkout?tier=2&checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${siteOrigin}/checkout?tier=2&checkout=cancelled`,
+        billing_address_collection: 'auto',
+        metadata: {
+          // Read directly by the webhook's `checkout.session.completed` branch — Tier 2's one-time
+          // payment never generates an Invoice, so unlike Tier 1 there is no `invoice.paid` event
+          // to resolve tier/expiry from. See app/api/stripe/webhook/route.ts.
+          tier: 'tier_2',
+        },
+      });
+
+      return NextResponse.json({ url: session.url });
+    } catch (error) {
+      console.error('Stripe Checkout Session creation failed', error);
+      return NextResponse.json({ error: 'Unable to start checkout right now.' }, { status: 502 });
+    }
   }
 
   const priceId =
@@ -42,7 +95,6 @@ export async function POST(request: NextRequest) {
 
   try {
     const stripe = getStripeClient();
-    const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL ?? siteConfig.url;
 
     // Shape follows Stripe's documented Checkout Session creation API
     // (https://stripe.com/docs/api/checkout/sessions/create). `mode:
@@ -68,11 +120,9 @@ export async function POST(request: NextRequest) {
       // not a Checkout-time discount — deliberately not modeled as a
       // trial/coupon here.
       metadata: {
-        // Wire-format tier literal (matches `LicensePayload.tier` in lib/license.ts) — this route
-        // only ever sells Tier 1 (Self-Hosted Pro) self-serve; Tier 2 (Enterprise DFY) is a
-        // custom-scoped engagement sold via the "Talk to us" contact flow, not this Checkout
-        // Session. (V12 fix: this used to be the marketing-display literal 'self-hosted-pro',
-        // which doesn't match the license payload's tier union at all.)
+        // Wire-format tier literal (matches `LicensePayload.tier` in lib/license.ts). (V12 fix:
+        // this used to be the marketing-display literal 'self-hosted-pro', which doesn't match the
+        // license payload's tier union at all.)
         tier: 'tier_1',
         billingInterval: interval,
       },

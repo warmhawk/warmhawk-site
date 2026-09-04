@@ -32,11 +32,14 @@ export function getStripeClient(): Stripe {
 export const STRIPE_PRICE_IDS = {
   selfHostedProMonthly: process.env.STRIPE_PRICE_SELF_HOSTED_PRO_MONTHLY ?? '',
   selfHostedProAnnual: process.env.STRIPE_PRICE_SELF_HOSTED_PRO_ANNUAL ?? '',
-  /** Tier 2 (Enterprise DFY) — not offered on this repo's self-serve Checkout Session (it's a
-   *  custom-scoped one-time + retainer engagement, sold via the "Talk to us" contact flow), but
-   *  the founder may set the $300/mo retainer up as a Stripe subscription by hand against this
-   *  Price ID, and `app/api/stripe/webhook`'s `tierForPriceId` needs it to recognize that event
-   *  and issue a tier_2 license rather than defaulting to tier_1. */
+  /** Tier 2 (Enterprise DFY)'s one-time setup fee — a real ONE-TIME (not recurring) Stripe Price,
+   *  sold self-serve through `app/api/checkout/session` in `mode: 'payment'`. 2026-09-03 repricing:
+   *  Tier 2 used to be a custom-scoped one-time + $300/mo retainer engagement sold only through the
+   *  "Talk to us" contact flow, with this Price ID reserved for the founder to hand-configure that
+   *  retainer as a Stripe subscription. The retainer is gone — Tier 2 is now a flat $1,999 one-time
+   *  fee, so this Price ID now names that one-time Price directly instead. Kept the same env var
+   *  name (`STRIPE_PRICE_TIER_2`) rather than introducing a new one, since it's already a required
+   *  var in docker/docker-compose.deploy.yml. */
   tier2: process.env.STRIPE_PRICE_TIER_2 ?? '',
 } as const;
 

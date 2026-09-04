@@ -127,4 +127,11 @@ describe('computeExpiry', () => {
     const days = (expiry - Math.floor(now.getTime() / 1000)) / 86_400;
     expect(days).toBeCloseTo(366, 0);
   });
+
+  it("returns a ~100-year horizon for lifetime (Tier 2's one-time purchase, no recurring period)", () => {
+    const now = new Date('2026-01-01T00:00:00.000Z');
+    const expiry = computeExpiry(now, 'lifetime');
+    const years = (expiry - Math.floor(now.getTime() / 1000)) / (365 * 86_400);
+    expect(years).toBeCloseTo(100, 0);
+  });
 });
