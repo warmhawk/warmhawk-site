@@ -60,6 +60,7 @@ export const vsPages = [
   { slug: 'lemlist', label: 'vs Lemlist' },
   { slug: 'woodpecker', label: 'vs Woodpecker' },
   { slug: 'custom-n8n', label: 'vs Custom n8n' },
+  { slug: 'inframail', label: 'vs Inframail' },
 ];
 
 // Column labels/contents match the artifact's SITE_FOOTER (Product / Compare
@@ -79,6 +80,7 @@ export const footerLinks = {
     { label: 'vs Lemlist', href: '/vs/lemlist' },
     { label: 'vs Woodpecker', href: '/vs/woodpecker' },
     { label: 'vs Custom n8n', href: '/vs/custom-n8n' },
+    { label: 'vs Inframail', href: '/vs/inframail' },
   ],
   company: [
     { label: 'Docs & quickstart', href: '/docs' },
