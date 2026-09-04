@@ -57,7 +57,7 @@ export function PricingTable() {
 
           <Link
             href={tier.ctaHref}
-            className={`btn btn-block ${tier.highlight ? 'btn-primary' : 'btn-ghost'}`}
+            className={`btn btn-block whitespace-normal text-center leading-snug ${tier.highlight ? 'btn-primary' : 'btn-ghost'}`}
           >
             {tier.ctaLabel}
           </Link>
