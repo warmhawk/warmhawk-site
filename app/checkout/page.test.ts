@@ -27,6 +27,9 @@ describe('CheckoutPage (app/checkout/page.tsx)', () => {
       'aria-selected',
       'true',
     );
+    expect(
+      screen.getByRole('button', { name: 'Get started — $1,999 + $199/mo' }),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText('Company')).toBeInTheDocument();
   });
 
@@ -51,6 +54,7 @@ describe('CheckoutPage (app/checkout/page.tsx)', () => {
     // `toBeInTheDocument` is the correct check for the button, since a role
     // query on a hidden element already resolves to no match at all.
     fireEvent.click(screen.getByRole('tab', { name: 'Tier 2 — Enterprise DFY' }));
+    expect(screen.getByRole('button', { name: 'Get started — $1,999 + $199/mo' })).toBeVisible();
     expect(screen.getByLabelText('Company')).toBeVisible();
     expect(
       screen.queryByRole('button', { name: 'Start your install — Self-Hosted Pro' }),

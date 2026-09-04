@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { tiers } from '@/lib/tierConfig';
 import { CheckoutButtons } from '@/components/CheckoutButtons';
+import { Tier2CheckoutButton } from '@/components/Tier2CheckoutButton';
 import { ContactSalesForm } from '@/components/ContactSalesForm';
 
 type TierKey = 'tier1' | 'tier2';
@@ -15,8 +16,10 @@ type TierKey = 'tier1' | 'tier2';
  * CSS classes. No generic Tabs component existed in components/ yet — this is deliberately scoped
  * to checkout's two tiers rather than a fully generic abstraction, since it's the only caller.
  *
- * Tier 1 renders the already-working CheckoutButtons (Stripe Checkout Session redirect); Tier 2
- * renders ContactSalesForm (POSTs to /api/contact-sales — a sales inquiry, never a charge).
+ * Tier 1 renders CheckoutButtons (Stripe Checkout Session redirect, subscription mode). Tier 2
+ * renders Tier2CheckoutButton (Stripe Checkout Session redirect, one-time $1,999 payment mode) as
+ * the primary CTA, with ContactSalesForm below it as an optional, non-blocking setup-intake form
+ * (POSTs to /api/contact-sales — never a charge, never required before buying).
  */
 export function CheckoutTabs({ initialTier }: { initialTier: TierKey }) {
   const [active, setActive] = useState<TierKey>(initialTier);
@@ -59,7 +62,13 @@ export function CheckoutTabs({ initialTier }: { initialTier: TierKey }) {
         <div role="tabpanel" aria-labelledby="tier-1" hidden={active !== 'tier1'}>
           <CheckoutButtons />
         </div>
-        <div role="tabpanel" aria-labelledby="tier-2" hidden={active !== 'tier2'}>
+        <div
+          role="tabpanel"
+          aria-labelledby="tier-2"
+          hidden={active !== 'tier2'}
+          className="flex flex-col gap-5"
+        >
+          <Tier2CheckoutButton />
           <ContactSalesForm />
         </div>
       </div>
