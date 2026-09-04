@@ -3,6 +3,7 @@ import {
   buildInstallCommand,
   buildLicenseEmailHtml,
   buildLicenseEmailText,
+  emailSender,
   environmentNote,
   escapeHtml,
   tierLabelFor,
@@ -26,6 +27,26 @@ describe('environmentNote', () => {
   it('returns null when unset, matching a real production deploy with the var simply not configured', () => {
     vi.stubEnv('NEXT_PUBLIC_SITE_URL', '');
     expect(environmentNote()).toBeNull();
+  });
+});
+
+describe('sendInviteRelayEmail (SmtpEmailSender)', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('degrades to a console-log stub and reports smtp_not_configured when SMTP_HOST is unset', async () => {
+    vi.stubEnv('SMTP_HOST', '');
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const result = await emailSender.sendInviteRelayEmail({
+      toEmail: 'invitee@example.com',
+      inviterEmail: 'owner@example.com',
+      acceptUrl: 'https://dashboard.example.com/accept-invite?token=abc',
+    });
+
+    expect(result).toEqual({ delivered: false, reason: 'smtp_not_configured' });
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('invite-relay-email STUB'));
   });
 });
 
