@@ -5,7 +5,6 @@ import {
   authenticateLicenseToken,
   generateLicenseKey,
   issueLicense,
-  tierForPriceId,
   computeExpiry,
   type LicensePayload,
 } from '@/lib/license';
@@ -104,12 +103,20 @@ export async function POST(request: NextRequest) {
   // Re-derived from the live subscription, never carried over from the old token: a customer who
   // switched monthly <-> annual gets an expiry matching what they now actually pay for.
   const interval = price?.recurring?.interval === 'year' ? 'annual' : 'monthly';
+  // Tier 2's recurring subscription item uses the SAME price as Tier 1's (both pay the identical
+  // $199/mo software fee) — only Tier 2's one-time setup fee differs, and that's an invoice item,
+  // never a subscription item, so it isn't in `entitling.items` at all, on the first cycle or any
+  // later one. Price ID can't disambiguate the tiers, so tier is read from the subscription's own
+  // metadata instead (stamped at checkout time by app/api/checkout/session/route.ts and preserved
+  // across every metadata write since — see persistLicenseOnSubscription in
+  // app/api/stripe/webhook/route.ts, which only ever merges in license fields).
+  const tier = entitling.metadata?.tier === 'tier_2' ? 'tier_2' : 'tier_1';
 
   const now = Math.floor(Date.now() / 1000);
   const payload: LicensePayload = {
     licenseKey: generateLicenseKey(),
     customerId: existing.customerId,
-    tier: tierForPriceId(price?.id),
+    tier,
     issuedAt: now,
     expiresAt: computeExpiry(new Date(), interval),
     // Preserved so the Guardrails "License piracy signal" reuse check keeps working across a

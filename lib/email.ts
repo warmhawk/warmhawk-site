@@ -222,9 +222,10 @@ class SmtpEmailSender implements EmailSender {
     });
   }
 
-  /** Tier 2 (Enterprise DFY) is a custom-scoped one-time + retainer engagement sold via a contact
-   *  form, never a self-serve Stripe Checkout Session — this notifies the sales inbox so the
-   *  founder can follow up, same lazy-transporter / degrade-to-console-log mechanism as
+  /** Tier 2 (Enterprise DFY)'s optional async setup-intake questionnaire (app/api/contact-sales) —
+   *  separate from the actual Tier 2 purchase, which goes through Stripe Checkout like Tier 1 (see
+   *  app/api/checkout/session). This just notifies the sales inbox so the founder has setup
+   *  context ahead of a purchase, same lazy-transporter / degrade-to-console-log mechanism as
    *  sendLicenseEmail above. */
   async sendSalesInquiryEmail(input: SalesInquiryEmailInput): Promise<void> {
     const subject = `Tier 2 (Enterprise DFY) inquiry — ${input.company}`;

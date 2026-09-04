@@ -135,7 +135,10 @@ export function Analytics() {
   // Funnel step 2 rides on the same effect as the SPA-style pageview:
   // /compare/pricing is the page whose drop-off tells you the homepage
   // isn't landing. Also checks for Stripe's success_url redirect
-  // (?checkout=success&session_id=...) to close funnel step 4.
+  // (?checkout=success&session_id=...) to close funnel step 4 — Tier 1's
+  // success_url lands on /compare/pricing, Tier 2's on /checkout (see
+  // app/api/checkout/session/route.ts), so both paths are checked rather
+  // than just the one Tier 1 originally used.
   useEffect(() => {
     if (!pathname || !booted.current) return;
     if (lastPath.current === pathname) return;
@@ -145,7 +148,9 @@ export function Analytics() {
 
     if (pathname.startsWith('/compare/pricing')) {
       track(EVENTS.pricingView, { path: pathname });
+    }
 
+    if (pathname.startsWith('/compare/pricing') || pathname.startsWith('/checkout')) {
       const params = new URLSearchParams(window.location.search);
       const sessionId = params.get('session_id');
       if (params.get('checkout') === 'success' && sessionId) {
