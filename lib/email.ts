@@ -34,9 +34,23 @@ export interface SalesInquiryEmailInput {
   notes: string;
 }
 
+export interface InviteRelayEmailInput {
+  toEmail: string;
+  inviterEmail: string;
+  acceptUrl: string;
+}
+
+/** Mirrors warmhawk-enterprise-operator's own `InviteEmailResult` shape exactly — the operator's
+ *  `/api/team/members` passes this straight back to its caller, so the two must stay in sync. See
+ *  `app/api/operator/relay-invite/route.ts`'s module doc for why this send happens here at all. */
+export type InviteRelayEmailResult =
+  | { delivered: true }
+  | { delivered: false; reason: 'smtp_not_configured' | 'send_failed'; detail?: string };
+
 export interface EmailSender {
   sendLicenseEmail(input: LicenseEmailInput): Promise<void>;
   sendSalesInquiryEmail(input: SalesInquiryEmailInput): Promise<void>;
+  sendInviteRelayEmail(input: InviteRelayEmailInput): Promise<InviteRelayEmailResult>;
 }
 
 function smtpConfigured(): boolean {
@@ -241,6 +255,51 @@ class SmtpEmailSender implements EmailSender {
       subject,
       text,
     });
+  }
+
+  /** Sends a self-hosted operator's team-invite email on its behalf — see
+   *  `app/api/operator/relay-invite/route.ts`'s module doc for why this exists. Content mirrors
+   *  warmhawk-enterprise-operator's own (now-removed) `renderInviteEmail()` text exactly, so the
+   *  customer-visible email is identical to what a self-configured SMTP sender would have produced.
+   *  Unlike the other two senders above, this one reports delivery status back to the caller instead
+   *  of only logging on failure — the operator's own UI needs to know whether to offer the accept
+   *  link as a copyable fallback. */
+  async sendInviteRelayEmail(input: InviteRelayEmailInput): Promise<InviteRelayEmailResult> {
+    const subject = `${input.inviterEmail} invited you to WarmHawk`;
+    const text = [
+      `${input.inviterEmail} invited you to join their WarmHawk team.`,
+      '',
+      `Accept your invite: ${input.acceptUrl}`,
+      '',
+      "This link expires in 7 days. If you weren't expecting this invite, you can ignore this email.",
+    ].join('\n');
+    const html = `
+      <p>${escapeHtml(input.inviterEmail)} invited you to join their WarmHawk team.</p>
+      <p><a href="${escapeHtml(input.acceptUrl)}">Accept your invite</a></p>
+      <p style="color:#666;font-size:0.9em">This link expires in 7 days. If you weren't expecting this invite, you can ignore this email.</p>
+    `.trim();
+
+    if (!smtpConfigured()) {
+      console.log(
+        `[invite-relay-email STUB — SMTP_HOST not set] Would send invite to ${input.toEmail} (invited by ${input.inviterEmail}): ${input.acceptUrl}`,
+      );
+      return { delivered: false, reason: 'smtp_not_configured' };
+    }
+
+    try {
+      await getTransporter().sendMail({
+        from: process.env.SMTP_FROM || siteConfig.defaultFrom,
+        to: input.toEmail,
+        subject,
+        text,
+        html,
+      });
+      return { delivered: true };
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : 'Unknown SMTP error';
+      console.error(`[invite-relay-email] send failed for ${input.toEmail}: ${detail}`);
+      return { delivered: false, reason: 'send_failed', detail };
+    }
   }
 }
 
