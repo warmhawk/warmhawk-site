@@ -23,13 +23,14 @@ describe('sitemap()', () => {
     expect(routes.some((route) => route.url.includes('/vs/instantly'))).toBe(false);
   });
 
-  it('includes the other four /vs/* comparison pages', () => {
+  it('includes the other five /vs/* comparison pages', () => {
     const routes = sitemap();
     const urls = routes.map((route) => route.url);
     expect(urls.some((url) => url.endsWith('/vs/smartlead'))).toBe(true);
     expect(urls.some((url) => url.endsWith('/vs/lemlist'))).toBe(true);
     expect(urls.some((url) => url.endsWith('/vs/woodpecker'))).toBe(true);
     expect(urls.some((url) => url.endsWith('/vs/custom-n8n'))).toBe(true);
+    expect(urls.some((url) => url.endsWith('/vs/inframail'))).toBe(true);
   });
 
   it('gives the homepage the highest priority and weekly change frequency', () => {
