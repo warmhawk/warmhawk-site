@@ -32,7 +32,7 @@ describe('Tier2CheckoutButton', () => {
     vi.stubGlobal('fetch', fetchSpy);
 
     render(createElement(Tier2CheckoutButton));
-    fireEvent.click(screen.getByRole('button', { name: /buy setup — \$1,999/i }));
+    fireEvent.click(screen.getByRole('button', { name: /get started — \$1,999 \+ \$199\/mo/i }));
 
     await waitFor(() => {
       expect(fetchSpy).toHaveBeenCalledWith(
@@ -53,7 +53,7 @@ describe('Tier2CheckoutButton', () => {
     );
 
     render(createElement(Tier2CheckoutButton));
-    fireEvent.click(screen.getByRole('button', { name: /buy setup — \$1,999/i }));
+    fireEvent.click(screen.getByRole('button', { name: /get started — \$1,999 \+ \$199\/mo/i }));
 
     const button = await screen.findByRole('button', { name: /starting checkout…/i });
     expect(button).toBeDisabled();
@@ -78,14 +78,14 @@ describe('Tier2CheckoutButton', () => {
     );
 
     render(createElement(Tier2CheckoutButton));
-    fireEvent.click(screen.getByRole('button', { name: /buy setup — \$1,999/i }));
+    fireEvent.click(screen.getByRole('button', { name: /get started — \$1,999 \+ \$199\/mo/i }));
 
     expect(
       await screen.findByText(
         'Stripe price ID not configured for this environment. Set STRIPE_PRICE_TIER_2.',
       ),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /buy setup — \$1,999/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /get started — \$1,999 \+ \$199\/mo/i })).toBeEnabled();
   });
 
   it('falls back to a generic message when the API returns neither a url nor an error', async () => {
@@ -95,7 +95,7 @@ describe('Tier2CheckoutButton', () => {
     );
 
     render(createElement(Tier2CheckoutButton));
-    fireEvent.click(screen.getByRole('button', { name: /buy setup — \$1,999/i }));
+    fireEvent.click(screen.getByRole('button', { name: /get started — \$1,999 \+ \$199\/mo/i }));
 
     expect(
       await screen.findByText(/checkout is not configured in this environment yet/i),
@@ -109,7 +109,7 @@ describe('Tier2CheckoutButton', () => {
     );
 
     render(createElement(Tier2CheckoutButton));
-    fireEvent.click(screen.getByRole('button', { name: /buy setup — \$1,999/i }));
+    fireEvent.click(screen.getByRole('button', { name: /get started — \$1,999 \+ \$199\/mo/i }));
 
     expect(await screen.findByText(/could not reach the checkout endpoint/i)).toBeInTheDocument();
   });
