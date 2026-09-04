@@ -28,9 +28,9 @@ export default function DocsIntroductionPage() {
         WarmHawk is self-hosted cold-email infrastructure: your own containers, your own Postgres,
         your own nginx and TLS certificate, sending through mailboxes you connect. It ships as a
         free open-core API (Tier 0), a licensed operator dashboard on top of that same engine (Tier
-        1, $199/mo), or a fully managed deployment WarmHawk operates for you (Tier 2, $999 +
-        $300/mo). Every tier runs the identical sending engine &mdash; what changes is who operates
-        the dashboard layer and who carries deployment/support.
+        1, $199/mo), or a one-time $1,999 setup where WarmHawk deploys and migrates it for you (Tier
+        2). Every tier runs the identical sending engine &mdash; what changes is who operates the
+        dashboard layer and who carries deployment.
       </AnswerBlock>
 
       <h2 className="font-display text-2xl font-semibold mb-4">What actually ships</h2>
