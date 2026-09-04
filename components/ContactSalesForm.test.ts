@@ -19,7 +19,7 @@ function fillRequiredFields() {
 }
 
 function submit() {
-  fireEvent.click(screen.getByRole('button', { name: /request a call/i }));
+  fireEvent.click(screen.getByRole('button', { name: /send setup details/i }));
 }
 
 describe('ContactSalesForm', () => {
@@ -45,7 +45,7 @@ describe('ContactSalesForm', () => {
     });
     submit();
 
-    expect(await screen.findByText(/thanks — we.ll be in touch/i)).toBeInTheDocument();
+    expect(await screen.findByText(/thanks — details received/i)).toBeInTheDocument();
     expect(fetchSpy).toHaveBeenCalledWith(
       '/api/contact-sales',
       expect.objectContaining({
@@ -99,7 +99,7 @@ describe('ContactSalesForm', () => {
     expect(await screen.findByText('Please provide a work email address.')).toBeInTheDocument();
     // Nothing was cleared — the visitor doesn't have to retype the form.
     expect(screen.getByLabelText('Company')).toHaveValue('Acme Outreach');
-    expect(screen.getByRole('button', { name: /request a call/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /send setup details/i })).toBeEnabled();
   });
 
   it('falls back to a generic message when the API rejects with no error field', async () => {
