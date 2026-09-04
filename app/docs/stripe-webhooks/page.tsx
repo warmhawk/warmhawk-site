@@ -57,8 +57,9 @@ export default function StripeWebhooksPage() {
 
       <h2 className="font-display text-2xl font-semibold mb-4">What the webhook actually does</h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
-        WarmHawk listens for a small set of Stripe subscription events and reacts to each one
-        differently:
+        WarmHawk listens for a small set of Stripe events &mdash; both Tier 1 and Tier 2 are real
+        recurring subscriptions, so both are driven by the same events &mdash; and reacts to each
+        one differently:
       </p>
       <ul className="list-disc pl-6 space-y-3 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
         <li>
@@ -66,7 +67,9 @@ export default function StripeWebhooksPage() {
           key with an expiry set to the current billing period, and sends you the confirmation email
           containing your install command with that license embedded. Fires for your very first
           invoice and every renewal after that, so this is the only event WarmHawk needs to keep
-          your license current.
+          your license current. For Tier 2 (Enterprise DFY), the very first invoice also carries the
+          one-time $1,999 setup fee alongside the first month&rsquo;s $199 software fee &mdash;
+          every invoice after that looks identical to a Tier 1 one.
         </li>
         <li>
           <strong className="text-ink">invoice.payment_failed</strong> &mdash; does not revoke

@@ -3,17 +3,19 @@
 import { useState, type FormEvent } from 'react';
 
 /**
- * Tier 2 (Enterprise DFY) contact form — POSTs to /api/contact-sales, which creates a sales
- * inquiry (never a Stripe charge; Tier 2 is a custom-scoped engagement, see
- * app/api/contact-sales/route.ts). Follows the same fetch/loading/error-state shape as
+ * Tier 2 (Enterprise DFY) setup-intake form — POSTs to /api/contact-sales, an optional,
+ * non-blocking questionnaire (never a Stripe charge; see app/api/contact-sales/route.ts). It sits
+ * alongside Tier2CheckoutButton, the actual $1,999 self-serve purchase — this form doesn't gate or
+ * schedule that purchase, it just hands the founder DNS/volume details ahead of setup for anyone
+ * who wants to fill it in first. Follows the same fetch/loading/error-state shape as
  * components/CheckoutButtons.tsx and components/DomainCheckTool.tsx — this repo's established
  * pattern for a client-side form hitting this site's own API.
  *
  * Responsive fix: every field below was `text-[15px]` — one pixel under the 16px threshold
- * below which iOS Safari auto-zooms the whole page when the field gains focus. This form is the
- * entire Tier 2 conversion path, reachable from a phone, so every mobile visitor got an
- * unwanted pinch-zoom on the very first tap. Bumped to exactly 16px (see the matching `.field`
- * fix in globals.css for the same bug in DomainCheckTool's input).
+ * below which iOS Safari auto-zooms the whole page when the field gains focus. Reachable from a
+ * phone, so every mobile visitor got an unwanted pinch-zoom on the very first tap. Bumped to
+ * exactly 16px (see the matching `.field` fix in globals.css for the same bug in
+ * DomainCheckTool's input).
  */
 type FormState = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -58,16 +60,15 @@ export function ContactSalesForm() {
   if (state === 'success') {
     return (
       <div className="card bg-cream-elevated p-7 text-center">
-        <div className="font-display text-xl font-semibold mb-2">
-          Thanks — we&rsquo;ll be in touch.
-        </div>
+        <div className="font-display text-xl font-semibold mb-2">Thanks — details received.</div>
         <p className="text-sm text-ink-muted">
-          A founder reads every Enterprise DFY inquiry personally and follows up same business day.
-          In the meantime, feel free to email{' '}
+          A founder reads every Tier 2 setup form personally and replies by email — no call
+          required. Already bought Tier 2? This just speeds up setup. Haven&rsquo;t yet? Use the
+          purchase button above whenever you&rsquo;re ready. Anything urgent, email{' '}
           <a href="mailto:hello@warmhawk.com" className="text-rust font-semibold">
             hello@warmhawk.com
           </a>{' '}
-          directly with anything urgent.
+          directly.
         </p>
       </div>
     );
@@ -76,9 +77,9 @@ export function ContactSalesForm() {
   return (
     <form onSubmit={handleSubmit} className="card p-7 flex flex-col gap-4">
       <p className="text-sm leading-relaxed text-ink-muted mb-1">
-        Tier 2 is a custom-scoped engagement — DNS, migration, dedicated IPs, and deployment handled
-        by WarmHawk&rsquo;s founder, then an ongoing retainer. Tell us about your setup and
-        we&rsquo;ll follow up to schedule a call. This does not charge a card.
+        Optional: send over your DNS, migration, and volume details ahead of time so setup starts
+        faster. This form doesn&rsquo;t charge a card and doesn&rsquo;t book a call — buy Tier 2
+        with the button above whenever you&rsquo;re ready, in any order relative to this.
       </p>
       <div className="grid sm:grid-cols-2 gap-4">
         <label className="flex flex-col gap-1.5 text-sm">
@@ -136,7 +137,7 @@ export function ContactSalesForm() {
         disabled={state === 'submitting'}
         className="btn btn-primary btn-block disabled:opacity-60"
       >
-        {state === 'submitting' ? 'Sending…' : 'Request a call'}
+        {state === 'submitting' ? 'Sending…' : 'Send setup details'}
       </button>
       {state === 'error' && errorMessage && (
         <p className="text-fail text-sm text-center">{errorMessage}</p>
