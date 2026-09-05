@@ -44,6 +44,18 @@ describe('DomainCheckPage (app/tools/domain-check/page.tsx)', () => {
     ).toBeNull();
   });
 
+  it('never lists List-Unsubscribe among the checks the paid dashboard runs continuously', () => {
+    render(createElement(DomainCheckPage));
+
+    // The stripped claim's last hiding place: the "is this the same check WarmHawk runs
+    // continuously?" FAQ answered "same underlying SPF/DKIM/DMARC/List-Unsubscribe/blocklist
+    // logic". core-engine's `Domain` model carries spfStatus/dkimStatus/dmarcStatus/
+    // blocklistStatus and nothing for List-Unsubscribe, so the dashboard cannot be monitoring it.
+    const bodyText = document.body.textContent ?? '';
+    expect(bodyText).not.toMatch(/DMARC\s*\/\s*List-Unsubscribe/i);
+    expect(bodyText).not.toMatch(/List-Unsubscribe\s*\/\s*blocklist/i);
+  });
+
   it('renders every domain-check FAQ item', () => {
     render(createElement(DomainCheckPage));
 
