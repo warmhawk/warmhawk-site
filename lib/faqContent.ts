@@ -100,6 +100,6 @@ export const domainCheckFaqItems: FaqItem[] = [
   {
     question: 'Is this the same check WarmHawk runs continuously for paying customers?',
     answer:
-      'Yes — same underlying SPF/DKIM/DMARC/List-Unsubscribe/blocklist logic. The difference is that this free tool gives you a one-time snapshot, while the paid WarmHawk dashboard runs the identical checks continuously against every sending domain you own and alerts you the moment one starts failing.',
+      'Yes — same underlying SPF/DKIM/DMARC and blocklist logic. The difference is that this free tool gives you a one-time snapshot, while the paid WarmHawk dashboard runs the identical checks continuously against every sending domain you own and alerts you the moment one starts failing. List-Unsubscribe is the one thing neither the tool nor the dashboard can check from DNS — it is a header on a sent message, so WarmHawk instead injects it on every send rather than monitoring it.',
   },
 ];
