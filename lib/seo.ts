@@ -131,6 +131,37 @@ export function softwareApplicationSchema() {
   };
 }
 
+/** WebApplication JSON-LD for a real, free, in-browser tool page (AEO
+ * baseline) — distinct from `softwareApplicationSchema()`, which describes
+ * the paid self-hosted product itself. Use this on a page that *is* the
+ * tool (e.g. `/tools/domain-check`), not on marketing pages that merely
+ * mention it. `offers` is a fixed free Offer since every tool this schema
+ * currently describes requires no account and no payment. */
+export function webApplicationSchema({
+  name,
+  description,
+  path,
+}: {
+  name: string;
+  description: string;
+  path: string;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name,
+    description,
+    url: `${siteConfig.url}${path}`,
+    applicationCategory: 'SecurityApplication',
+    operatingSystem: 'Any (browser-based)',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+  };
+}
+
 export interface HowToStepInput {
   name: string;
   text: string;
