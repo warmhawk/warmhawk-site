@@ -160,6 +160,20 @@ test.describe('Human journey: real checkout -> real license email', () => {
 // app/api/checkout/session/route.ts's success_url, so there's no page-side activation poll to wait
 // on here; the caller polls Resend for the license email instead).
 async function completeStripeCheckoutViaBrowser(page: Page) {
+  // Stripe paints the hosted page's payment form asynchronously, well after the navigation that
+  // got us here resolves. Every step below probes with `count()`, which returns 0 for a form that
+  // simply hasn't rendered yet exactly as it does for a selector that no longer exists — so
+  // without this anchor the disclosure checkbox and the card accordion are both silently skipped
+  // on a normal-speed load, and the only symptom is a `#cardNumber` timeout 30s later that names
+  // neither step. Waiting on the payment-method section (which renders regardless of the
+  // disclosure below) is what makes those later counts mean what they claim to mean.
+  await page
+    .locator(
+      '#cardNumber, #payment-method-accordion-item-title-card, [data-testid="card-accordion-item-button"]',
+    )
+    .first()
+    .waitFor({ state: 'attached', timeout: 60_000 });
+
   // Stripe's real, sanctioned disclosure for exactly this case: a plain consent checkbox ("I am
   // an AI agent acting on behalf of someone else"), not a CAPTCHA/block. Checking it honestly
   // (this genuinely is Playwright automation) is what actually lets the flow proceed. Real,
@@ -188,22 +202,52 @@ async function completeStripeCheckoutViaBrowser(page: Page) {
     await followedInstructionsCheckbox.evaluate((el: HTMLInputElement) => el.click());
   }
 
-  // Card renders as a collapsed accordion row (a "Card" radio next to its own "Pay with card"
-  // button) in some Checkout configurations, not pre-expanded — #cardNumber never appears without
-  // selecting it first in that case. The radio and its overlapping expand-button both fail
+  // Card renders as a collapsed accordion row (a "Card" radio beside Cash App Pay / Klarna / Bank)
+  // whenever more than one payment method is enabled, not pre-expanded — #cardNumber never appears
+  // without selecting it first in that case. The radio and its overlapping expand-button both fail
   // Playwright's own click ("subtree intercepts pointer events" / "element is not visible") even
-  // though the button is real and interactive — same native-click escape hatch as the two
-  // checkboxes above. Only clicks when the fields aren't already visible, so this keeps working
-  // if Checkout is pre-expanded instead.
+  // though they are real and interactive — same native-click escape hatch as the two checkboxes
+  // above. Only clicks when the fields aren't already visible, so this keeps working if Checkout
+  // is pre-expanded instead.
   if (
     !(await page
       .locator('#cardNumber')
       .isVisible()
       .catch(() => false))
   ) {
-    const cardAccordionButton = page.locator('[data-testid="card-accordion-item-button"]');
-    if (await cardAccordionButton.count()) {
-      await cardAccordionButton.evaluate((el: HTMLButtonElement) => el.click());
+    // Ordered most- to least-stable. `data-testid` used to be the hook here and was the ONLY one
+    // tried; Stripe has since dropped every data-testid from the accordion, so that selector now
+    // matches nothing. The radio's id is the durable replacement: it is semantic
+    // (`...-title-<method>`), it is what the accessibility tree exposes as the "Card" radio, and
+    // unlike the class names it is not a styling artifact.
+    const cardAccordionSelectors = [
+      '#payment-method-accordion-item-title-card',
+      '[data-testid="card-accordion-item-button"]',
+      '.card-accordion-item-cover',
+    ];
+
+    let expanded = false;
+    for (const selector of cardAccordionSelectors) {
+      const candidate = page.locator(selector).first();
+      if (!(await candidate.count())) continue;
+      await candidate.evaluate((el: HTMLElement) => el.click());
+      expanded = await page
+        .locator('#cardNumber')
+        .waitFor({ state: 'visible', timeout: 10_000 })
+        .then(() => true)
+        .catch(() => false);
+      if (expanded) break;
+    }
+
+    // Fail on the actual cause. The previous `if (await count())` guard swallowed a selector that
+    // had rotted away to zero matches and let the run die 30s later on a `#cardNumber` timeout,
+    // which describes the symptom and names none of the three selectors that missed.
+    if (!expanded) {
+      throw new Error(
+        `Could not expand the Card payment method on Stripe Checkout. None of these revealed ` +
+          `#cardNumber: ${cardAccordionSelectors.join(', ')}. Stripe most likely renamed the ` +
+          `accordion hooks again — re-inspect the hosted page and add the current selector.`,
+      );
     }
   }
 
