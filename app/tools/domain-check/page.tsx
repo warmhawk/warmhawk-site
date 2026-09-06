@@ -1,14 +1,17 @@
 import type { Metadata } from 'next';
-import { pageSeo } from '@/lib/seo';
+import { pageSeo, webApplicationSchema } from '@/lib/seo';
 import { domainCheckFaqItems } from '@/lib/faqContent';
 import { AnswerBlock } from '@/components/AnswerBlock';
 import { FaqSection } from '@/components/FaqSchema';
 import { DomainCheckTool } from '@/components/DomainCheckTool';
 
+const TOOL_NAME = 'Free Bulk SPF, DKIM & DMARC Checker';
+const TOOL_DESCRIPTION =
+  'Check up to 15 sending domains at once — MX, SPF, DKIM, DMARC and blocklist status, 5 checks each — plus a plain-language guide to the RFC 8058 List-Unsubscribe requirement. No account required.';
+
 export const metadata: Metadata = pageSeo({
-  title: 'Free Bulk SPF, DKIM & DMARC Checker + List-Unsubscribe Guide',
-  description:
-    'Check up to 15 sending domains at once — MX, SPF, DKIM, DMARC and blocklist status, 5 checks each — plus a plain-language guide to the RFC 8058 List-Unsubscribe requirement. No account required.',
+  title: `${TOOL_NAME} + List-Unsubscribe Guide`,
+  description: TOOL_DESCRIPTION,
   path: '/tools/domain-check',
 });
 
@@ -39,6 +42,19 @@ export const metadata: Metadata = pageSeo({
 export default function DomainCheckPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            webApplicationSchema({
+              name: TOOL_NAME,
+              description: TOOL_DESCRIPTION,
+              path: '/tools/domain-check',
+            })
+          ),
+        }}
+      />
       <div className="wrap pt-16 md:pt-24 pb-10">
         <div className="max-w-3xl">
           <div className="label text-rust mb-5">
