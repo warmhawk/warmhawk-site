@@ -21,7 +21,7 @@ function getDisallow(): string[] {
   const vsInstantlyLive =
     isFlagEnabled(process.env.ENABLE_VS_INSTANTLY) &&
     isFlagEnabled(process.env.SEED_PLACEMENT_LIVE_IN_PRODUCTION);
-  return [...(vsInstantlyLive ? [] : ['/vs/instantly']), '/api/'];
+  return [...(vsInstantlyLive ? [] : ['/vs/instantly']), '/api/', '/install'];
 }
 
 // Named allow rules for AI/answer-engine crawlers (AEO/GEO baseline) — the
