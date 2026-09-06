@@ -57,7 +57,12 @@ export function buildLlmsTxt(): string {
 
   lines.push('## Tools');
   lines.push(
-    `- [Free SPF, DKIM, DMARC & List-Unsubscribe checker](${siteConfig.url}/tools/domain-check): Instant PASS/FAIL results for any sending domain's deliverability setup, no account required.`,
+    // Copy audit follow-up: this line called the tool a "List-Unsubscribe checker", the exact
+    // claim stripped from the page's own title/meta/hero/FAQ on 2026-09-03 — RFC 8058 headers
+    // live on a sent message, so `GET /public/domain-check` returns an explanatory string for
+    // that row, never PASS/FAIL (see app/tools/domain-check/page.tsx's header comment). llms.txt
+    // is a fifth surface the original audit missed; it now advertises only the DNS-checkable set.
+    `- [Free SPF, DKIM & DMARC checker with blocklist lookup](${siteConfig.url}/tools/domain-check): Instant PASS/FAIL results for any sending domain's deliverability setup, no account required. Also explains the RFC 8058 List-Unsubscribe requirement, which is a sent-message header and not checkable from DNS.`,
   );
   lines.push('');
 

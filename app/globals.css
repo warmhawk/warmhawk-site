@@ -149,4 +149,13 @@ a {
   .badge-unconfigured {
     @apply bg-unconfigured-tint text-unconfigured;
   }
+  /* `warn` and `unknown` reuse the amber and gray pairs above rather than adding colors: the
+     artifact's four badge colors map exactly onto the checker's four states. See CheckBadge.tsx
+     for why `unknown` must never be rendered as either pass or fail. */
+  .badge-warn {
+    @apply bg-pending-tint text-pending;
+  }
+  .badge-unknown {
+    @apply bg-unconfigured-tint text-unconfigured;
+  }
 }
