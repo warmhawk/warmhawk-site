@@ -6,9 +6,13 @@ const nextConfig = {
   // dependency, so Next statically prerenders it at build time by default.
   // We stop short of `output: "export"` only because two routes need a
   // real Node runtime: the Stripe Checkout session/webhook/portal API
-  // routes (Phase 4 — Commercial Licensing & Billing) and the
-  // `/tools/domain-check` page's client-side call to core-engine's public
-  // API. Everything else ships as static HTML.
+  // routes (Phase 4 — Commercial Licensing & Billing) and
+  // `/api/domain-check`, the server-side proxy to the probe container.
+  // That proxy holds PROBE_SHARED_SECRET and fetches a single-use nonce per
+  // request, so it can never be prerendered — an earlier revision had the
+  // BROWSER call core-engine's public API directly, which published the
+  // secret via NEXT_PUBLIC_* and pointed at a hostname that has never
+  // existed. Everything else ships as static HTML.
   poweredByHeader: false,
   // next build's own internal ESLint pass (separate from this repo's own
   // `npm run lint` / CI's 1.8-lint-format step, both still eslint 8.57.1's

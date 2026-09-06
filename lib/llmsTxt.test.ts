@@ -58,6 +58,16 @@ describe('buildLlmsTxt', () => {
     expect(body).toContain(`${siteConfig.url}/legal/privacy`);
   });
 
+  it('never advertises the domain-check tool as a List-Unsubscribe checker', () => {
+    // llms.txt is the surface the 2026-09-03 copy audit missed: it still billed the tool as a
+    // "List-Unsubscribe checker" after that claim was stripped from the page's own title, meta,
+    // hero and FAQ. RFC 8058 headers ride on a sent message, so `GET /public/domain-check`
+    // returns an explanatory string for that row and never a PASS/FAIL.
+    for (const body of [buildLlmsTxt(), buildLlmsFullTxt()]) {
+      expect(body).not.toMatch(/List-Unsubscribe checker/i);
+    }
+  });
+
   it('links to the machine-readable OpenAPI spec', () => {
     const body = buildLlmsTxt();
     expect(body).toContain(`${siteConfig.url}/openapi.json`);
