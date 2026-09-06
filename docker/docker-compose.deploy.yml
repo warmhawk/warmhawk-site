@@ -67,6 +67,12 @@ services:
       NEXT_PUBLIC_CORE_ENGINE_PUBLIC_API_URL: ${NEXT_PUBLIC_CORE_ENGINE_PUBLIC_API_URL:-https://api.warmhawk.com}
       ENABLE_VS_INSTANTLY: ${ENABLE_VS_INSTANTLY:-}
       SEED_PLACEMENT_LIVE_IN_PRODUCTION: ${SEED_PLACEMENT_LIVE_IN_PRODUCTION:-}
+      # The probe, reached by container name on this same network -- no ingress, no public
+      # hostname, which is what removes the CORS and NEXT_PUBLIC_* drift bug class outright.
+      # Server-only: if either of these ever gains a NEXT_PUBLIC_ prefix, the shared secret is
+      # inlined into the client bundle and published to every visitor.
+      PROBE_INTERNAL_URL: ${PROBE_INTERNAL_URL:-http://warmhawk-probe:4700}
+      PROBE_SHARED_SECRET: ${PROBE_SHARED_SECRET:-}
     healthcheck:
       test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:4600/']
       interval: 30s
