@@ -733,7 +733,9 @@ export function DomainCheckTool() {
                       </b>{' '}
                       {insight.leaders.length === 1 ? 'enforces' : 'enforce'} DMARC at{' '}
                       <b className="text-ink font-semibold">p={insight.leaderPolicy}</b> while{' '}
-                      {insight.laggards.length === 1 ? 'the other sits' : `the other ${insight.laggards.length} sit`}{' '}
+                      {insight.laggards.length === 1
+                        ? 'the other sits'
+                        : `the other ${insight.laggards.length} sit`}{' '}
                       at{' '}
                       {insight.laggardPolicy ? (
                         <b className="text-ink font-semibold">p={insight.laggardPolicy}</b>
