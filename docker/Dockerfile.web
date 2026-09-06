@@ -30,6 +30,21 @@ ARG STRIPE_WEBHOOK_SECRET=whsec_placeholder
 ENV STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY
 ENV STRIPE_WEBHOOK_SECRET=$STRIPE_WEBHOOK_SECRET
 
+# 🔑 The Turnstile SITE key, which is public by definition — it is printed into the widget's own
+# markup and read by every visitor. That is why it can be defaulted here in a public repo, while
+# the matching SECRET exists only in the probe's environment and never in this image at all.
+#
+# It has to be a build ARG and not a runtime env var: NEXT_PUBLIC_* is inlined by `next build`
+# into the client bundle, so a value supplied at container start is read too late and the widget
+# renders unconfigured. Changing it needs a REBUILD, not a restart.
+#
+# The default is the real key on purpose. One widget covers warmhawk.com, www.warmhawk.com and
+# stage.warmhawk.com, so every environment that runs this image wants the same value — and a blank
+# default would produce the dangerous half-configured state where the site sends no token while
+# the probe demands one, rejecting every visitor.
+ARG NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAAEpyt1Fwxww4Oho2
+ENV NEXT_PUBLIC_TURNSTILE_SITE_KEY=$NEXT_PUBLIC_TURNSTILE_SITE_KEY
+
 RUN npm run build && npm prune --omit=dev
 
 FROM node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293 AS runtime
