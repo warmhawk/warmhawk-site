@@ -59,7 +59,10 @@ a {
      badge/control right) stacked inside one card, used for the domain-check
      tool's five checks instead of five separate cards. */
   .toggle-row {
-    @apply flex items-center justify-between gap-4 py-3.5 border-t border-border;
+    /* items-start, not items-center: a fix block (see .fix below) can make the label column
+       much taller than the badge, and the artifact keeps the badge pinned to the top in that
+       case rather than re-centering it against the label's full height. */
+    @apply flex items-start justify-between gap-4 py-3.5 border-t border-border;
   }
   .toggle-row:first-child {
     @apply border-t-0;
@@ -68,7 +71,32 @@ a {
     @apply block text-sm font-semibold text-ink;
   }
   .toggle-row .t-label span {
-    @apply text-[12.5px] text-ink-muted;
+    @apply block text-[12.5px] text-ink-muted;
+  }
+
+  /* Matches the artifact's `.drawer-h` — the "All 5 checks for <domain> · worst
+     first" caption above a drawer's toggle-rows. */
+  .drawer-h {
+    @apply font-mono text-[10.5px] tracking-[0.12em] uppercase text-ink-muted pt-3 pb-1;
+  }
+  .drawer-h b {
+    @apply text-ink font-semibold normal-case tracking-normal;
+  }
+
+  /* Matches the artifact's `.fix`/`.fix .fl`/`.fix .cp`/`.fix code` — a suggested DNS record
+     with one-click copy, offered only for the one check (missing DMARC) that has a universally
+     safe starting value. See `fixFor` in DomainCheckTool.tsx for why SPF/DKIM never get one. */
+  .fix {
+    @apply mt-[11px] bg-cream border border-border rounded-[9px] px-[13px] py-[11px];
+  }
+  .fix .fl {
+    @apply text-[11.5px] font-semibold text-ink-muted tracking-[0.03em] mb-[7px] flex items-center justify-between gap-2.5;
+  }
+  .fix .cp {
+    @apply font-sans text-[11px] font-semibold text-rust bg-transparent border border-border rounded-[5px] px-2 py-[3px] cursor-pointer flex-none hover:bg-rust-tint;
+  }
+  .fix code {
+    @apply block font-mono text-[12.5px] text-ink bg-paper border border-border rounded-[6px] px-[11px] py-[9px] overflow-x-auto whitespace-pre;
   }
 
   /* Matches the artifact's `.field`/`.field label`/`.field input`. */
@@ -157,5 +185,86 @@ a {
   }
   .badge-unknown {
     @apply bg-unconfigured-tint text-unconfigured;
+  }
+
+  /* Domain-check meter — the count-vs-cap progress bar under the textarea, from the design
+     artifact's `.meter`/`.meter i`/`.meter.full`. Purely a visual read of the same count the
+     "N domains · 5 checks each" text already states; it carries no information of its own. */
+  .meter {
+    @apply relative flex-1 min-w-[70px] h-[3px] rounded-full overflow-hidden bg-cream-elevated;
+  }
+  .meter i {
+    @apply block h-full bg-rust transition-[width] duration-200;
+  }
+  .meter.full i {
+    @apply bg-fail;
+  }
+
+  /* Rollup tally — the four headline numbers atop a bulk result set (artifact's `.tally .t .v`). */
+  .tally-num {
+    @apply font-display font-bold text-[28px] leading-none;
+  }
+  .tally-num.is-fail {
+    @apply text-fail;
+  }
+  .tally-num.is-warn {
+    @apply text-pending;
+  }
+  .tally-num.is-pass {
+    @apply text-pass;
+  }
+
+  /* Matrix pips — icon-first status marks (artifact's `.pip`), replacing the dot+word badge only
+     inside the bulk table, where five of them sit in a row and the word becomes noise. The word
+     itself is not lost — it moves to a visually-hidden label so the same status is still announced
+     to a screen reader and still assertable in tests. */
+  .pip {
+    @apply inline-flex items-center justify-center w-[25px] h-[25px] rounded-[7px] text-[12px] font-bold leading-none;
+  }
+  .pip-pass {
+    @apply bg-pass-tint text-pass;
+  }
+  .pip-fail {
+    @apply bg-fail-tint text-fail;
+  }
+  .pip-warn {
+    @apply bg-pending-tint text-pending;
+  }
+  .pip-unknown {
+    @apply bg-unconfigured-tint text-unconfigured;
+  }
+
+  /* Severity bar — the artifact's `.sev`, a color read on the domain row itself so the worst
+     finding is visible without scanning across to the matrix columns. */
+  .sev-bar {
+    @apply w-[3px] h-8 rounded-sm flex-none block;
+  }
+
+  /* Expand/collapse caret (artifact's `.caret`) — a hand-rolled chevron rather than an icon
+     library, matching how the rest of this site draws its own marks. */
+  .caret {
+    @apply inline-flex items-center justify-center w-[26px] h-[26px] rounded-full text-ink-muted border border-transparent transition-transform duration-150;
+  }
+  .caret.open {
+    @apply rotate-90 text-rust-fg bg-rust border-rust;
+  }
+
+  /* Matrix legend footer (artifact's `.legend`) — spells out what the four pip icons mean once,
+     rather than repeating it in every row. */
+  .legend-row {
+    @apply flex flex-wrap items-center gap-x-4 gap-y-2 px-3.5 py-2.5 bg-cream border-t border-border text-[12px] text-ink-muted;
+  }
+
+  /* Insight callout (artifact's `.insight`) — the one highlighted finding worth reading before the
+     table, when a single check is failing or warning across two or more domains at once. */
+  .insight-callout {
+    @apply border-l-[3px] border-rust bg-rust-tint rounded-r-[10px] px-4 py-[13px] mt-[18px];
+  }
+
+  /* Gate — the artifact's `.gate`, the closing upsell card styled to match the mockup's visual
+     weight even though the "watch this on a schedule" feature it depicts needs a database and an
+     email pipeline this stateless tool doesn't have yet (see the domain-check plan doc, Phase 5). */
+  .gate-card {
+    @apply mt-5 bg-paper border border-border border-l-[3px] border-l-rust rounded-r-2xl px-6 py-[22px];
   }
 }
