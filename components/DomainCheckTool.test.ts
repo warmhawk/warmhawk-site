@@ -486,10 +486,7 @@ describe('DomainCheckTool', () => {
     vi.stubGlobal(
       'fetch',
       okFetch({
-        results: [
-          cleanPassingDomain('a.com', 'reject'),
-          cleanPassingDomain('b.com', 'reject'),
-        ],
+        results: [cleanPassingDomain('a.com', 'reject'), cleanPassingDomain('b.com', 'reject')],
         meta: {
           submitted: 2,
           deduplicated: 2,
