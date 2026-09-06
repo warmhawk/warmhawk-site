@@ -5,7 +5,12 @@
 // first when any of them change.
 export const siteConfig = {
   name: 'WarmHawk',
-  url: 'https://warmhawk.com',
+  // Falls back to the production URL rather than throwing when unset, since
+  // most pages here are statically prerendered at build time (no NEXT_PUBLIC_*
+  // build ARG wires this in yet) — see docker/Dockerfile.web's ARG list. Once
+  // wired as a build ARG, a stage build stops silently emitting prod URLs in
+  // its own sitemap/robots/canonical/OG tags.
+  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://warmhawk.com',
   description:
     'WarmHawk — enterprise cold email infrastructure running completely on your own server. Unlimited mailboxes, zero per-seat fees, real deliverability data, AI personalization with your choice of Gemini or Claude, and a queueing engine that never pushes your domains past what’s actually safe. Live in under 10 minutes, one command.',
   twitter: '@warmhawk',
