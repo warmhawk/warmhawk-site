@@ -20,10 +20,10 @@ describe('DomainCheckPage (app/tools/domain-check/page.tsx)', () => {
     render(createElement(DomainCheckPage));
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'Check any sending domain’s deliverability setup, free.',
+      'Check every sending domain’s deliverability setup, free.',
     );
 
-    const answer = screen.getByText(/live SPF, DKIM, and DMARC status/i);
+    const answer = screen.getByText(/live MX, SPF, DKIM, DMARC and blocklist status/i);
     expect(answer).toBeInTheDocument();
     expect(answer.textContent).toMatch(/can.t be verified from a bare domain/i);
   });
@@ -62,5 +62,30 @@ describe('DomainCheckPage (app/tools/domain-check/page.tsx)', () => {
     for (const item of domainCheckFaqItems) {
       expect(screen.getByText(item.question)).toBeInTheDocument();
     }
+  });
+});
+
+describe('DomainCheckPage — the bulk unit vocabulary', () => {
+  afterEach(cleanup);
+
+  it('says "15 domains" and "5 checks each", never a bare "up to 10"', () => {
+    render(createElement(DomainCheckPage));
+    const bodyText = document.body.textContent ?? '';
+    expect(bodyText).toMatch(/up to 15 domains/i);
+    expect(bodyText).toMatch(/5\s*checks each/i);
+    // "10" may only ever appear attached to DNS lookups — it is RFC 7208's limit, not our
+    // domain cap, and conflating the two is the specific confusion this rule exists to prevent.
+    const tens = bodyText.match(/\b10\b(?!\s*DNS lookups)/gi) ?? [];
+    expect(tens).toEqual([]);
+  });
+
+  it('names all five checks, and never promises a sixth', () => {
+    render(createElement(DomainCheckPage));
+    const bodyText = document.body.textContent ?? '';
+    for (const check of ['MX', 'SPF', 'DKIM', 'DMARC', 'blocklist']) {
+      expect(bodyText).toContain(check);
+    }
+    // List-Unsubscribe is explained as a requirement, never counted as a check.
+    expect(bodyText).not.toMatch(/6 checks|six checks/i);
   });
 });
