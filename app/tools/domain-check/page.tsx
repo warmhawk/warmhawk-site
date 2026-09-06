@@ -50,12 +50,12 @@ export default function DomainCheckPage() {
           <AnswerBlock>
             Paste up to 15 domains to see live MX, SPF, DKIM, DMARC and blocklist status &mdash; 5
             checks each &mdash; the same DNS checks WarmHawk runs continuously on every domain
-            inside the paid dashboard, exposed here as a free public tool. The SPF check also
-            counts what the record costs against the limit of 10 DNS lookups RFC 7208 sets, which
-            is the usual reason a record that looks fine has quietly stopped working. It also
-            explains the RFC 8058 one-click List-Unsubscribe requirement, though that one
-            can&rsquo;t be verified from a bare domain — it lives on your sent messages, not in
-            DNS, so connect the domain inside WarmHawk to check it on real sends.
+            inside the paid dashboard, exposed here as a free public tool. The SPF check also counts
+            what the record costs against the limit of 10 DNS lookups RFC 7208 sets, which is the
+            usual reason a record that looks fine has quietly stopped working. It also explains the
+            RFC 8058 one-click List-Unsubscribe requirement, though that one can&rsquo;t be verified
+            from a bare domain — it lives on your sent messages, not in DNS, so connect the domain
+            inside WarmHawk to check it on real sends.
           </AnswerBlock>
         </div>
       </div>

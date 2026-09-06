@@ -22,7 +22,11 @@ function checkRow(id: string, status: string, label: string) {
 }
 
 /** A well-formed response: five rows per domain, in the fixed order. */
-function response(domain: string, statuses: [string, string][], meta: Partial<Record<string, unknown>> = {}) {
+function response(
+  domain: string,
+  statuses: [string, string][],
+  meta: Partial<Record<string, unknown>> = {},
+) {
   return {
     results: [
       {
@@ -44,7 +48,9 @@ function response(domain: string, statuses: [string, string][], meta: Partial<Re
 }
 
 function okFetch(body: unknown) {
-  return vi.fn(() => Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(body) } as Response));
+  return vi.fn(() =>
+    Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(body) } as Response),
+  );
 }
 
 const CLEAN: [string, string][] = [

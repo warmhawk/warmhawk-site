@@ -23,13 +23,7 @@
  * artifact's four badge colors (green / amber / red / gray) map exactly onto these four states.
  * `pending` and `unconfigured` are retained for the /status page, which has its own vocabulary.
  */
-export type CheckStatus =
-  | 'pass'
-  | 'warn'
-  | 'fail'
-  | 'unknown'
-  | 'pending'
-  | 'unconfigured';
+export type CheckStatus = 'pass' | 'warn' | 'fail' | 'unknown' | 'pending' | 'unconfigured';
 
 const LABELS: Record<CheckStatus, string> = {
   pass: 'PASS',

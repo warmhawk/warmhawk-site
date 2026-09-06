@@ -108,7 +108,8 @@ function classify(candidate: string): RejectionReason | null {
   if (FORBIDDEN_SUFFIXES.some((suffix) => candidate.endsWith(suffix))) return 'reserved-name';
 
   if (!candidate.includes('.')) return 'single-label';
-  if (candidate.split('.').some((label) => label.length > MAX_LABEL_LENGTH)) return 'label-too-long';
+  if (candidate.split('.').some((label) => label.length > MAX_LABEL_LENGTH))
+    return 'label-too-long';
   if (!DOMAIN_PATTERN.test(candidate)) return 'not-a-domain';
   return null;
 }

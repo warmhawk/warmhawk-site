@@ -118,13 +118,16 @@ const SENTENCES: Record<string, string> = {
 
   'spf-ok': 'A valid SPF record, within the lookup limit.',
   'spf-none': 'No SPF record. Receivers cannot tell which servers may send for you.',
-  'spf-multiple-records': 'Two or more SPF records. Receivers treat this as an error and ignore both.',
+  'spf-multiple-records':
+    'Two or more SPF records. Receivers treat this as an error and ignore both.',
   'spf-lookup-limit-exceeded':
     'This SPF record needs more than the 10 DNS lookups RFC 7208 allows, so receivers stop honouring it.',
-  'spf-void-limit-exceeded': 'Too many SPF lookups resolve to nothing, which receivers treat as an error.',
+  'spf-void-limit-exceeded':
+    'Too many SPF lookups resolve to nothing, which receivers treat as an error.',
   'spf-all-permissive': 'The record ends in +all, which authorises anyone to send as your domain.',
   'spf-all-neutral': 'The record ends in ?all, which authorises nothing in particular.',
-  'spf-no-all': 'The record has no all mechanism, so it never says what to do with unlisted senders.',
+  'spf-no-all':
+    'The record has no all mechanism, so it never says what to do with unlisted senders.',
   'spf-syntax-error': 'This SPF record could not be parsed.',
   'spf-lookup-failed': 'We could not read the SPF record just now.',
 
@@ -271,9 +274,7 @@ export function DomainCheckTool() {
         >
           {count} {count === 1 ? 'domain' : 'domains'} &middot; 5 checks each
           {preview.overCap > 0 ? ` · ${preview.overCap} over the limit, not checked` : ''}
-          {preview.rejected.length > 0
-            ? ` · ${preview.rejected.length} not usable`
-            : ''}
+          {preview.rejected.length > 0 ? ` · ${preview.rejected.length} not usable` : ''}
         </p>
 
         {/* Rendered only when a site key is configured; an unconfigured widget is a no-op div. */}
@@ -290,7 +291,11 @@ export function DomainCheckTool() {
           disabled={state.kind === 'loading' || count === 0 || turnstile.blocking}
           className="btn btn-primary btn-block disabled:opacity-50"
         >
-          {state.kind === 'loading' ? 'Checking…' : `Check ${count || ''} ${count === 1 ? 'domain' : 'domains'}`.replace(/\s+/g, ' ').trim()}
+          {state.kind === 'loading'
+            ? 'Checking…'
+            : `Check ${count || ''} ${count === 1 ? 'domain' : 'domains'}`
+                .replace(/\s+/g, ' ')
+                .trim()}
         </button>
       </form>
 
@@ -305,8 +310,8 @@ export function DomainCheckTool() {
           <div className="kicker-card">
             <div className="flex items-baseline justify-between gap-3 mb-4">
               <span className="font-mono text-[11.5px] tracking-[0.1em] uppercase text-ink-muted">
-                {state.data.results.length}{' '}
-                {state.data.results.length === 1 ? 'domain' : 'domains'} &middot; 5 checks each
+                {state.data.results.length} {state.data.results.length === 1 ? 'domain' : 'domains'}{' '}
+                &middot; 5 checks each
               </span>
               <span className="font-mono text-[11.5px] tracking-[0.1em] uppercase text-ink-muted flex-none">
                 Just now
@@ -321,7 +326,10 @@ export function DomainCheckTool() {
                 </caption>
                 <thead>
                   <tr>
-                    <th scope="col" className="text-left font-mono text-[11.5px] tracking-[0.08em] uppercase text-ink-muted pb-2 pr-4">
+                    <th
+                      scope="col"
+                      className="text-left font-mono text-[11.5px] tracking-[0.08em] uppercase text-ink-muted pb-2 pr-4"
+                    >
                       Domain
                     </th>
                     {COLUMNS.map((column) => (
