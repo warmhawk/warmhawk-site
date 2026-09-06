@@ -83,6 +83,11 @@ export async function POST(request: Request): Promise<NextResponse> {
   const domains = (body as { domains?: unknown }).domains;
   const dkimSelector = (body as { dkimSelector?: unknown }).dkimSelector;
 
+  // Passed straight through, unexamined. This proxy deliberately does NOT verify it: the private
+  // Docker network is not a trust boundary, so a `turnstileOk: true` asserted here would be a claim
+  // the probe has no way to check. The probe holds the secret and calls siteverify itself.
+  const turnstileToken = (body as { turnstileToken?: unknown }).turnstileToken;
+
   if (typeof domains !== 'string' || domains.length > RAW_INPUT_MAX_CHARS) {
     return NextResponse.json({ error: 'invalid-input' }, { status: 422 });
   }
@@ -123,6 +128,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         // there is no reason to forward attacker-controlled bytes it will only reject.
         domains: normalised.domains.join('\n'),
         nonce,
+        ...(typeof turnstileToken === 'string' && turnstileToken ? { turnstileToken } : {}),
         ...(typeof dkimSelector === 'string' && dkimSelector ? { dkimSelector } : {}),
       }),
       cache: 'no-store',
@@ -135,6 +141,13 @@ export async function POST(request: Request): Promise<NextResponse> {
       // the UI can say "you've run a lot of checks" rather than "we're broken".
       if (res.status === 429) {
         return NextResponse.json({ error: 'rate-limited' }, { status: 429 });
+      }
+      // A rejected Turnstile token is also a real answer, and one the visitor can act on by
+      // completing the widget again. Collapsing it into "we're broken" would tell them to wait for
+      // a fix that is never coming. A 403 for a stale NONCE is indistinguishable from here, and
+      // resolves the same way: reload and retry.
+      if (res.status === 403) {
+        return NextResponse.json({ error: 'challenge-failed' }, { status: 403 });
       }
       return NextResponse.json(UNAVAILABLE, { status: 502 });
     }

@@ -264,4 +264,53 @@ describe('DomainCheckTool', () => {
     // perfectly safe markup — the meaningful assertions are "no element" and "present as text".
     expect(within(table).getByText('<img src=x onerror=alert(1)>.com')).toBeInTheDocument();
   });
+  it('shows an actionable message when the bot check is rejected, not an outage message', async () => {
+    // A 403 is the visitor's problem and they can fix it by completing the widget again. Telling
+    // them "we're broken" would send them away waiting for a fix that is never coming.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve({
+          ok: false,
+          status: 403,
+          json: () => Promise.resolve({ error: 'challenge-failed' }),
+        } as Response),
+      ),
+    );
+
+    render(createElement(DomainCheckTool));
+    paste('example.com');
+    submit();
+
+    expect(await screen.findByText(/couldn.t confirm you.re not a bot/i)).toBeInTheDocument();
+    expect(screen.queryByText(/isn.t reachable right now/i)).not.toBeInTheDocument();
+  });
+
+  it('submits with no turnstileToken field when Turnstile is unconfigured', async () => {
+    // NEXT_PUBLIC_TURNSTILE_SITE_KEY is unset in the test env, which is the supported local-dev
+    // state. The probe applies the mirror-image rule — no secret, no verification — so an absent
+    // token must NOT be sent as an empty string: the probe rejects unknown/blank fields, and a
+    // half-configured pair is exactly how one environment starts refusing every request.
+    const fetchSpy = okFetch(response('example.com', CLEAN));
+    vi.stubGlobal('fetch', fetchSpy);
+
+    render(createElement(DomainCheckTool));
+    paste('example.com');
+    submit();
+
+    await screen.findByRole('table');
+
+    const [, init] = fetchSpy.mock.calls[0] as unknown as [string, RequestInit];
+    const sent = JSON.parse(String(init.body)) as Record<string, unknown>;
+    expect(sent.domains).toBe('example.com');
+    expect('turnstileToken' in sent).toBe(false);
+  });
+
+  it('leaves the submit button usable when Turnstile is unconfigured', async () => {
+    // `blocking` must be false in the unconfigured state, or local dev and the test env would
+    // render a form that can never be submitted.
+    render(createElement(DomainCheckTool));
+    paste('example.com');
+    expect(screen.getByRole('button', { name: /check/i })).not.toBeDisabled();
+  });
 });

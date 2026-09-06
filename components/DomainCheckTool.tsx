@@ -4,6 +4,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { CheckBadge, type CheckStatus } from '@/components/CheckBadge';
 import { normalise, type Rejection } from '@/lib/domainInput';
+import { useTurnstile } from '@/components/useTurnstile';
 
 /**
  * The bulk domain checker.
@@ -186,6 +187,7 @@ const GENERIC_ERROR =
 export function DomainCheckTool() {
   const [input, setInput] = useState('');
   const [state, setState] = useState<ToolState>({ kind: 'idle' });
+  const turnstile = useTurnstile();
 
   // Local validation, purely for instant feedback. The probe validates independently — see
   // lib/domainInput.ts on why the duplication is deliberate.
@@ -201,8 +203,26 @@ export function DomainCheckTool() {
       const res = await fetch('/api/domain-check', {
         method: 'POST',
         headers: { 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify({ domains: input }),
+        body: JSON.stringify({
+          domains: input,
+          // Empty when Turnstile is unconfigured. The probe skips verification in that case, so
+          // both halves agree — see components/useTurnstile.ts.
+          ...(turnstile.token ? { turnstileToken: turnstile.token } : {}),
+        }),
       });
+
+      // A redeemed token is dead. Reset before reading the response so the next submission always
+      // carries a fresh one, whatever happened to this one.
+      turnstile.reset();
+
+      if (res.status === 403) {
+        setState({
+          kind: 'error',
+          message:
+            "We couldn't confirm you're not a bot. Please complete the check above and try again.",
+        });
+        return;
+      }
 
       if (res.status === 429) {
         setState({
@@ -256,9 +276,18 @@ export function DomainCheckTool() {
             : ''}
         </p>
 
+        {/* Rendered only when a site key is configured; an unconfigured widget is a no-op div. */}
+        <div ref={turnstile.containerRef} className="mb-3 empty:hidden" />
+
+        {turnstile.state === 'failed' && (
+          <p className="text-sm text-ink-muted mb-3">
+            The bot check couldn&rsquo;t load. Reload the page to try again.
+          </p>
+        )}
+
         <button
           type="submit"
-          disabled={state.kind === 'loading' || count === 0}
+          disabled={state.kind === 'loading' || count === 0 || turnstile.blocking}
           className="btn btn-primary btn-block disabled:opacity-50"
         >
           {state.kind === 'loading' ? 'Checking…' : `Check ${count || ''} ${count === 1 ? 'domain' : 'domains'}`.replace(/\s+/g, ' ').trim()}
