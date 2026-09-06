@@ -6,23 +6,26 @@ import { FaqSection } from '@/components/FaqSchema';
 import { DomainCheckTool } from '@/components/DomainCheckTool';
 
 export const metadata: Metadata = pageSeo({
-  title: 'Free SPF, DKIM & DMARC Checker + List-Unsubscribe Guide',
+  title: 'Free Bulk SPF, DKIM & DMARC Checker + List-Unsubscribe Guide',
   description:
-    'Free SPF/DKIM/DMARC checker and blocklist lookup for any sending domain, with a plain-language guide to the RFC 8058 List-Unsubscribe requirement. Instant PASS/FAIL results on the DNS checks, no account required.',
+    'Check up to 15 sending domains at once — MX, SPF, DKIM, DMARC and blocklist status, 5 checks each — plus a plain-language guide to the RFC 8058 List-Unsubscribe requirement. No account required.',
   path: '/tools/domain-check',
 });
 
 // Hero eyebrow/h1 and the result-card framing are matched against the source design artifact
-// (warmhawk-full-prototype.html `#page-domain-check`,
-// lines 684-712) — its eyebrow, exact h1 ("Check any sending domain's deliverability setup,
-// free."), and closing line ("See this monitored continuously for all your sending domains, with
-// alerts the moment something changes.") are carried over close to verbatim. The one deliberate
-// departure: the artifact's result card is a static mockup with five pre-filled rows, including a
-// "WEAK POLICY" amber state for DMARC — this page instead calls core-engine's real
-// `GET /public/domain-check` endpoint (see components/DomainCheckTool.tsx), which only ever
-// returns PASS/FAIL for SPF/DKIM/DMARC (no policy-strength gradient) and a plain explanatory
-// string for List-Unsubscribe rather than a checkable status, so the UI reflects the real API
-// contract instead of the mockup's fabricated "WEAK POLICY" badge.
+// (warmhawk-full-prototype.html `#page-domain-check`, lines 684-712) — its eyebrow and closing
+// line ("See this monitored continuously for all your sending domains, with alerts the moment
+// something changes.") are carried over close to verbatim.
+//
+// The tool is a BULK checker: up to 15 domains, 5 checks each (MX, SPF, DKIM, DMARC, blocklist).
+// The unit vocabulary matters and the copy must never blur it — "15 domains", "5 checks each",
+// "12 of 10 DNS lookups". The 15 is ours and tunable; the 10 is RFC 7208's and is not.
+//
+// The artifact's mockup included a "WEAK POLICY" amber state for DMARC. That is now real rather
+// than fabricated: the probe returns four statuses, and `warn` is exactly this case — a p=none
+// policy is a published rule that asks receivers to do nothing, which is a finding but not a
+// failure. The fourth, `unknown`, exists because some checks genuinely cannot be answered (see
+// components/CheckBadge.tsx), and rendering those as either pass or fail would be a lie.
 //
 // Copy audit (2026-09-03): the title/meta/hero used to claim this tool checks "whether [a domain]
 // has a working RFC 8058 ... header" — verified against the actual endpoint and found false. RFC
@@ -39,18 +42,20 @@ export default function DomainCheckPage() {
       <div className="wrap pt-16 md:pt-24 pb-10">
         <div className="max-w-3xl">
           <div className="label text-rust mb-5">
-            SPF/DKIM/DMARC checker · blocklist check · List-Unsubscribe guide
+            Bulk SPF/DKIM/DMARC checker · blocklist check · List-Unsubscribe guide
           </div>
           <h1 className="font-display text-4xl md:text-[48px] leading-tight font-semibold mb-6">
-            Check any sending domain&rsquo;s deliverability setup, free.
+            Check every sending domain&rsquo;s deliverability setup, free.
           </h1>
           <AnswerBlock>
-            Paste a domain to see live SPF, DKIM, and DMARC status and its current blocklist
-            standing — the same DNS checks WarmHawk runs continuously on every domain inside the
-            paid dashboard, exposed here as a free public tool. It also explains the RFC 8058
-            one-click List-Unsubscribe requirement, though that one can&rsquo;t be verified from a
-            bare domain — it lives on your sent messages, not in DNS, so connect the domain inside
-            WarmHawk to check it on real sends.
+            Paste up to 15 domains to see live MX, SPF, DKIM, DMARC and blocklist status &mdash; 5
+            checks each &mdash; the same DNS checks WarmHawk runs continuously on every domain
+            inside the paid dashboard, exposed here as a free public tool. The SPF check also counts
+            what the record costs against the limit of 10 DNS lookups RFC 7208 sets, which is the
+            usual reason a record that looks fine has quietly stopped working. It also explains the
+            RFC 8058 one-click List-Unsubscribe requirement, though that one can&rsquo;t be verified
+            from a bare domain — it lives on your sent messages, not in DNS, so connect the domain
+            inside WarmHawk to check it on real sends.
           </AnswerBlock>
         </div>
       </div>
