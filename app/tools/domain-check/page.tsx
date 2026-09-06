@@ -51,7 +51,7 @@ export default function DomainCheckPage() {
               name: TOOL_NAME,
               description: TOOL_DESCRIPTION,
               path: '/tools/domain-check',
-            })
+            }),
           ),
         }}
       />
