@@ -44,6 +44,15 @@ import { NextResponse } from 'next/server';
  *     `RUSTUP_UPDATE_ROOT` or Homebrew's `HOMEBREW_BREW_GIT_REMOTE`) — a git remote URL is cloned; a
  *     local filesystem path is copied as-is (including uncommitted working-tree state, useful for
  *     testing a not-yet-committed change before it's public).
+ *
+ * CORE_REPO_REF pins that clone to `master`, and it is load-bearing: a bare `git clone` takes the
+ * repo's default branch, which is the development trunk. Without this flag every customer install
+ * would be whatever landed on trunk that day, ungated by the release process.
+ *
+ * It is a branch and not a release tag on purpose. `git clone --depth 1 --branch <tag>` writes a
+ * refspec for a branch of that name, which does not exist, so the customer's later
+ * `git fetch`/`scripts/update.sh` would find nothing and upgrades would silently stop working.
+ * `master` carries the newest release because every tag is cut from its head.
  *   - warmhawk-enterprise-operator is PRIVATE FOREVER — that repo's source is never fetched by this
  *     script at all, not now, not after go-live. What the customer's box gets instead is a small
  *     "deploy tooling" tarball (install.sh, docker-compose.yml, nginx config — no application code)
@@ -75,6 +84,8 @@ const INSTALL_SCRIPT = `#!/usr/bin/env bash
 #   --api-domain <domain>                (default: api.<domain>)
 #   --dashboard-domain <domain>          (default: dashboard.<domain>)
 #   --core-engine-source <src>           (default: \$WARMHAWK_CORE_REPO_URL or the public GitHub repo)
+#   --core-engine-ref <branch>           (default: \$WARMHAWK_CORE_REPO_REF or master -- the released
+#                                         branch; only change this if WarmHawk support asks you to)
 #   --operator-deploy-tooling-url <url>  (default: \$OPERATOR_DEPLOY_TOOLING_URL or
 #                                         https://warmhawk.com/api/operator-deploy-tooling --
 #                                         install.sh/docker-compose.yml/nginx config only, never
@@ -94,6 +105,9 @@ fail() {
 # warmhawk-core-engine goes public. Override for internal staging/testing (a git remote is cloned;
 # a local path is copied as-is).
 CORE_REPO_SOURCE="\${WARMHAWK_CORE_REPO_URL:-https://github.com/warmhawk/warmhawk-core-engine.git}"
+# CORE_REPO_REF: the branch cloned above. \`master\` is the released branch -- a bare clone would take
+# the repo's default branch, i.e. the development trunk, and put unreleased code on customer servers.
+CORE_REPO_REF="\${WARMHAWK_CORE_REPO_REF:-master}"
 # OPERATOR_DEPLOY_TOOLING_URL: NOT a repo source -- warmhawk-enterprise-operator is private forever
 # and this script never clones it. This is this repo's own endpoint serving just the deploy tooling
 # tarball (install.sh/docker-compose.yml/nginx config); see app/api/operator-deploy-tooling/route.ts.
@@ -114,6 +128,7 @@ while [ \$# -gt 0 ]; do
     --api-domain) API_DOMAIN="\$2"; shift 2 ;;
     --dashboard-domain) DASHBOARD_DOMAIN="\$2"; shift 2 ;;
     --core-engine-source) CORE_REPO_SOURCE="\$2"; shift 2 ;;
+    --core-engine-ref) CORE_REPO_REF="\$2"; shift 2 ;;
     --operator-deploy-tooling-url) OPERATOR_DEPLOY_TOOLING_URL="\$2"; shift 2 ;;
     --install-dir) INSTALL_DIR="\$2"; shift 2 ;;
     *) fail "Unknown argument: \$1 (expected --license, --domain, --owner-email, and optionally --api-domain/--dashboard-domain/--core-engine-source/--operator-deploy-tooling-url/--install-dir)" ;;
@@ -143,15 +158,16 @@ mkdir -p "\$INSTALL_DIR"
 # not-yet-committed .env or other generated state). Delete the destination directory yourself
 # first if you genuinely want a clean re-fetch.
 fetch_source() {
-  local source="\$1" dest="\$2" label="\$3"
+  local source="\$1" dest="\$2" label="\$3" ref="\$4"
   if [ -d "\$dest" ] && [ -n "\$(ls -A "\$dest" 2>/dev/null)" ]; then
     log "\${label} already present at \${dest} -- reusing it."
     return 0
   fi
   case "\$source" in
     http://*|https://*|git@*|ssh://*)
-      log "Cloning \${label} from \${source}..."
-      git clone --depth 1 "\$source" "\$dest"
+      log "Cloning \${label} from \${source} (\${ref})..."
+      git clone --depth 1 --branch "\$ref" "\$source" "\$dest" \\
+        || fail "Could not clone \${label} branch '\${ref}' from \${source}."
       ;;
     *)
       [ -d "\$source" ] || fail "\${label} source '\${source}' is neither a URL nor a local directory."
@@ -164,7 +180,7 @@ fetch_source() {
 
 # --- 1. warmhawk-core-engine (Tier 0 -- no license needed) --------------------------------------
 CORE_DIR="\$INSTALL_DIR/warmhawk-core-engine"
-fetch_source "\$CORE_REPO_SOURCE" "\$CORE_DIR" "warmhawk-core-engine"
+fetch_source "\$CORE_REPO_SOURCE" "\$CORE_DIR" "warmhawk-core-engine" "\$CORE_REPO_REF"
 
 log "Installing WarmHawk Core Engine at https://\${API_DOMAIN}/ ..."
 ( cd "\$CORE_DIR" && ./scripts/install.sh --domain "\$API_DOMAIN" )
