@@ -114,6 +114,8 @@ const COLUMNS: { id: CheckId; title: string; explain: string }[] = [
 const SENTENCES: Record<string, string> = {
   'mx-present': 'Inbound mail is routed.',
   'mx-none': 'No MX records. This domain receives no mail — it can still send.',
+  'mx-null':
+    'A null MX record, which declares that this domain accepts no mail at all. It can still send.',
   'mx-lookup-failed': 'We could not read the MX records just now.',
 
   'spf-ok': 'A valid SPF record, within the lookup limit.',
@@ -135,6 +137,10 @@ const SENTENCES: Record<string, string> = {
   'dkim-selector-not-found':
     'No key found under nine common selector names. Selectors cannot be listed from DNS, so yours may simply use a different name.',
   'dkim-supplied-selector-not-found': 'No DKIM key published under the selector you gave.',
+  'dkim-selector-revoked':
+    'A key is published under a common selector name, but it has been revoked and signs nothing. Yours may use a different selector.',
+  'dkim-supplied-selector-revoked':
+    'The DKIM key published under the selector you gave has been revoked, so it verifies nothing.',
   'dkim-lookup-failed': 'We could not read the DKIM records just now.',
 
   'dmarc-enforcing': 'An enforcing DMARC policy with reporting.',
