@@ -102,6 +102,23 @@ describe('GET /install', () => {
     expect(script).toContain('--core-engine-source) CORE_REPO_SOURCE="$2"; shift 2 ;;');
   });
 
+  it('clones core-engine from the released branch, never the repo default branch', async () => {
+    const script = await (await GET()).text();
+    // A bare `git clone` takes the default branch -- the development trunk -- which would put
+    // unreleased code on every customer server. The ref must be explicit and must default to master.
+    expect(script).toContain('CORE_REPO_REF="${WARMHAWK_CORE_REPO_REF:-master}"');
+    expect(script).toContain('--core-engine-ref) CORE_REPO_REF="$2"; shift 2 ;;');
+    expect(script).toContain('git clone --depth 1 --branch "$ref" "$source" "$dest"');
+    expect(script).not.toMatch(/git clone --depth 1 "\$source"/);
+  });
+
+  it('pins the clone to a branch, not a tag — a tag ref breaks the customer’s later fetches', async () => {
+    const script = await (await GET()).text();
+    // `git clone --depth 1 --branch <tag>` writes a refspec for a branch of that name, which does
+    // not exist, so `scripts/update.sh` would fetch nothing and upgrades would silently stop.
+    expect(script).not.toMatch(/CORE_REPO_REF="\$\{WARMHAWK_CORE_REPO_REF:-v\d/);
+  });
+
   it('fetches the operator deploy-tooling tarball instead of cloning warmhawk-enterprise-operator — that repo is private forever', async () => {
     const script = await (await GET()).text();
     // No git clone of the operator repo anywhere in this script -- only core-engine's is a real
