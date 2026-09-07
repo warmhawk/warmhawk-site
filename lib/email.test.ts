@@ -3,11 +3,115 @@ import {
   buildInstallCommand,
   buildLicenseEmailHtml,
   buildLicenseEmailText,
+  EmailSendError,
   emailSender,
   environmentNote,
   escapeHtml,
+  parseAddress,
+  sendViaZeptomail,
   tierLabelFor,
 } from './email';
+
+function jsonResponse(status: number, body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+const message = {
+  from: 'WarmHawk <support@warmhawk.com>',
+  to: 'someone@example.com',
+  subject: 'Hello',
+  html: '<p>Hi</p>',
+};
+
+describe('parseAddress', () => {
+  it('splits a display name from the address', () => {
+    expect(parseAddress('WarmHawk <support@warmhawk.com>')).toEqual({
+      address: 'support@warmhawk.com',
+      name: 'WarmHawk',
+    });
+  });
+
+  it('accepts a bare address and yields no name', () => {
+    expect(parseAddress('support@warmhawk.com')).toEqual({ address: 'support@warmhawk.com' });
+  });
+});
+
+describe('sendViaZeptomail', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  it('skips without throwing when ZEPTOMAIL_TOKEN is unset', async () => {
+    vi.stubEnv('ZEPTOMAIL_TOKEN', '');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+
+    await expect(sendViaZeptomail(message)).resolves.toEqual({ skipped: true });
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalled();
+  });
+
+  it('posts the ZeptoMail body shape and returns the request id', async () => {
+    vi.stubEnv('ZEPTOMAIL_TOKEN', 'test-token');
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(jsonResponse(201, { request_id: 'req-123' }));
+
+    await expect(sendViaZeptomail(message)).resolves.toEqual({ skipped: false, id: 'req-123' });
+
+    const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('https://api.zeptomail.com/v1.1/email');
+    expect(JSON.parse(init.body as string)).toEqual({
+      from: { address: 'support@warmhawk.com', name: 'WarmHawk' },
+      to: [{ email_address: { address: 'someone@example.com' } }],
+      subject: 'Hello',
+      htmlbody: '<p>Hi</p>',
+    });
+    expect((init.headers as Record<string, string>).Authorization).toBe(
+      'Zoho-enczapikey test-token',
+    );
+  });
+
+  it('unpacks the nested detail from an ambiguous 401', async () => {
+    vi.stubEnv('ZEPTOMAIL_TOKEN', 'test-token');
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      jsonResponse(401, {
+        error: {
+          code: 'TM_4001',
+          message: 'Access Denied',
+          details: [
+            {
+              message: 'Invalid recipient',
+              inner_error: { message: 'to[0].email_address.address is not a valid address' },
+            },
+          ],
+        },
+      }),
+    );
+
+    await expect(sendViaZeptomail(message)).rejects.toMatchObject({
+      name: 'EmailSendError',
+      status: 401,
+      code: 'TM_4001',
+      message:
+        'Access Denied: Invalid recipient; to[0].email_address.address is not a valid address',
+    });
+  });
+
+  it('throws EmailSendError with no status on a transport failure', async () => {
+    vi.stubEnv('ZEPTOMAIL_TOKEN', 'test-token');
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('ECONNREFUSED'));
+
+    const err = await sendViaZeptomail(message).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(EmailSendError);
+    expect((err as EmailSendError).status).toBeUndefined();
+    expect((err as EmailSendError).message).toContain('ECONNREFUSED');
+  });
+});
 
 describe('environmentNote', () => {
   afterEach(() => {
@@ -30,13 +134,13 @@ describe('environmentNote', () => {
   });
 });
 
-describe('sendInviteRelayEmail (SmtpEmailSender)', () => {
+describe('sendInviteRelayEmail (ZeptomailEmailSender)', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
   });
 
-  it('degrades to a console-log stub and reports smtp_not_configured when SMTP_HOST is unset', async () => {
-    vi.stubEnv('SMTP_HOST', '');
+  it('degrades to a console-log stub and reports email_not_configured when ZEPTOMAIL_TOKEN is unset', async () => {
+    vi.stubEnv('ZEPTOMAIL_TOKEN', '');
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     const result = await emailSender.sendInviteRelayEmail({
@@ -45,7 +149,7 @@ describe('sendInviteRelayEmail (SmtpEmailSender)', () => {
       acceptUrl: 'https://dashboard.example.com/accept-invite?token=abc',
     });
 
-    expect(result).toEqual({ delivered: false, reason: 'smtp_not_configured' });
+    expect(result).toEqual({ delivered: false, reason: 'email_not_configured' });
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('invite-relay-email STUB'));
   });
 });
