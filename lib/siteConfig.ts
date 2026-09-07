@@ -27,14 +27,19 @@ export const siteConfig = {
   defaultFrom: 'WarmHawk <support@warmhawk.com>',
 };
 
-// Order and labels match the artifact's SITE_HEADER nav exactly: Product,
-// Compare, Pricing, Docs (Dashboard is a distinct external link, handled
-// separately in Nav.tsx since it isn't an internal route).
+// Order and labels match the artifact's SITE_HEADER nav: Product, Compare,
+// Pricing, Docs (Dashboard is a distinct external link, handled separately
+// in Nav.tsx since it isn't an internal route). "Domain Check" was added
+// after launch — the free bulk domain-check tool shipped with a footer link
+// and one homepage callout, but no header entry, so it had no path from any
+// page beyond the homepage. Placed last (before Dashboard) rather than
+// reordering the artifact-matched four ahead of it.
 export const mainNav = [
   { label: 'Product', href: '/#features' },
   { label: 'Compare', href: '/vs/smartlead' },
   { label: 'Pricing', href: '/compare/pricing' },
   { label: 'Docs', href: '/docs' },
+  { label: 'Domain Check', href: '/tools/domain-check' },
 ];
 
 // `/vs/instantly` is deliberately excluded below — its own page (app/vs/instantly/page.tsx)

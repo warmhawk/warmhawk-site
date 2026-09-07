@@ -4,6 +4,7 @@ import { domainCheckFaqItems } from '@/lib/faqContent';
 import { AnswerBlock } from '@/components/AnswerBlock';
 import { FaqSection } from '@/components/FaqSchema';
 import { DomainCheckTool } from '@/components/DomainCheckTool';
+import { ToolCrossLinks } from '@/components/ToolCrossLinks';
 
 const TOOL_NAME = 'Free Bulk SPF, DKIM & DMARC Checker';
 const TOOL_DESCRIPTION =
@@ -76,9 +77,11 @@ export default function DomainCheckPage() {
         </div>
       </div>
 
-      <div className="wrap pb-16 md:pb-20">
+      <div className="wrap pb-10">
         <DomainCheckTool />
       </div>
+
+      <ToolCrossLinks current="/tools/domain-check" />
 
       <FaqSection items={domainCheckFaqItems} title="SPF, DKIM, DMARC & List-Unsubscribe FAQ" />
     </>

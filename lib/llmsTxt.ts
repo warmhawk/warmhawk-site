@@ -1,7 +1,16 @@
 import { siteConfig, vsPages, footerLinks } from './siteConfig';
 import { docsSections } from './docsNav';
 import { tiers } from './tierConfig';
-import { homeFaqItems, pricingFaqItems, domainCheckFaqItems } from './faqContent';
+import {
+  homeFaqItems,
+  pricingFaqItems,
+  domainCheckFaqItems,
+  mxCheckFaqItems,
+  spfCheckFaqItems,
+  dkimCheckFaqItems,
+  dmarcCheckFaqItems,
+  blacklistCheckFaqItems,
+} from './faqContent';
 
 /**
  * Builds the content served at https://warmhawk.com/llms.txt — the
@@ -64,6 +73,21 @@ export function buildLlmsTxt(): string {
     // is a fifth surface the original audit missed; it now advertises only the DNS-checkable set.
     `- [Free SPF, DKIM & DMARC checker with blocklist lookup](${siteConfig.url}/tools/domain-check): Instant PASS/FAIL results for any sending domain's deliverability setup, no account required. Also explains the RFC 8058 List-Unsubscribe requirement, which is a sent-message header and not checkable from DNS.`,
   );
+  lines.push(
+    `- [MX Record Checker](${siteConfig.url}/tools/mx-checker): Free MX lookup — leads with inbound mail routing, plus the same SPF/DKIM/DMARC/blocklist results as the full report.`,
+  );
+  lines.push(
+    `- [SPF Record Checker](${siteConfig.url}/tools/spf-checker): Free SPF lookup that also counts DNS lookups against RFC 7208's limit of 10.`,
+  );
+  lines.push(
+    `- [DKIM Checker](${siteConfig.url}/tools/dkim-checker): Free DKIM selector lookup across nine common selector names.`,
+  );
+  lines.push(
+    `- [DMARC Checker](${siteConfig.url}/tools/dmarc-checker): Free DMARC policy lookup — reports p=none/quarantine/reject and rua reporting status.`,
+  );
+  lines.push(
+    `- [Email Blacklist Checker](${siteConfig.url}/tools/blacklist-checker): Free Spamhaus domain blocklist lookup for a sending domain and its declared SPF senders.`,
+  );
   lines.push('');
 
   lines.push('## Pricing');
@@ -105,6 +129,11 @@ export function buildLlmsFullTxt(): string {
     { title: 'Home', items: homeFaqItems },
     { title: 'Pricing', items: pricingFaqItems },
     { title: 'Domain check tool', items: domainCheckFaqItems },
+    { title: 'MX Record Checker', items: mxCheckFaqItems },
+    { title: 'SPF Record Checker', items: spfCheckFaqItems },
+    { title: 'DKIM Checker', items: dkimCheckFaqItems },
+    { title: 'DMARC Checker', items: dmarcCheckFaqItems },
+    { title: 'Email Blacklist Checker', items: blacklistCheckFaqItems },
   ];
 
   const lines: string[] = [buildLlmsTxt().trimEnd(), '', '## Full FAQ'];

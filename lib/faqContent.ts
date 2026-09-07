@@ -81,6 +81,96 @@ export const pricingFaqItems: FaqItem[] = [
   },
 ];
 
+export const mxCheckFaqItems: FaqItem[] = [
+  {
+    question: 'What does it mean if my domain has no MX record?',
+    answer:
+      'No MX records means this domain can’t receive mail — but it can still send. That’s normal for a domain used only for outbound sending, and not itself a problem.',
+  },
+  {
+    question: 'What’s a "null MX" record?',
+    answer:
+      'A null MX is a deliberate record stating a domain accepts no mail at all. It’s a valid, intentional configuration that doesn’t affect the domain’s ability to send.',
+  },
+  {
+    question: 'Does a missing MX record hurt deliverability?',
+    answer:
+      'Not on its own. Deliverability is governed by SPF, DKIM and DMARC — MX only controls inbound routing. Check those three, plus blocklist status, below.',
+  },
+];
+
+export const spfCheckFaqItems: FaqItem[] = [
+  {
+    question: 'What happens if my SPF record exceeds 10 DNS lookups?',
+    answer:
+      'Receivers are required by RFC 7208 to treat the whole record as a permanent error and stop evaluating it — usually meaning mail starts failing SPF everywhere, with no warning in your own DNS.',
+  },
+  {
+    question: 'What does "+all" or "?all" mean at the end of my SPF record?',
+    answer:
+      '+all authorizes literally anyone to send as your domain — almost never intentional. ?all authorizes nothing in particular. Neither is a safe default.',
+  },
+  {
+    question: 'Can I have two SPF records?',
+    answer:
+      'No — receivers treat two TXT records at the SPF selector as an error and ignore both, which is functionally the same as having none.',
+  },
+];
+
+export const dkimCheckFaqItems: FaqItem[] = [
+  {
+    question: 'Why didn’t the checker find my DKIM record?',
+    answer:
+      'DKIM selectors are chosen by your mail provider and can’t be listed from DNS — we try nine common names. A miss means we didn’t find a key under those names, not that DKIM is absent.',
+  },
+  {
+    question: 'What does a "revoked" DKIM key mean?',
+    answer:
+      'A key published under a common selector but revoked is a record that exists but deliberately verifies nothing — often meaning the selector was retired, not that it’s currently signing your mail.',
+  },
+  {
+    question: 'Does DKIM alone stop spoofing?',
+    answer:
+      'No — DKIM only proves a message wasn’t altered; it doesn’t tell receivers what to do if a spoofed message fails. That’s DMARC’s job, checked on the same page below.',
+  },
+];
+
+export const dmarcCheckFaqItems: FaqItem[] = [
+  {
+    question: 'Is p=none the same as having no DMARC protection?',
+    answer:
+      'It’s a published record, so alignment is being evaluated — but the policy explicitly tells receivers to do nothing on failure. It’s a monitoring mode, not enforcement.',
+  },
+  {
+    question: 'What’s the difference between quarantine and reject?',
+    answer:
+      'quarantine asks receivers to route failing mail to spam; reject asks them to refuse it outright. Reject is the stronger policy most mature domains land on.',
+  },
+  {
+    question: 'Why do I need an rua address in my DMARC record?',
+    answer:
+      'Without an rua address, an enforcing policy still works, but spoofing attempts against your domain are never reported back to you.',
+  },
+];
+
+export const blacklistCheckFaqItems: FaqItem[] = [
+  {
+    question: 'Is this the same as checking my website’s IP reputation?',
+    answer:
+      'No. Your website’s IP is usually a shared CDN address with no relationship to your mail sending reputation. This check looks at your domain and the addresses your SPF record actually declares for sending.',
+  },
+  {
+    question: 'What does it mean if the blacklist query is refused?',
+    answer:
+      'A refused query means the blocklist didn’t answer at all — usually a resolver-level block — so we genuinely can’t say listed or not.',
+  },
+  {
+    question: 'What should I do if my domain is listed?',
+    answer:
+      'Fix the underlying sending practice first, then request delisting from the blocklist operator directly. WarmHawk’s paid dashboard also monitors listings continuously.',
+  },
+];
+
 export const domainCheckFaqItems: FaqItem[] = [
   {
     question: 'What is SPF/DKIM/DMARC and why do they matter?',
