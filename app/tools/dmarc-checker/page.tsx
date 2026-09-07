@@ -38,16 +38,18 @@ export default function DmarcCheckerPage() {
       />
       <div className="wrap pt-16 md:pt-24 pb-10">
         <div className="max-w-3xl">
-          <div className="label text-rust mb-5">DMARC Checker · plus MX, SPF, DKIM &amp; blacklist</div>
+          <div className="label text-rust mb-5">
+            DMARC Checker · plus MX, SPF, DKIM &amp; blacklist
+          </div>
           <h1 className="font-display text-4xl md:text-[48px] leading-tight font-semibold mb-6">
             Check your DMARC policy &mdash; none, quarantine, or reject.
           </h1>
           <AnswerBlock>
-            DMARC tells receivers what to do when a message fails SPF or DKIM, and reports
-            spoofing attempts back to you. A policy of p=none is a real, published record that
-            explicitly asks receivers to take no action on failure &mdash; a common default
-            that&rsquo;s easy to mistake for protection. Paste up to 15 domains below to see each
-            one&rsquo;s exact policy, reporting address, and 4 more checks.
+            DMARC tells receivers what to do when a message fails SPF or DKIM, and reports spoofing
+            attempts back to you. A policy of p=none is a real, published record that explicitly
+            asks receivers to take no action on failure &mdash; a common default that&rsquo;s easy
+            to mistake for protection. Paste up to 15 domains below to see each one&rsquo;s exact
+            policy, reporting address, and 4 more checks.
           </AnswerBlock>
         </div>
       </div>

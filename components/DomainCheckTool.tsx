@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useMemo, useState, type FormEvent } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { CheckBadge, type CheckStatus } from '@/components/CheckBadge';
 import { normalise, type Rejection } from '@/lib/domainInput';
@@ -290,6 +290,17 @@ function fixFor(check: ApiCheck, domain: string): { label: string; value: string
 /** The `.fix` block (artifact's `dmarcMissing`) — a suggested record with one-click copy. */
 function FixBlock({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleared on unmount — otherwise a click just before navigating away (or, in tests, just before
+  // the next test's jsdom environment replaces this one) leaves this timer to fire against a
+  // `window` that's already gone.
+  useEffect(
+    () => () => {
+      if (resetTimer.current) clearTimeout(resetTimer.current);
+    },
+    [],
+  );
 
   return (
     <div className="fix">
@@ -301,7 +312,8 @@ function FixBlock({ label, value }: { label: string; value: string }) {
           onClick={() => {
             navigator.clipboard?.writeText(value).catch(() => {});
             setCopied(true);
-            setTimeout(() => setCopied(false), 1600);
+            if (resetTimer.current) clearTimeout(resetTimer.current);
+            resetTimer.current = setTimeout(() => setCopied(false), 1600);
           }}
         >
           {copied ? 'Copied' : 'Copy'}
@@ -959,8 +971,7 @@ export function DomainCheckTool({ leadCheck }: DomainCheckToolProps = {}) {
                               <div className="border-l-[3px] border-rust px-4 py-1">
                                 <p className="drawer-h">
                                   All {CHECK_IDS.length} checks for{' '}
-                                  <b className="break-all">{result.domain}</b>{' '}
-                                  ·{' '}
+                                  <b className="break-all">{result.domain}</b> ·{' '}
                                   {leadCheck
                                     ? `${COLUMNS.find((c) => c.id === leadCheck)?.title} first, then worst first`
                                     : 'worst first'}

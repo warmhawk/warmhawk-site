@@ -38,16 +38,18 @@ export default function MxCheckerPage() {
       />
       <div className="wrap pt-16 md:pt-24 pb-10">
         <div className="max-w-3xl">
-          <div className="label text-rust mb-5">MX Record Checker · plus SPF, DKIM, DMARC &amp; blacklist</div>
+          <div className="label text-rust mb-5">
+            MX Record Checker · plus SPF, DKIM, DMARC &amp; blacklist
+          </div>
           <h1 className="font-display text-4xl md:text-[48px] leading-tight font-semibold mb-6">
             Check your MX record &mdash; free, no account.
           </h1>
           <AnswerBlock>
-            Your MX record tells the internet where your domain&rsquo;s inbound mail gets
-            delivered. A missing MX record doesn&rsquo;t stop you from sending &mdash; only from
-            receiving &mdash; but it&rsquo;s often the first sign a domain was set up for
-            outbound-only sending. Paste up to 15 domains below to see live MX status, plus the 4
-            other checks WarmHawk runs continuously in the paid dashboard.
+            Your MX record tells the internet where your domain&rsquo;s inbound mail gets delivered.
+            A missing MX record doesn&rsquo;t stop you from sending &mdash; only from receiving
+            &mdash; but it&rsquo;s often the first sign a domain was set up for outbound-only
+            sending. Paste up to 15 domains below to see live MX status, plus the 4 other checks
+            WarmHawk runs continuously in the paid dashboard.
           </AnswerBlock>
         </div>
       </div>

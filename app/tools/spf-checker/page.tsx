@@ -38,15 +38,17 @@ export default function SpfCheckerPage() {
       />
       <div className="wrap pt-16 md:pt-24 pb-10">
         <div className="max-w-3xl">
-          <div className="label text-rust mb-5">SPF Record Checker · plus MX, DKIM, DMARC &amp; blacklist</div>
+          <div className="label text-rust mb-5">
+            SPF Record Checker · plus MX, DKIM, DMARC &amp; blacklist
+          </div>
           <h1 className="font-display text-4xl md:text-[48px] leading-tight font-semibold mb-6">
             Check your SPF record &mdash; and its 10-lookup budget.
           </h1>
           <AnswerBlock>
-            SPF lists which servers may send mail for your domain, and RFC 7208 caps it at
-            exactly 10 DNS lookups &mdash; go over, and receivers stop honoring the record
-            entirely, silently. Paste up to 15 domains below to see your live SPF record, its
-            exact lookup count against that ceiling, and 4 more checks alongside it.
+            SPF lists which servers may send mail for your domain, and RFC 7208 caps it at exactly
+            10 DNS lookups &mdash; go over, and receivers stop honoring the record entirely,
+            silently. Paste up to 15 domains below to see your live SPF record, its exact lookup
+            count against that ceiling, and 4 more checks alongside it.
           </AnswerBlock>
         </div>
       </div>
