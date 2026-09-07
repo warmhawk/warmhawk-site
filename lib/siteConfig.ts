@@ -76,7 +76,12 @@ export const vsPages = [
 // Column labels/contents match the artifact's SITE_FOOTER (Product / Compare
 // / Resources / Legal) exactly, with two real, valuable links the artifact's
 // placeholder footer doesn't have (Roadmap, Support) kept in Resources
-// rather than dropped — additive, not a fidelity violation.
+// rather than dropped — additive, not a fidelity violation. The `tools`
+// column is a later addition (2026-09-07): the 5 checker landing pages
+// started out folded into `company`/Resources, but that grew to 10 items —
+// nearly double Compare's and Legal's length — burying the checker links
+// among unrelated docs/support links. Splitting them into their own column
+// fixes both the imbalance and gives the checkers their own labeled surface.
 export const footerLinks = {
   product: [
     { label: 'Core Engine (free)', href: '/docs/quickstart' },
@@ -92,14 +97,16 @@ export const footerLinks = {
     { label: 'vs Custom n8n', href: '/vs/custom-n8n' },
     { label: 'vs Inframail', href: '/vs/inframail' },
   ],
-  company: [
-    { label: 'Docs & quickstart', href: '/docs' },
+  tools: [
     { label: 'MX record checker', href: '/tools/mx-checker' },
     { label: 'SPF record checker', href: '/tools/spf-checker' },
     { label: 'DKIM checker', href: '/tools/dkim-checker' },
     { label: 'DMARC checker', href: '/tools/dmarc-checker' },
     { label: 'Email blacklist checker', href: '/tools/blacklist-checker' },
     { label: 'Full domain health check', href: '/tools/domain-check' },
+  ],
+  company: [
+    { label: 'Docs & quickstart', href: '/docs' },
     { label: 'Security', href: '/security' },
     // Points at core-engine's GitHub Discussions once that repo is public — it is private today,
     // so this link 404'd for every visitor. Gated on the same kind of explicit flag as

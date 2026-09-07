@@ -11,8 +11,8 @@ import { BrandMark } from '@/components/BrandMark';
 export function Footer() {
   return (
     <div className="bg-footer-bg border-t border-footer-border">
-      <div className="wrap py-16 pb-10 grid grid-cols-2 md:grid-cols-5 gap-8">
-        <div className="col-span-2 md:col-span-1">
+      <div className="wrap py-16 pb-10 grid grid-cols-2 lg:grid-cols-6 gap-8">
+        <div className="col-span-2 lg:col-span-1">
           <div className="flex items-center gap-2.5 mb-3.5">
             <BrandMark size={22} />
             <span className="font-display font-bold text-base text-footer-ink">WarmHawk</span>
@@ -35,6 +35,7 @@ export function Footer() {
 
         <FooterColumn title="Product" links={footerLinks.product} />
         <FooterColumn title="Compare" links={footerLinks.compare} />
+        <FooterColumn title="Tools" links={footerLinks.tools} />
         <FooterColumn title="Resources" links={footerLinks.company} />
         <FooterColumn title="Legal" links={footerLinks.legal} />
       </div>
