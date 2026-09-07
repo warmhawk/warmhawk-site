@@ -28,11 +28,32 @@ function DocCard({ link }: { link: DocLink }) {
   );
 }
 
-function DocGroup({ label, links }: { label: string; links: DocLink[] }) {
+function DocGroup({
+  label,
+  links,
+  tag,
+  dim,
+}: {
+  label: string;
+  links: DocLink[];
+  tag?: string;
+  dim?: boolean;
+}) {
   return (
     <div className="mb-14">
-      <div className="label text-rust mb-5">{label}</div>
-      <div className="grid sm:grid-cols-2 gap-5">
+      <div className="flex items-center gap-2 mb-5">
+        {/* Label text stays byte-identical to lib/docsNav.ts's `docsSections[].label` — this is
+            the exact string page.test.ts looks up with getByText(section.label). The optional
+            `tag` renders as a separate sibling element instead of appending text into this div,
+            so that lookup keeps matching unchanged. */}
+        <div className="label text-rust">{label}</div>
+        {tag && (
+          <span className="label text-[10px] text-ink-muted border border-border rounded-full px-2 py-0.5">
+            {tag}
+          </span>
+        )}
+      </div>
+      <div className={`grid sm:grid-cols-2 gap-5 ${dim ? 'opacity-70' : ''}`}>
         {links.map((link) => (
           <DocCard key={link.href} link={link} />
         ))}
@@ -70,10 +91,24 @@ export default function DocsIndexPage() {
       </AnswerBlock>
 
       <div className="mt-14">
+        {/* On Tier 1/2, none of the sections below are required reading — they document the
+            underlying API/self-hosting layer, not the operator dashboard. Added per
+            notes/1-plan/09-07-26-dashboard-nav-and-tier-buyer-docs.md. */}
+        <div className="card bg-rust-tint border-rust px-6 py-5 mb-14 max-w-2xl">
+          <p className="text-[14px] leading-relaxed text-ink">
+            <span className="font-semibold text-rust">On Tier 1 or Tier 2?</span> You never touch
+            any of this — skip straight to{' '}
+            <Link href="/dashboard" className="font-semibold text-rust underline">
+              what the operator dashboard includes
+            </Link>
+            . Everything below is the underlying API, for Tier 0 self-hosters and developers.
+          </p>
+        </div>
+
         <DocGroup label="Get started" links={getStarted} />
         <DocGroup label="Guides" links={guides} />
-        <DocGroup label="Self-hosting" links={selfHosting} />
-        <DocGroup label="API reference" links={apiReference} />
+        <DocGroup label="Self-hosting" links={selfHosting} tag="Tier 0" dim />
+        <DocGroup label="API reference" links={apiReference} tag="Tier 0" dim />
 
         <div className="mb-14">
           <a
