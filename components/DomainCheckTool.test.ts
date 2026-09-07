@@ -902,4 +902,42 @@ describe('DomainCheckTool', () => {
     const link = await screen.findByRole('link', { name: /try warmhawk/i });
     expect(link).toHaveAttribute('href', '/checkout?tier=1');
   });
+
+  it('renders the real watch form, not a checkout-only placeholder, after results land', async () => {
+    vi.stubGlobal('fetch', okFetch(response('example.com', CLEAN)));
+
+    render(createElement(DomainCheckTool));
+    paste('example.com');
+    submit();
+
+    expect(await screen.findByRole('heading', { name: /watch this domain/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /email me on changes/i })).toBeInTheDocument();
+    expect(screen.queryByText(/want this watched automatically/i)).not.toBeInTheDocument();
+  });
+
+  it('names the watch heading by the real domain count for a multi-domain batch', async () => {
+    vi.stubGlobal(
+      'fetch',
+      okFetch({
+        results: [cleanPassingDomain('a.com', 'reject'), cleanPassingDomain('b.com', 'reject')],
+        meta: {
+          submitted: 2,
+          deduplicated: 2,
+          fresh: 2,
+          cached: 0,
+          rejected: [],
+          truncated: false,
+          overCap: 0,
+        },
+      }),
+    );
+
+    render(createElement(DomainCheckTool));
+    paste('a.com\nb.com');
+    submit();
+
+    expect(
+      await screen.findByRole('heading', { name: /watch all 2 domains/i }),
+    ).toBeInTheDocument();
+  });
 });
