@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { CheckBadge, type CheckStatus } from '@/components/CheckBadge';
 import { normalise, type Rejection } from '@/lib/domainInput';
 import { useTurnstile } from '@/components/useTurnstile';
+import { WatchForm } from '@/components/WatchForm';
 
 /**
  * The bulk domain checker.
@@ -1014,18 +1015,15 @@ export function DomainCheckTool() {
             </p>
           )}
 
-          <div className="gate-card">
-            <h3 className="font-display text-xl font-semibold mb-1.5">
-              Want this watched automatically?
-            </h3>
-            <p className="text-sm text-ink-muted max-w-[58ch] mb-0">
-              WarmHawk re-runs these same 5 checks on a schedule and tells you only when a result
-              changes for any domain you own &mdash; never a weekly &ldquo;all fine&rdquo; note.
-            </p>
-            <Link href="/checkout?tier=1" className="btn btn-primary mt-4">
+          <WatchForm domains={state.data.results.map((r) => r.domain)} />
+
+          <p className="upsell mt-4 text-sm text-ink-muted max-w-[64ch]">
+            See these 5 checks run continuously across every domain you own, with alerts the moment
+            a result changes.{' '}
+            <Link href="/checkout?tier=1" className="font-semibold text-rust">
               Try WarmHawk &rarr;
             </Link>
-          </div>
+          </p>
         </div>
       )}
     </div>
