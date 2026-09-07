@@ -97,9 +97,9 @@ export default function SecurityPage() {
               proof-of-concept (non-destructive only) all help us triage faster.
             </p>
             <p className="text-sm leading-relaxed text-ink-muted">
-              <strong className="text-ink">PGP key to be published before go-live.</strong> Until
-              then, reports over plain email are fine &mdash; avoid including live credentials or
-              customer data in the report itself.
+              <strong className="text-ink">No PGP key is published yet.</strong> Reports over plain
+              email are fine in the meantime &mdash; avoid including live credentials or customer
+              data in the report itself.
             </p>
           </div>
         </div>
