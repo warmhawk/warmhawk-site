@@ -94,7 +94,12 @@ export const footerLinks = {
   ],
   company: [
     { label: 'Docs & quickstart', href: '/docs' },
-    { label: 'Domain health check', href: '/tools/domain-check' },
+    { label: 'MX record checker', href: '/tools/mx-checker' },
+    { label: 'SPF record checker', href: '/tools/spf-checker' },
+    { label: 'DKIM checker', href: '/tools/dkim-checker' },
+    { label: 'DMARC checker', href: '/tools/dmarc-checker' },
+    { label: 'Email blacklist checker', href: '/tools/blacklist-checker' },
+    { label: 'Full domain health check', href: '/tools/domain-check' },
     { label: 'Security', href: '/security' },
     // Points at core-engine's GitHub Discussions once that repo is public — it is private today,
     // so this link 404'd for every visitor. Gated on the same kind of explicit flag as
