@@ -49,11 +49,11 @@ export function Nav() {
               {item.label}
             </Link>
           ))}
-          {/* Was an external link to github.com/warmhawk/warmhawk-enterprise-operator, which is a
-              private-forever repo (see that repo's own README) — so this 404'd for every visitor,
-              on every page of the site. Points at the docs describing what the dashboard actually
-              does instead. */}
-          <Link href="/docs/introduction" className="hover:text-rust transition-colors">
+          {/* Was an external link to github.com/warmhawk/warmhawk-enterprise-operator (private-forever
+              repo, 404 for every visitor), then a stopgap to /docs/introduction (which routed
+              Tier 1/2 buyers into API docs — see notes/1-plan/09-07-26-dashboard-nav-and-tier-buyer-docs.md).
+              Now the real screenshots-driven dashboard page. */}
+          <Link href="/dashboard" className="hover:text-rust transition-colors">
             Dashboard
           </Link>
         </div>
@@ -98,7 +98,7 @@ export function Nav() {
                 </Link>
               ))}
               <Link
-                href="/docs/introduction"
+                href="/dashboard"
                 className="rounded-lg px-2.5 py-2.5 hover:bg-cream-elevated hover:text-ink transition-colors"
               >
                 Dashboard
