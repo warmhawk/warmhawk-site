@@ -24,15 +24,28 @@ function Shot({
   alt,
   title,
   body,
+  path,
 }: {
   id: string;
   src: string;
   alt: string;
   title: string;
   body: string;
+  path: string;
 }) {
   return (
     <div className="card bg-cream overflow-hidden mb-10">
+      {/* Browser-chrome frame: without it, a full-bleed screenshot reads as a live embedded panel
+          rather than a picture of one. Traffic-light dots + a url bar are the standard cue that
+          says "this is a captured screenshot," matching the page copy's own claim below. */}
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-deep">
+        <span className="flex gap-1.5" aria-hidden="true">
+          <span className="w-2.5 h-2.5 rounded-full bg-fail/70" />
+          <span className="w-2.5 h-2.5 rounded-full bg-pending/70" />
+          <span className="w-2.5 h-2.5 rounded-full bg-pass/70" />
+        </span>
+        <span className="ml-1.5 font-mono text-[11px] text-slate-soft/70 truncate">{path}</span>
+      </div>
       <a href={`#zoom-${id}`} aria-label={`Zoom in: ${alt}`} className="group relative block">
         <img src={src} alt={alt} className="w-full border-b border-border" />
         <span
@@ -83,7 +96,7 @@ function Shot({
 
 export default function DashboardPage() {
   return (
-    <div className="py-16">
+    <div className="wrap py-16">
       <div className="label text-rust mb-5">Tier 1 / Tier 2</div>
       <h1 className="font-display text-4xl md:text-[48px] leading-tight font-semibold mb-6 max-w-3xl">
         The dashboard you run day to day &mdash; no API, no code.
@@ -110,6 +123,7 @@ export default function DashboardPage() {
 
       <Shot
         id="queue"
+        path="app.warmhawk.com/dashboard/queue"
         src="/dashboard-screens/queue.png"
         alt="WarmHawk operator dashboard Live Queue page, showing real-time BullMQ dispatcher state"
         title="Live queue inspector"
@@ -118,6 +132,7 @@ export default function DashboardPage() {
 
       <Shot
         id="domains"
+        path="app.warmhawk.com/dashboard/domains"
         src="/dashboard-screens/domains.png"
         alt="WarmHawk operator dashboard Domain Health page, tracking SPF, DKIM, DMARC, and blocklist status per domain"
         title="Domain health, tracked automatically"
@@ -126,6 +141,7 @@ export default function DashboardPage() {
 
       <Shot
         id="team"
+        path="app.warmhawk.com/dashboard/team"
         src="/dashboard-screens/team.png"
         alt="WarmHawk operator dashboard Team members page"
         title="Team, without a permissions system to configure"
@@ -134,6 +150,7 @@ export default function DashboardPage() {
 
       <Shot
         id="security"
+        path="app.warmhawk.com/dashboard/settings/security"
         src="/dashboard-screens/security.png"
         alt="WarmHawk operator dashboard Security page, two-factor authentication setup"
         title="2FA required on every dashboard login"
