@@ -56,11 +56,9 @@ services:
       # explains why), verified by the `registry` service below via its public half.
       REGISTRY_TOKEN_SIGNING_PRIVATE_KEY: ${REGISTRY_TOKEN_SIGNING_PRIVATE_KEY:?REGISTRY_TOKEN_SIGNING_PRIVATE_KEY is required}
       OPERATOR_RELEASE_READ_TOKEN: ${OPERATOR_RELEASE_READ_TOKEN:?OPERATOR_RELEASE_READ_TOKEN is required}
-      SMTP_HOST: ${SMTP_HOST:-smtp.resend.com}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_USER: ${SMTP_USER:-resend}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:?SMTP_PASSWORD is required}
-      SMTP_FROM: ${SMTP_FROM:-WarmHawk <support@warmhawk.com>}
+      ZEPTOMAIL_TOKEN: ${ZEPTOMAIL_TOKEN:?ZEPTOMAIL_TOKEN is required}
+      ZEPTOMAIL_API_URL: ${ZEPTOMAIL_API_URL:-https://api.zeptomail.com/v1.1/email}
+      EMAIL_FROM: ${EMAIL_FROM:-WarmHawk <support@warmhawk.com>}
       STATUS_KUMA_BASE_URL: ${STATUS_KUMA_BASE_URL:-}
       STATUS_KUMA_SLUG: ${STATUS_KUMA_SLUG:-}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://warmhawk.com}

@@ -1,23 +1,160 @@
-import nodemailer, { type Transporter } from 'nodemailer';
 import { siteConfig } from './siteConfig';
 
 /**
  * Transactional email — license delivery, and Tier 2 sales inquiries.
  *
- * V12 fix: the Stripe webhook handler previously only `console.log`'d the issued license key with
- * a `TODO(pre-launch)` marker. This is a real, pluggable sender against a generic SMTP config
- * (the standard pattern any founder-operated transactional sender would use, same shape as
- * warmhawk-enterprise-operator's `lib/email/invite-email.ts`) — but this build makes no live SMTP
- * connection: `getTransporter()` is lazy, and nothing calls it unless `SMTP_HOST` is actually set
- * (see `sendLicenseEmail`'s early-return-to-console-log fallback below), matching the "no real
- * external network/API calls" build constraint. Once real `SMTP_*` env vars are set in production,
- * this works with zero code changes.
+ * Sends via ZeptoMail's HTTP API directly (`fetch`, no SDK), mirroring jitterflow-core-app's
+ * `packages/email` pattern. `zeptomailConfigured()` gates every send: nothing
+ * calls the transport unless `ZEPTOMAIL_TOKEN` is actually set (see each sender's early-return-to-
+ * console-log fallback below), matching the repo's long-standing "no real external network/API
+ * calls when unconfigured" convention. Once a real `ZEPTOMAIL_TOKEN` is set in production, this
+ * works with zero code changes.
  *
  * `sendSalesInquiryEmail` (Part B, /checkout's Tier 2 contact form) reuses this exact same
- * lazy-transporter / degrade-to-console mechanism rather than inventing a second email pathway —
- * it notifies `siteConfig.helloEmail`, the same address the marketing site already uses for
- * "Talk to us" (see lib/tierConfig.ts's old mailto CTA and lib/siteConfig.ts), not a new env var.
+ * lazy-sender / degrade-to-console mechanism rather than inventing a second email pathway — it
+ * notifies `siteConfig.helloEmail`, the same address the marketing site already uses for "Talk to
+ * us" (see lib/tierConfig.ts's old mailto CTA and lib/siteConfig.ts), not a new env var.
  */
+
+const ZEPTOMAIL_DEFAULT_API_URL = 'https://api.zeptomail.com/v1.1/email';
+const ZEPTOMAIL_DEFAULT_TIMEOUT_MS = 30000;
+
+/** Thrown for every failed ZeptoMail send, so callers see one error type rather than a mix of
+ *  fetch rejections and HTTP-status checks. `status` is undefined for transport-level failures
+ *  (timeout, DNS, socket reset) — no HTTP response was received at all. */
+export class EmailSendError extends Error {
+  readonly status?: number;
+  readonly code?: string;
+
+  constructor(message: string, opts: { status?: number; code?: string; cause?: unknown } = {}) {
+    super(message);
+    this.name = 'EmailSendError';
+    this.status = opts.status;
+    this.code = opts.code;
+    if (opts.cause !== undefined) this.cause = opts.cause;
+  }
+}
+
+interface ZeptomailErrorBody {
+  request_id?: string;
+  message?: string;
+  error?: {
+    code?: string;
+    message?: string;
+    details?: Array<{ message?: string; inner_error?: { message?: string } }>;
+  };
+}
+
+interface ZeptomailMessage {
+  from: string;
+  to: string;
+  subject: string;
+  text?: string;
+  html?: string;
+  replyTo?: string;
+}
+
+interface ZeptomailSendOutcome {
+  skipped: boolean;
+  id?: string;
+}
+
+/** Splits `WarmHawk <support@warmhawk.com>` into its parts — ZeptoMail wants the display name and
+ *  the address as separate JSON fields. A bare address with no display name yields no name. */
+export function parseAddress(input: string): { address: string; name?: string } {
+  const match = /^\s*(.*?)\s*<([^>]+)>\s*$/.exec(input);
+  if (!match) return { address: input.trim() };
+  const name = match[1]!.replace(/^"|"$/g, '').trim();
+  return name ? { address: match[2]!.trim(), name } : { address: match[2]!.trim() };
+}
+
+function zeptomailConfigured(): boolean {
+  return Boolean(process.env.ZEPTOMAIL_TOKEN);
+}
+
+/**
+ * Posts one message to ZeptoMail. Resolves `{ skipped: true }` when no token is configured, rather
+ * than throwing, so unit/CI runs with no secrets don't fail. Deliberately not retried on timeout: a
+ * timeout can't distinguish "never arrived" from "arrived, response lost", and retrying risks a
+ * duplicate send.
+ */
+export async function sendViaZeptomail(message: ZeptomailMessage): Promise<ZeptomailSendOutcome> {
+  if (!zeptomailConfigured()) {
+    console.warn(`[email] ZEPTOMAIL_TOKEN not set — skipping send to ${message.to}`);
+    return { skipped: true };
+  }
+
+  const url = process.env.ZEPTOMAIL_API_URL || ZEPTOMAIL_DEFAULT_API_URL;
+  const token = process.env.ZEPTOMAIL_TOKEN as string;
+  const from = parseAddress(message.from);
+
+  // The token is stored bare in .env; the scheme word is added here so the stored value stays a
+  // plain credential — and so a copy/paste straight out of the ZeptoMail dashboard, which includes
+  // the prefix, still works.
+  const authorization = /^Zoho-enczapikey\s/i.test(token) ? token : `Zoho-enczapikey ${token}`;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ZEPTOMAIL_DEFAULT_TIMEOUT_MS);
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: authorization,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        from: { address: from.address, ...(from.name ? { name: from.name } : {}) },
+        to: [{ email_address: { address: message.to } }],
+        subject: message.subject,
+        ...(message.html ? { htmlbody: message.html } : {}),
+        ...(message.text ? { textbody: message.text } : {}),
+        ...(message.replyTo ? { reply_to: [{ address: message.replyTo }] } : {}),
+      }),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    const aborted = err instanceof Error && err.name === 'AbortError';
+    throw new EmailSendError(
+      aborted
+        ? `ZeptoMail request timed out after ${ZEPTOMAIL_DEFAULT_TIMEOUT_MS}ms`
+        : `ZeptoMail request failed: ${err instanceof Error ? err.message : String(err)}`,
+      { cause: err },
+    );
+  } finally {
+    clearTimeout(timer);
+  }
+
+  const raw = await response.text();
+  let body: ZeptomailErrorBody = {};
+  try {
+    body = raw ? (JSON.parse(raw) as ZeptomailErrorBody) : {};
+  } catch {
+    // A non-JSON body (an HTML 502 from a proxy, say) isn't itself the failure — the status below
+    // decides. Keep the text for the message.
+  }
+
+  if (!response.ok) {
+    // ZeptoMail puts a generic string in error.message — "Access Denied", even for a malformed
+    // recipient — and the wording that actually identifies the failure sits in
+    // error.details[].message and its inner_error. Both are folded in, since the status code alone
+    // is ambiguous (a bad recipient and a revoked token can both come back as the same 401).
+    const detail = body.error?.details
+      ?.flatMap((d) => [d.message, d.inner_error?.message])
+      .filter(Boolean)
+      .join('; ');
+    const text =
+      [body.error?.message, detail].filter(Boolean).join(': ') ||
+      body.message ||
+      raw.slice(0, 200) ||
+      response.statusText;
+    throw new EmailSendError(text, { status: response.status, code: body.error?.code });
+  }
+
+  return { skipped: false, id: body.request_id };
+}
 
 export interface LicenseEmailInput {
   toEmail: string;
@@ -45,16 +182,12 @@ export interface InviteRelayEmailInput {
  *  `app/api/operator/relay-invite/route.ts`'s module doc for why this send happens here at all. */
 export type InviteRelayEmailResult =
   | { delivered: true }
-  | { delivered: false; reason: 'smtp_not_configured' | 'send_failed'; detail?: string };
+  | { delivered: false; reason: 'email_not_configured' | 'send_failed'; detail?: string };
 
 export interface EmailSender {
   sendLicenseEmail(input: LicenseEmailInput): Promise<void>;
   sendSalesInquiryEmail(input: SalesInquiryEmailInput): Promise<void>;
   sendInviteRelayEmail(input: InviteRelayEmailInput): Promise<InviteRelayEmailResult>;
-}
-
-function smtpConfigured(): boolean {
-  return Boolean(process.env.SMTP_HOST);
 }
 
 /** The deploy's own site URL, shown in the email only when it isn't the real production domain —
@@ -75,23 +208,6 @@ export function escapeHtml(value: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
-}
-
-let cachedTransporter: Transporter | null = null;
-
-function getTransporter(): Transporter {
-  if (cachedTransporter) return cachedTransporter;
-  cachedTransporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT ?? 587),
-    // Implicit TLS only on the SMTPS port (465) — 587/25 use STARTTLS, negotiated automatically
-    // by nodemailer when `secure: false`.
-    secure: Number(process.env.SMTP_PORT ?? 587) === 465,
-    auth: process.env.SMTP_USER
-      ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD }
-      : undefined,
-  });
-  return cachedTransporter;
 }
 
 /** The install command a customer runs to bring their instance up — per the spec's Minimal-Effort
@@ -195,16 +311,16 @@ export function buildLicenseEmailHtml(
 </html>`;
 }
 
-class SmtpEmailSender implements EmailSender {
+class ZeptomailEmailSender implements EmailSender {
   async sendLicenseEmail(input: LicenseEmailInput): Promise<void> {
     const installCommand = buildInstallCommand(input.licenseToken, input.toEmail);
 
-    if (!smtpConfigured()) {
+    if (!zeptomailConfigured()) {
       // Pre-launch fallback, matching invite-email.ts's convention in warmhawk-enterprise-operator
       // and the "no live external calls in this build" constraint — never throws, so a missing
-      // SMTP config degrades to a log line instead of failing the whole webhook handler.
+      // email config degrades to a log line instead of failing the whole webhook handler.
       console.log(
-        `[license-email STUB — SMTP_HOST not set] Would send license to ${input.toEmail}:`,
+        `[license-email STUB — ZEPTOMAIL_TOKEN not set] Would send license to ${input.toEmail}:`,
         { tier: input.tier, installCommand },
       );
       return;
@@ -213,8 +329,8 @@ class SmtpEmailSender implements EmailSender {
     const envNote = environmentNote();
     const tierLabel = tierLabelFor(input.tier);
 
-    await getTransporter().sendMail({
-      from: process.env.SMTP_FROM || siteConfig.defaultFrom,
+    await sendViaZeptomail({
+      from: process.env.EMAIL_FROM || siteConfig.defaultFrom,
       to: input.toEmail,
       subject: 'Your WarmHawk install command',
       text: buildLicenseEmailText(tierLabel, envNote, installCommand),
@@ -241,16 +357,16 @@ class SmtpEmailSender implements EmailSender {
       input.notes || '(none provided)',
     ].join('\n');
 
-    if (!smtpConfigured()) {
+    if (!zeptomailConfigured()) {
       console.log(
-        `[sales-inquiry-email STUB — SMTP_HOST not set] Would notify ${siteConfig.helloEmail}:`,
+        `[sales-inquiry-email STUB — ZEPTOMAIL_TOKEN not set] Would notify ${siteConfig.helloEmail}:`,
         { company: input.company, name: input.name, email: input.email, volume: input.volume },
       );
       return;
     }
 
-    await getTransporter().sendMail({
-      from: process.env.SMTP_FROM || siteConfig.defaultFrom,
+    await sendViaZeptomail({
+      from: process.env.EMAIL_FROM || siteConfig.defaultFrom,
       to: siteConfig.helloEmail,
       replyTo: input.email,
       subject,
@@ -280,16 +396,16 @@ class SmtpEmailSender implements EmailSender {
       <p style="color:#666;font-size:0.9em">This link expires in 7 days. If you weren't expecting this invite, you can ignore this email.</p>
     `.trim();
 
-    if (!smtpConfigured()) {
+    if (!zeptomailConfigured()) {
       console.log(
-        `[invite-relay-email STUB — SMTP_HOST not set] Would send invite to ${input.toEmail} (invited by ${input.inviterEmail}): ${input.acceptUrl}`,
+        `[invite-relay-email STUB — ZEPTOMAIL_TOKEN not set] Would send invite to ${input.toEmail} (invited by ${input.inviterEmail}): ${input.acceptUrl}`,
       );
-      return { delivered: false, reason: 'smtp_not_configured' };
+      return { delivered: false, reason: 'email_not_configured' };
     }
 
     try {
-      await getTransporter().sendMail({
-        from: process.env.SMTP_FROM || siteConfig.defaultFrom,
+      await sendViaZeptomail({
+        from: process.env.EMAIL_FROM || siteConfig.defaultFrom,
         to: input.toEmail,
         subject,
         text,
@@ -297,7 +413,7 @@ class SmtpEmailSender implements EmailSender {
       });
       return { delivered: true };
     } catch (error) {
-      const detail = error instanceof Error ? error.message : 'Unknown SMTP error';
+      const detail = error instanceof Error ? error.message : 'Unknown email error';
       console.error(`[invite-relay-email] send failed for ${input.toEmail}: ${detail}`);
       return { delivered: false, reason: 'send_failed', detail };
     }
@@ -305,5 +421,5 @@ class SmtpEmailSender implements EmailSender {
 }
 
 // Swap this for a different EmailSender implementation if the transactional provider ever changes
-// — every call site depends only on the `EmailSender` interface, never on nodemailer directly.
-export const emailSender: EmailSender = new SmtpEmailSender();
+// — every call site depends only on the `EmailSender` interface, never on ZeptoMail directly.
+export const emailSender: EmailSender = new ZeptomailEmailSender();
