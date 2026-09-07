@@ -4,6 +4,7 @@ import {
   faqSchema,
   organizationSchema,
   softwareApplicationSchema,
+  webApplicationSchema,
   breadcrumbSchema,
   howToSchema,
 } from './seo';
@@ -96,6 +97,32 @@ describe('softwareApplicationSchema', () => {
 
   it('never fabricates an aggregateRating or review', () => {
     const schema = softwareApplicationSchema();
+    expect(schema).not.toHaveProperty('aggregateRating');
+    expect(schema).not.toHaveProperty('review');
+  });
+});
+
+describe('webApplicationSchema', () => {
+  it('describes a free, browser-based WebApplication at an absolute URL, distinct from softwareApplicationSchema', () => {
+    const schema = webApplicationSchema({
+      name: 'Free Bulk SPF, DKIM & DMARC Checker',
+      description: 'Check up to 15 sending domains at once.',
+      path: '/tools/domain-check',
+    });
+
+    expect(schema['@type']).toBe('WebApplication');
+    expect(schema.name).toBe('Free Bulk SPF, DKIM & DMARC Checker');
+    expect(schema.url).toBe(`${siteConfig.url}/tools/domain-check`);
+    expect(schema.operatingSystem).toBe('Any (browser-based)');
+    expect(schema.offers).toEqual({ '@type': 'Offer', price: '0', priceCurrency: 'USD' });
+  });
+
+  it('never fabricates an aggregateRating or review', () => {
+    const schema = webApplicationSchema({
+      name: 'n',
+      description: 'd',
+      path: '/tools/domain-check',
+    });
     expect(schema).not.toHaveProperty('aggregateRating');
     expect(schema).not.toHaveProperty('review');
   });
