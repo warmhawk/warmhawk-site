@@ -3,7 +3,7 @@ import { target } from './targets';
 
 // Loads .env/.env.stage EXCLUSIVELY when HUMAN_ENV=stage — no merge/fallback with
 // .env/.env.local or .env/.env.example, and a no-op for local/prod — before workers fork, so
-// STRIPE_SECRET_KEY/price IDs/RESEND_API_KEY/LICENSE_SIGNING_PRIVATE_KEY etc. are set for every
+// STRIPE_SECRET_KEY/price IDs etc. are set for every
 // worker regardless of which spec file happens to load first. See scripts/load-env.js's own
 // header comment for the full rationale; .env/.env.stage itself is gitignored (real values, filled
 // in by hand) — .env/.env.stage.example (committed) documents its shape. Never touches any other
@@ -12,8 +12,8 @@ import { target } from './targets';
 require('../../scripts/load-env').loadEnv();
 
 // Live-deploy verification suite — follows an established tests/human-journeys/ convention: a
-// real Stripe test-mode subscription + real Resend email round trip against an already-running
-// deployment, resolved via HUMAN_ENV (see targets.ts). fullyParallel stays false
+// real Stripe test-mode subscription against an already-running deployment, resolved via
+// HUMAN_ENV (see targets.ts). fullyParallel stays false
 // on purpose (this suite creates a real Stripe subscription, so within-file ordering still
 // matters), but workers is bumped 1 -> 4 (Human Journey Gate task 1) since this repo only ever
 // runs one human-journey spec file at a time today — there is no cross-file real-money race to
