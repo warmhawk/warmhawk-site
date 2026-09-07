@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useMemo, useState, type FormEvent } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { CheckBadge, type CheckStatus } from '@/components/CheckBadge';
 import { normalise, type Rejection } from '@/lib/domainInput';
@@ -290,6 +290,17 @@ function fixFor(check: ApiCheck, domain: string): { label: string; value: string
 /** The `.fix` block (artifact's `dmarcMissing`) — a suggested record with one-click copy. */
 function FixBlock({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleared on unmount — otherwise a click just before navigating away (or, in tests, just before
+  // the next test's jsdom environment replaces this one) leaves this timer to fire against a
+  // `window` that's already gone.
+  useEffect(
+    () => () => {
+      if (resetTimer.current) clearTimeout(resetTimer.current);
+    },
+    [],
+  );
 
   return (
     <div className="fix">
@@ -301,7 +312,8 @@ function FixBlock({ label, value }: { label: string; value: string }) {
           onClick={() => {
             navigator.clipboard?.writeText(value).catch(() => {});
             setCopied(true);
-            setTimeout(() => setCopied(false), 1600);
+            if (resetTimer.current) clearTimeout(resetTimer.current);
+            resetTimer.current = setTimeout(() => setCopied(false), 1600);
           }}
         >
           {copied ? 'Copied' : 'Copy'}
@@ -498,7 +510,15 @@ function isApiResponse(value: unknown): value is ApiResponse {
 const GENERIC_ERROR =
   "The domain checker isn't reachable right now. Please try again shortly, or reach us at security@warmhawk.com if this keeps happening.";
 
-export function DomainCheckTool() {
+interface DomainCheckToolProps {
+  /** Promotes one check to the front of each domain's drawer and highlights its column header —
+   *  used by the 5 check-specific landing pages so "leads with X" is literal, not just copy. The
+   *  matrix's column order never changes: it's fixed-order everywhere (see COLUMNS above), so a
+   *  missing/reordered column can't silently break anything that depends on position. */
+  leadCheck?: CheckId;
+}
+
+export function DomainCheckTool({ leadCheck }: DomainCheckToolProps = {}) {
   const [input, setInput] = useState('');
   const [state, setState] = useState<ToolState>({ kind: 'idle' });
   // Which domain rows are expanded to show their per-check findings. Keyed by domain string
@@ -806,9 +826,14 @@ export function DomainCheckTool() {
                         key={column.id}
                         scope="col"
                         title={column.explain}
-                        className="text-center font-mono text-[11.5px] tracking-[0.08em] uppercase text-ink-muted px-4 py-2 bg-cream border-b border-border"
+                        className={
+                          column.id === leadCheck
+                            ? 'text-center font-mono text-[11.5px] tracking-[0.08em] uppercase text-rust px-4 py-2 bg-cream border-b border-border font-semibold'
+                            : 'text-center font-mono text-[11.5px] tracking-[0.08em] uppercase text-ink-muted px-4 py-2 bg-cream border-b border-border'
+                        }
                       >
                         {column.title}
+                        {column.id === leadCheck && <span aria-hidden="true"> ★</span>}
                       </th>
                     ))}
                     <th scope="col" className="px-2 py-2 bg-cream border-b border-border">
@@ -824,6 +849,12 @@ export function DomainCheckTool() {
                     const worstFirst = [...result.checks].sort(
                       (a, b) => SEVERITY_RANK[a.status] - SEVERITY_RANK[b.status],
                     );
+                    // When a page leads with one check, its drawer pins that check first and
+                    // keeps worst-first ordering for the remaining four — the matrix's column
+                    // order above is untouched either way.
+                    const drawerOrder = leadCheck
+                      ? [byId.get(leadCheck)!, ...worstFirst.filter((c) => c.id !== leadCheck)]
+                      : worstFirst;
                     const failingCount = result.checks.filter((c) => c.status === 'fail').length;
                     const worst: 'fail' | 'warn' | 'pass' = result.checks.some(
                       (c) => c.status === 'fail',
@@ -940,13 +971,23 @@ export function DomainCheckTool() {
                               <div className="border-l-[3px] border-rust px-4 py-1">
                                 <p className="drawer-h">
                                   All {CHECK_IDS.length} checks for{' '}
-                                  <b className="break-all">{result.domain}</b> · worst first
+                                  <b className="break-all">{result.domain}</b> ·{' '}
+                                  {leadCheck
+                                    ? `${COLUMNS.find((c) => c.id === leadCheck)?.title} first, then worst first`
+                                    : 'worst first'}
                                 </p>
-                                {worstFirst.map((check) => {
+                                {drawerOrder.map((check) => {
                                   const fix = fixFor(check, result.domain);
+                                  const isLead = check.id === leadCheck;
                                   return (
-                                    <div key={check.id} className="toggle-row">
+                                    <div
+                                      key={check.id}
+                                      className={isLead ? 'toggle-row lead' : 'toggle-row'}
+                                    >
                                       <div className="t-label">
+                                        {isLead && (
+                                          <span className="lead-marker">Leads this page</span>
+                                        )}
                                         <b>
                                           {COLUMNS.find((c) => c.id === check.id)?.title ??
                                             check.id}
