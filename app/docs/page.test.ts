@@ -64,4 +64,12 @@ describe('DocsIndexPage (app/docs/page.tsx)', () => {
       screen.getByRole('link', { name: startsWithTitle('OpenAPI spec (openapi.json)') }),
     ).toHaveAttribute('href', '/openapi.json');
   });
+
+  it('points the Tier 1/2 banner at the real dashboard page', () => {
+    render(createElement(DocsIndexPage));
+
+    expect(
+      screen.getByRole('link', { name: 'what the operator dashboard includes' }),
+    ).toHaveAttribute('href', '/dashboard');
+  });
 });

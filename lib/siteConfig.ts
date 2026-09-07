@@ -85,7 +85,7 @@ export const vsPages = [
 export const footerLinks = {
   product: [
     { label: 'Core Engine (free)', href: '/docs/quickstart' },
-    { label: 'Enterprise Operator', href: '/compare/pricing' },
+    { label: 'Enterprise Operator', href: '/dashboard' },
     { label: 'Pricing', href: '/compare/pricing' },
     { label: 'Status', href: '/status' },
   ],
