@@ -78,12 +78,21 @@ export default function DocsIntroductionPage() {
       <div className="card bg-cream-elevated p-7 max-w-2xl">
         <h2 className="font-display text-xl font-semibold mb-3">Where to go next</h2>
         <ul className="space-y-2 text-[15px] text-ink-muted">
+          {/* Tier 1/2 path stated first and explicitly — per
+              notes/1-plan/09-07-26-dashboard-nav-and-tier-buyer-docs.md. */}
+          <li>
+            On the dashboard or a managed setup?{' '}
+            <Link href="/dashboard" className="text-rust font-semibold">
+              See what Tier 1/2 includes
+            </Link>{' '}
+            &mdash; you never touch the API below.
+          </li>
           <li>
             New to the API? Start with{' '}
             <Link href="/docs/quickstart" className="text-rust font-semibold">
               Quickstart &amp; installation
             </Link>{' '}
-            &mdash; a real send in a handful of curl calls.
+            (Tier 0 / API) &mdash; a real send in a handful of curl calls.
           </li>
           <li>
             Running your own instance day to day?{' '}
@@ -93,18 +102,15 @@ export default function DocsIntroductionPage() {
             cover mailboxes, leads, campaigns, sending safety, and replies.
           </li>
           <li>
-            Deploying or maintaining the stack?{' '}
+            Deploying, maintaining, or building against the API directly?{' '}
             <Link href="/docs/self-hosting/architecture" className="text-rust font-semibold">
               Self-hosting
             </Link>{' '}
-            covers architecture, backups, and TLS/observability.
-          </li>
-          <li>
-            Building against the API directly?{' '}
+            or{' '}
             <Link href="/docs/api-reference/auth-and-mailboxes" className="text-rust font-semibold">
               API reference
-            </Link>{' '}
-            documents every endpoint that actually exists today.
+            </Link>
+            .
           </li>
         </ul>
       </div>
