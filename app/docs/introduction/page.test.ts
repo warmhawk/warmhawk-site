@@ -49,4 +49,13 @@ describe('DocsIntroductionPage (app/docs/introduction/page.tsx)', () => {
       '/docs/api-reference/auth-and-mailboxes',
     );
   });
+
+  it('states the Tier 1/2 path first, linking to the real dashboard page', () => {
+    render(createElement(DocsIntroductionPage));
+
+    expect(screen.getByRole('link', { name: 'See what Tier 1/2 includes' })).toHaveAttribute(
+      'href',
+      '/dashboard',
+    );
+  });
 });

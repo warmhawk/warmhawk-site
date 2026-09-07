@@ -52,4 +52,12 @@ describe('Footer', () => {
       expect(footerLinks.company.some((l) => l.label === label)).toBe(false);
     }
   });
+
+  it('links the bottom-bar "See what the operator dashboard includes" to the real dashboard page', () => {
+    render(createElement(Footer));
+
+    expect(
+      screen.getByRole('link', { name: 'See what the operator dashboard includes →' }),
+    ).toHaveAttribute('href', '/dashboard');
+  });
 });
