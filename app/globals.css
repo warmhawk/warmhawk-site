@@ -74,6 +74,15 @@ a {
     @apply block text-[12.5px] text-ink-muted;
   }
 
+  /* The check a leadCheck page pins to the top of the drawer (DomainCheckTool's `drawerOrder`) —
+     a faint rust wash, never a border-top, since it's always the visually-first row already. */
+  .toggle-row.lead {
+    @apply bg-rust-tint border-t-0 rounded-lg px-3 -mx-3;
+  }
+  .lead-marker {
+    @apply block font-mono text-[10px] tracking-[0.1em] uppercase text-rust font-semibold mb-0.5;
+  }
+
   /* Matches the artifact's `.drawer-h` — the "All 5 checks for <domain> · worst
      first" caption above a drawer's toggle-rows. */
   .drawer-h {
