@@ -38,16 +38,18 @@ export default function DkimCheckerPage() {
       />
       <div className="wrap pt-16 md:pt-24 pb-10">
         <div className="max-w-3xl">
-          <div className="label text-rust mb-5">DKIM Checker · plus MX, SPF, DMARC &amp; blacklist</div>
+          <div className="label text-rust mb-5">
+            DKIM Checker · plus MX, SPF, DMARC &amp; blacklist
+          </div>
           <h1 className="font-display text-4xl md:text-[48px] leading-tight font-semibold mb-6">
             Check whether DKIM is signing your mail.
           </h1>
           <AnswerBlock>
             DKIM signs your outgoing mail with a private key so receivers can confirm it
             wasn&rsquo;t altered in transit. Selectors can&rsquo;t be enumerated from DNS, so this
-            check tries a set of common selector names &mdash; a miss means we couldn&rsquo;t
-            find a key under those names, not that DKIM is definitely missing. Paste up to 15
-            domains below, and see DKIM alongside 4 more checks.
+            check tries a set of common selector names &mdash; a miss means we couldn&rsquo;t find a
+            key under those names, not that DKIM is definitely missing. Paste up to 15 domains
+            below, and see DKIM alongside 4 more checks.
           </AnswerBlock>
         </div>
       </div>
