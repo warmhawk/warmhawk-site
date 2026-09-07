@@ -4,8 +4,8 @@
  * this product family's test suites of a live-deploy target resolved from one env var.
  *
  * "local" resolves to `npm run dev`'s port (4800), not the e2e-docker container's port (4801):
- * this suite needs a running app process with REAL Stripe/Resend secrets wired into its own
- * environment (a real checkout -> real webhook -> real email round trip), which in practice means
+ * this suite needs a running app process with REAL Stripe secrets wired into its own
+ * environment (a real checkout -> real webhook round trip), which in practice means
  * a developer's `.env.local` + `npm run dev`, not the e2e-docker container (whose env is
  * intentionally just build-time placeholders — see scripts/e2e-docker-up.sh's comment; that
  * container cannot complete a real Stripe webhook round trip at all). Revisit this if the project

@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test';
  * The POST itself is intercepted rather than left to hit the real endpoint: a genuine submission
  * calls emailSender.sendSalesInquiryEmail (app/api/contact-sales/route.ts), which sends a real
  * inquiry email to hello@warmhawk.com and would burn a send against this project's own documented
- * Resend daily-send-quota constraint on every test run. Everything else here — navigation, the tab
+ * ZeptoMail daily-send-quota constraint on every test run. Everything else here — navigation, the tab
  * switch, real field entry, and the client-side success/error state machine in
  * components/ContactSalesForm.tsx — runs for real in a real browser; only that one network
  * boundary is stubbed.

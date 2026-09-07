@@ -12,10 +12,23 @@ export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return;
   if (!process.env.OTEL_EXPORTER_OTLP_ENDPOINT) return;
 
-  const { diag, DiagConsoleLogger, DiagLogLevel } = await import('@opentelemetry/api');
-  const { NodeSDK } = await import('@opentelemetry/sdk-node');
-  const { getNodeAutoInstrumentations } = await import('@opentelemetry/auto-instrumentations-node');
-  const { OTLPTraceExporter } = await import('@opentelemetry/exporter-trace-otlp-http');
+  // webpackIgnore: serverExternalPackages only stops webpack from bundling the four packages named
+  // there — it does nothing for what THOSE packages themselves pull in (grpc-js's OTLP-over-gRPC
+  // path, the winston instrumentation, the GCP resource detector's fetch stack), and webpack still
+  // descends into those transitive files looking for Node built-ins it can't bundle. Marking the
+  // import itself ignored is the standard, documented fix: webpack leaves the whole call alone and
+  // Node's own runtime `import()` resolves it, natively, exactly like every other require() this
+  // SDK does at runtime.
+  const { diag, DiagConsoleLogger, DiagLogLevel } = await import(
+    /* webpackIgnore: true */ '@opentelemetry/api'
+  );
+  const { NodeSDK } = await import(/* webpackIgnore: true */ '@opentelemetry/sdk-node');
+  const { getNodeAutoInstrumentations } = await import(
+    /* webpackIgnore: true */ '@opentelemetry/auto-instrumentations-node'
+  );
+  const { OTLPTraceExporter } = await import(
+    /* webpackIgnore: true */ '@opentelemetry/exporter-trace-otlp-http'
+  );
 
   // Silent by default (fire-and-forget export errors go nowhere without this) — WARN surfaces a
   // broken endpoint instead of just "no traces show up" with zero clue why. Same convention used
