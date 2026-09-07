@@ -7,7 +7,7 @@ import { createRateLimiter } from '@/lib/rateLimit';
  * Sends a self-hosted `warmhawk-enterprise-operator` instance's team-invite email on its behalf.
  *
  * The operator is proprietary/self-hosted and previously required each customer to configure their
- * own SMTP provider (Resend, Postmark, etc.) just to send a dashboard team-invite — real friction,
+ * own SMTP provider (Postmark, SendGrid, etc.) just to send a dashboard team-invite — real friction,
  * and a real cost, for a feature that has nothing to do with the product's actual outreach-sending
  * (which already runs through each customer's own connected mailbox, entirely separate from this).
  * Decision: `warmhawk-site` relays these instead, reusing the SMTP credential it already has live in

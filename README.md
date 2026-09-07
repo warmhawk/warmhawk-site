@@ -174,18 +174,18 @@ CI can decide it:
 
 ## 🧪 Testing
 
-| Tier           | Command                      | What it hits                                                                                                                                      |
-| -------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Unit           | `npm run test:unit`          | Mocked `@/lib/stripe`/`@/lib/email` — no network, ever. Matches plain `npm test`.                                                                 |
-| Integration    | `npm run test:integration`   | **Real** Stripe TEST-mode API + real Resend send. Self-skips cleanly when secrets are absent.                                                     |
-| E2E (Docker)   | `npm run test:e2e:docker`    | Builds/runs this repo's own `docker/Dockerfile.web`, reuses the existing `tests/e2e/*.spec.ts` specs against it, always tears the container down. |
-| Human journeys | `npm run test:human`         | A real, browser-driven Stripe checkout + license-email round trip against an already-deployed target.                                             |
-| Load (k6)      | `k6 run tests/load/stage.js` | Read-only marketing/docs page rendering only — never `/api/checkout/session`.                                                                     |
+| Tier           | Command                      | What it hits                                                                                                                                                             |
+| -------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Unit           | `npm run test:unit`          | Mocked `@/lib/stripe`/`@/lib/email` — no network, ever. Matches plain `npm test`.                                                                                        |
+| Integration    | `npm run test:integration`   | **Real** Stripe TEST-mode API + real ZeptoMail send. Self-skips cleanly when secrets are absent.                                                                         |
+| E2E (Docker)   | `npm run test:e2e:docker`    | Builds/runs this repo's own `docker/Dockerfile.web`, reuses the existing `tests/e2e/*.spec.ts` specs against it, always tears the container down.                        |
+| Human journeys | `npm run test:human`         | A real, browser-driven Stripe checkout against an already-deployed target (email/license verification currently reduced — see checkout-and-license.spec.ts's KNOWN GAP). |
+| Load (k6)      | `k6 run tests/load/stage.js` | Read-only marketing/docs page rendering only — never `/api/checkout/session`.                                                                                            |
 
 > **⚠️ Integration and human-journey tests deliberately override this repo's "no live external
 > network calls" build policy** (see `lib/stripe.ts`'s / `lib/email.ts`'s header comments — that
 > policy still governs the plain `*.test.ts` unit suite only). They make real calls to Stripe's
-> real TEST-mode API and Resend's real API/SMTP relay, reading secrets from the env vars documented
+> real TEST-mode API and ZeptoMail's real HTTP API, reading secrets from the env vars documented
 > in `.env/.env.example`. Until those secrets are provisioned as CI secrets, both tiers self-skip
 > cleanly rather than fail.
 
@@ -200,8 +200,8 @@ HUMAN_ENV=stage npm run test:human
 **Stage env vars:** `HUMAN_ENV=stage` loads `.env/.env.stage` EXCLUSIVELY — no merging with, or
 fallback to, `.env/.env.local`/`.env/.env.example` (see `scripts/load-env.js`, wired into
 `tests/human-journeys/human.config.ts`). Copy `.env/.env.stage.example` (committed, placeholders
-only) to `.env/.env.stage` (gitignored) and fill in real Stripe test-mode + Resend + license-signing
-values by hand — this is for local/dev parity only and never changes how CI injects
+only) to `.env/.env.stage` (gitignored) and fill in real Stripe test-mode values by hand — this is
+for local/dev parity only and never changes how CI injects
 secrets into the deployed stage server itself (`from_secret` there stays authoritative).
 
 `prod` is accepted by `targets.ts` but the real-purchase test itself hard-skips whenever

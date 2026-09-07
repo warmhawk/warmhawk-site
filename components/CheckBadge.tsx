@@ -34,11 +34,18 @@ const LABELS: Record<CheckStatus, string> = {
   unconfigured: 'NOT CONFIGURED',
 };
 
-export function CheckBadge({ status }: { status: CheckStatus }) {
+/**
+ * `label` overrides the generic status word with a specific one (`Google Workspace`,
+ * `12 of 10 DNS lookups`, `p=none`) — the domain-check tool's drawer passes one wherever the
+ * probe's `facts` make a truthful, specific label possible (see `badgeLabelFor` in
+ * DomainCheckTool.tsx). Optional and unused by the dashboard's own callers, which keep the
+ * generic PASS/WARN/FAIL/UNKNOWN word this component has always shown.
+ */
+export function CheckBadge({ status, label }: { status: CheckStatus; label?: string }) {
   return (
     <span className={`badge badge-${status}`}>
       <span className="badge-dot" aria-hidden="true" />
-      {LABELS[status]}
+      {label ?? LABELS[status]}
     </span>
   );
 }
