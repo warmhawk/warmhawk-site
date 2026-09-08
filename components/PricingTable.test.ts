@@ -40,4 +40,13 @@ describe('PricingTable', () => {
     expect(screen.queryByText(/\$300\/mo/)).toBeNull();
     expect(document.body.textContent ?? '').not.toMatch(/retainer/i);
   });
+
+  it('offers a White-Label/MSP contact link, not a 4th priced tier', () => {
+    render(createElement(PricingTable));
+
+    expect(screen.getByText('White-Label / MSP')).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: 'Contact us' });
+    expect(link).toHaveAttribute('href', expect.stringContaining('mailto:hello@warmhawk.com'));
+    expect(tiers.map((t) => t.id)).toEqual(['open-core', 'self-hosted-pro', 'enterprise-dfy']);
+  });
 });
