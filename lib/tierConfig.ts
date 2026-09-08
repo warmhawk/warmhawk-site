@@ -21,18 +21,21 @@
 
 export type TierId = 'open-core' | 'self-hosted-pro' | 'enterprise-dfy';
 
-/** The four glyphs available to an exclusive-feature row — see `ExclusiveFeature` below. Add a
+/** The five glyphs available to an exclusive-feature row — see `ExclusiveFeature` below. Add a
  *  new one in `EXCLUSIVE_FEATURE_ICONS` (components/PricingTable.tsx) before using it here. */
-export type ExclusiveFeatureIcon = 'badge' | 'certificate' | 'compliance' | 'radar';
+export type ExclusiveFeatureIcon = 'badge' | 'certificate' | 'compliance' | 'radar' | 'history';
 
 /**
- * A feature gated by the real `isTier2` flag in warmhawk-enterprise-operator's `LicenseGate`
- * (packages/tier-config/src/constants.ts, `TierFeatures.isTier2`) — currently exactly four UI
- * surfaces: `BadgeEmbedPanel` ("Get your badge"), the per-domain "Download certificate" button,
- * the per-domain "Export compliance report" button, and `LookalikeCandidatesPanel`
- * ("Lookalike domain monitoring"). Rendered by PricingTable.tsx with its own icon instead of the
- * plain checkmark used for `features` below, so it visually reads as Tier-2-exclusive rather than
- * blending into the generic bullet list.
+ * A feature gated to Tier 2 in warmhawk-enterprise-operator — currently exactly five UI surfaces
+ * (its own code comments number these "Item 2/3/4/6/7"): `ChangeHistoryPanel` ("DNS change
+ * history", gated server-side via `getServerTier() === 'tier_2'` directly rather than the
+ * `isTier2` client flag — easy to miss in a client-side-only grep, and originally missed here),
+ * `BadgeEmbedPanel` ("Get your badge"), the per-domain "Download certificate" button, the
+ * per-domain "Export compliance report" button, and `LookalikeCandidatesPanel` ("Lookalike domain
+ * monitoring") — the latter four do read the client `isTier2` flag
+ * (packages/tier-config/src/constants.ts, `TierFeatures.isTier2`). Rendered by PricingTable.tsx
+ * with its own icon instead of the plain checkmark used for `features` below, so it visually reads
+ * as Tier-2-exclusive rather than blending into the generic bullet list.
  */
 export interface ExclusiveFeature {
   icon: ExclusiveFeatureIcon;
@@ -133,6 +136,7 @@ export const tiers: TierDefinition[] = [
       'Audit log (planned, procurement-driven)',
     ],
     exclusiveFeatures: [
+      { icon: 'history', label: 'DNS change history' },
       { icon: 'badge', label: 'Trust badge embed' },
       { icon: 'certificate', label: 'Domain certificate PDF' },
       { icon: 'compliance', label: 'Compliance report PDF' },
