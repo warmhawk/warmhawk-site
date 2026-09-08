@@ -49,4 +49,26 @@ describe('PricingTable', () => {
     expect(link).toHaveAttribute('href', expect.stringContaining('mailto:hello@warmhawk.com'));
     expect(tiers.map((t) => t.id)).toEqual(['open-core', 'self-hosted-pro', 'enterprise-dfy']);
   });
+
+  /**
+   * Copy audit (2026-09-08): "BYO-cert support" was listed as a Tier 2 bullet even though the
+   * comparison matrix (app/compare/pricing/page.tsx) already marks it "Yes" at every tier —
+   * self-hosted means the customer's own box, so cert control was never Tier-2-exclusive. Pinning
+   * its removal, and pinning its replacement, which IS gated by the real isTier2 flag in
+   * warmhawk-enterprise-operator (badge-embed-panel, certificate/compliance PDFs,
+   * lookalike-domain monitoring).
+   */
+  it('never claims BYO-cert support as a Tier 2 exclusive', () => {
+    render(createElement(PricingTable));
+
+    expect(screen.queryByText(/BYO-cert support/i)).toBeNull();
+  });
+
+  it('lists Tier 2 dashboard extras that are actually gated behind isTier2 in the operator app', () => {
+    render(createElement(PricingTable));
+
+    expect(
+      screen.getByText(/trust badge embed, certificate & compliance PDFs, lookalike-domain monitoring/i),
+    ).toBeInTheDocument();
+  });
 });
