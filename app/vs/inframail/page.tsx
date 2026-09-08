@@ -75,12 +75,12 @@ const faqItems = [
   {
     question: 'Can I migrate from Inframail without losing my sending domains?',
     answer:
-      'Yes. CSV import and webhook ingestion both cover migrating leads and campaigns, and Tier 2 (Enterprise DFY) includes white-glove list and domain migration as a one-time setup service if you’d rather have it done for you.',
+      'Yes. CSV import and webhook ingestion both cover migrating leads and campaigns, at every tier — nothing Tier-2-exclusive there. What Tier 2 (Enterprise DFY) actually adds is WarmHawk’s founder running the initial deployment for you as a one-time setup service, if you’d rather not run install.sh yourself.',
   },
   {
     question: 'Does WarmHawk include a deliverability consultant like Inframail’s Agency Pack?',
     answer:
-      'Not a human consultant — instead, every account gets real seed-inbox placement testing and continuous SPF/DKIM/DMARC/blocklist monitoring built into the dashboard, plus a founder-staffed support SLA (1 business day, 4h on critical issues) on Tier 1 and Tier 2.',
+      'Not a human consultant — instead, every account gets real seed-inbox placement testing and continuous SPF/DKIM/DMARC/blocklist monitoring built into the dashboard, plus a founder-staffed support SLA — 1 business day (4h on critical issues) on Tier 1, same-business-day on a direct founder line on Tier 2.',
   },
 ];
 
