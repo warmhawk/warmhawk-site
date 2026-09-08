@@ -1,5 +1,14 @@
 import { createSign, createVerify, createPublicKey, randomBytes } from 'node:crypto';
 
+/** .env files commonly escape real newlines as literal `\n`; unescape if needed. Matches
+ *  warmhawk-enterprise-operator's `lib/license/verify.ts` — added here after a production
+ *  incident where LICENSE_SIGNING_PRIVATE_KEY was pasted into its deployment secret with literal
+ *  `\n` (produced by `scripts/generate-license-keypair.sh`'s `escape_for_env()`) and nothing in
+ *  this file unescaped it, crashing every route below. */
+function unescapePem(pem: string): string {
+  return pem.includes('\\n') ? pem.replace(/\\n/g, '\n') : pem;
+}
+
 /**
  * RSA license-key issuance — the ONE canonical implementation for the whole product.
  *
@@ -74,7 +83,7 @@ export function issueLicense(payload: LicensePayload, privateKeyPem: string): Si
   const signer = createSign(SIGNATURE_ALGORITHM);
   signer.update(payloadJson);
   signer.end();
-  const signature = signer.sign(privateKeyPem);
+  const signature = signer.sign(unescapePem(privateKeyPem));
   const encodedSignature = signature.toString('base64url');
 
   return { token: `${encodedPayload}.${encodedSignature}`, payload };
@@ -110,7 +119,7 @@ export function verifyLicense(token: string, publicKeyPem: string): LicenseVerif
     verifier.update(payloadJson);
     verifier.end();
     const signatureBuffer = Buffer.from(encodedSignature, 'base64url');
-    signatureValid = verifier.verify(publicKeyPem, signatureBuffer);
+    signatureValid = verifier.verify(unescapePem(publicKeyPem), signatureBuffer);
   } catch {
     signatureValid = false;
   }
@@ -147,7 +156,9 @@ export function generateLicenseKey(): string {
  *  RSA private keys embed their own public modulus/exponent, so this is a pure local derivation —
  *  no I/O, nothing new to provision. */
 export function derivePublicKeyPem(privateKeyPem: string): string {
-  return createPublicKey(privateKeyPem).export({ type: 'spki', format: 'pem' }).toString();
+  return createPublicKey(unescapePem(privateKeyPem))
+    .export({ type: 'spki', format: 'pem' })
+    .toString();
 }
 
 /**
