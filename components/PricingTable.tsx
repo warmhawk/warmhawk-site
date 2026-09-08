@@ -171,7 +171,7 @@ export function PricingTable() {
                         key={exclusive.label}
                         className="flex items-center gap-2.5 text-sm text-ink-muted"
                       >
-                        <span className="flex-none flex items-center justify-center w-6 h-6 rounded-full bg-rust-tint text-rust">
+                        <span className="flex-none flex items-center justify-center w-6 h-6 rounded-full border border-rust/25 bg-rust-tint text-rust">
                           {EXCLUSIVE_FEATURE_ICONS[exclusive.icon]}
                         </span>
                         {exclusive.label}
@@ -192,7 +192,28 @@ export function PricingTable() {
         ))}
       </div>
 
-      <div className="mt-[22px] flex flex-col sm:flex-row sm:items-center gap-4 rounded-[18px] border border-dashed border-border p-[22px]">
+      <div className="mt-[22px] flex flex-col sm:flex-row sm:items-center gap-5 rounded-[18px] border border-dashed border-border bg-paper p-[26px]">
+        <span
+          className="flex-none flex items-center justify-center w-11 h-11 rounded-xl bg-rust-tint text-rust"
+          aria-hidden="true"
+        >
+          {/* Two overlapping squares — running the same product across multiple separate
+              installs. The front square's fill matches the chip's own bg-rust-tint exactly, so it
+              visually occludes the back square rather than just crossing outlines. */}
+          <svg viewBox="0 0 20 20" fill="none" className="w-5 h-5">
+            <rect x="3.5" y="3.5" width="9" height="9" rx="2" stroke="currentColor" strokeWidth="1.4" />
+            <rect
+              x="7.5"
+              y="7.5"
+              width="9"
+              height="9"
+              rx="2"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              fill="#FBF3EA"
+            />
+          </svg>
+        </span>
         <div className="flex-1">
           <div className="font-mono text-xs tracking-[0.1em] uppercase text-rust">
             White-Label / MSP
@@ -210,7 +231,7 @@ export function PricingTable() {
           href={`mailto:${siteConfig.helloEmail}?subject=White-label%2FMSP%20inquiry`}
           className="btn btn-ghost whitespace-normal text-center leading-snug shrink-0"
         >
-          Contact us
+          Contact us →
         </a>
       </div>
     </div>
