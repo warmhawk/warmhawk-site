@@ -3,6 +3,7 @@ import { generateKeyPairSync } from 'node:crypto';
 import {
   issueLicense,
   verifyLicense,
+  derivePublicKeyPem,
   generateLicenseKey,
   computeExpiry,
   type LicensePayload,
@@ -90,6 +91,25 @@ describe('RSA license sign/verify (canonical scheme)', () => {
     if (!result.valid) {
       expect(result.reason).toBe('malformed');
     }
+  });
+
+  // Regression test for the 2026-09-08 prod outage: LICENSE_SIGNING_PRIVATE_KEY was stored in the
+  // deployment secret with literal `\n` instead of real newlines (produced by
+  // scripts/generate-license-keypair.sh's escape_for_env()), and every call site here crashed
+  // trying to parse it. issueLicense/verifyLicense/derivePublicKeyPem now tolerate either form.
+  it('signs and verifies correctly when the private/public key PEMs have literal \\n instead of real newlines', () => {
+    const escapedPrivateKey = TEST_PRIVATE_KEY.replace(/\n/g, '\\n');
+    const escapedPublicKey = TEST_PUBLIC_KEY.replace(/\n/g, '\\n');
+
+    const payload = basePayload();
+    const { token } = issueLicense(payload, escapedPrivateKey);
+    const result = verifyLicense(token, escapedPublicKey);
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.payload).toEqual(payload);
+    }
+
+    expect(derivePublicKeyPem(escapedPrivateKey).trim()).toBe(TEST_PUBLIC_KEY.trim());
   });
 });
 
