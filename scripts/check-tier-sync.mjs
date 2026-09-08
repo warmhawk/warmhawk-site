@@ -125,24 +125,27 @@ if (tier2FirstResponse?.toLowerCase().includes('same business day')) {
   );
 }
 
-// 4. The exact four isTier2-gated UI surfaces the site's exclusiveFeatures array names —
-//    BadgeEmbedPanel, the certificate PDF button, the compliance-report PDF button, and
-//    LookalikeCandidatesPanel. constants.ts doesn't enumerate these individually (it's one
-//    boolean flag), so this just confirms the site still lists exactly the four this script's own
-//    header comment (and tierConfig.ts's ExclusiveFeature doc comment) describes — a reminder to
-//    re-grep the operator app if a fifth surface gets added there without a matching site update.
+// 4. The exact five Tier-2-only UI surfaces the site's exclusiveFeatures array names —
+//    ChangeHistoryPanel, BadgeEmbedPanel, the certificate PDF button, the compliance-report PDF
+//    button, and LookalikeCandidatesPanel. constants.ts doesn't enumerate these individually (four
+//    of the five read its one `isTier2` boolean; ChangeHistoryPanel's route checks
+//    `getServerTier() === 'tier_2'` directly instead — see tierConfig.ts's ExclusiveFeature doc
+//    comment), so this just confirms the site still lists exactly the five this script's own
+//    header comment describes — a reminder to re-grep the operator app (`grep -rn "tier_2\|isTier2"
+//    apps/web/src`) if a sixth surface gets added there without a matching site update.
 const exclusiveLabels = [...siteConfig.matchAll(/label: '([^']+)'/g)].map((m) => m[1]);
 const expectedLabels = [
+  'DNS change history',
   'Trust badge embed',
   'Domain certificate PDF',
   'Compliance report PDF',
   'Lookalike-domain monitoring',
 ];
 if (expectedLabels.every((label) => exclusiveLabels.includes(label))) {
-  ok('All four known isTier2-gated UI surfaces are still listed in lib/tierConfig.ts.');
+  ok('All five known Tier-2-only UI surfaces are still listed in lib/tierConfig.ts.');
 } else {
   fail(
-    `lib/tierConfig.ts's exclusiveFeatures no longer lists all four known isTier2 surfaces (found: ${exclusiveLabels.join(', ')}) — if a surface was added or removed in warmhawk-enterprise-operator, update both this script and tierConfig.ts.`,
+    `lib/tierConfig.ts's exclusiveFeatures no longer lists all five known Tier-2 surfaces (found: ${exclusiveLabels.join(', ')}) — if a surface was added or removed in warmhawk-enterprise-operator, update both this script and tierConfig.ts.`,
   );
 }
 
