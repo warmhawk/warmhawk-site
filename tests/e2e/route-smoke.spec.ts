@@ -21,6 +21,8 @@ const routes: { path: string; expectedStatus: 200 | 404 }[] = [
   { path: '/status', expectedStatus: 200 },
   { path: '/tools/domain-check', expectedStatus: 200 },
   { path: '/checkout', expectedStatus: 200 },
+  { path: '/dashboard', expectedStatus: 200 },
+  { path: '/account/billing', expectedStatus: 200 },
 
   { path: '/docs', expectedStatus: 200 },
   { path: '/docs/introduction', expectedStatus: 200 },
@@ -72,3 +74,23 @@ for (const { path, expectedStatus } of routes) {
     expect(pageErrors, `${path} threw an uncaught error:\n${pageErrors.join('\n')}`).toEqual([]);
   });
 }
+
+// `/install` doesn't fit the loop above: it's a NextResponse of `text/x-shellscript`
+// (app/install/route.ts), not an HTML page, so there's no <title> and `page.goto()`'s own
+// download-vs-navigate handling makes it an awkward fit for the shared body. `route.test.ts`
+// already unit-tests the script's actual content (flag parsing, Tier 0 behavior) by calling the
+// handler directly, in-process — what's still missing, and what this closes, is proof the route is
+// actually reachable and correctly served end to end through a real running build (Next.js
+// routing/middleware/build step could all independently break this without the unit test noticing).
+test('/install -> 200, real shell script, never cached', async ({ request }) => {
+  const res = await request.get('/install');
+  expect(res.status()).toBe(200);
+  expect(res.headers()['content-type']).toBe('text/x-shellscript; charset=utf-8');
+  expect(res.headers()['cache-control']).toBe('no-store');
+
+  const body = await res.text();
+  expect(body.startsWith('#!/usr/bin/env bash')).toBe(true);
+  expect(body).toContain(
+    'curl -fsSL https://warmhawk.com/install | bash -s -- --domain yourcompany.com',
+  );
+});
