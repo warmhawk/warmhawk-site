@@ -85,6 +85,36 @@ test.describe('Human journey: real checkout', () => {
     // Matches app/api/checkout/session/route.ts's success_url.
     expect(page.url()).toContain('checkout=success');
   });
+
+  // P11a (found 2026-09-08 auditing recent commits — see Journey M): Tier 2 (Enterprise DFY)
+  // became a fully self-serve Stripe Checkout purchase on 2026-09-03/04 ($199/mo, same recurring
+  // price as Tier 1, plus a one-time $1,999 setup fee on the first invoice), replacing the old
+  // contact-sales-only flow — this repo's own `Tier2CheckoutButton.tsx` doc comment confirms an
+  // earlier draft of that button wrongly said "no recurring charge" and was caught before shipping,
+  // which is exactly the kind of pricing-copy regression a real checkout round trip like this one
+  // would catch automatically. Zero new prerequisites beyond the Tier 1 case above: same
+  // `completeStripeCheckoutViaBrowser()` helper, `?tier=2` starts the page on the Tier 2 tab
+  // (app/checkout/page.tsx), and `STRIPE_PRICE_TIER_2` is confirmed populated in this target env's
+  // real (test-mode) Stripe config — checked directly in `.env/.env.local`, not assumed.
+  test('a visitor can buy Tier 2 (Enterprise DFY) via a real Stripe checkout', async ({ page }) => {
+    test.setTimeout(120_000);
+
+    await page.goto(`${target.baseURL}/checkout?tier=2`);
+
+    const tier2Tab = page.getByRole('tab', { name: 'Tier 2 — Enterprise DFY' });
+    await expect(tier2Tab).toHaveAttribute('aria-selected', 'true');
+
+    // See components/Tier2CheckoutButton.tsx: POSTs { tier: 'tier_2' } to /api/checkout/session
+    // and redirects the browser to the returned Stripe Checkout URL, same as Tier 1's button.
+    await page.getByRole('button', { name: 'Get started — $1,999 + $199/mo' }).click();
+    await page.waitForURL(/^https:\/\/checkout\.stripe\.com\//, { timeout: 30_000 });
+
+    await completeStripeCheckoutViaBrowser(page);
+
+    // Matches app/api/checkout/session/route.ts's Tier 2 success_url
+    // (`/checkout?tier=2&checkout=success&session_id=...`).
+    expect(page.url()).toContain('checkout=success');
+  });
 });
 
 // Drives Stripe's own hosted Checkout page for real, using their documented test card
