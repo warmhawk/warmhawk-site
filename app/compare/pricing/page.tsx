@@ -128,9 +128,9 @@ const matrixRows: { feature: string; tier0: string; tier1: string; tier2: string
     tier2: 'Direct founder line, same-business-day',
   },
   {
-    feature: 'Managed deployment, DNS, dedicated IPs, white-glove migration, BYO-cert support',
-    tier0: 'No',
-    tier1: 'No',
+    feature: 'BYO-cert support',
+    tier0: 'Yes',
+    tier1: 'Yes',
     tier2: 'Yes',
   },
   {
