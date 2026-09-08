@@ -177,6 +177,23 @@ export interface InviteRelayEmailInput {
   acceptUrl: string;
 }
 
+export interface InstallFailureEmailInput {
+  /** Which installer script reported this — 'install' (fresh install) or 'update' (in-place
+   *  upgrade). See warmhawk-enterprise-operator/scripts/{install,update}.sh's own report_failure(). */
+  script: 'install' | 'update';
+  /** The domain the customer passed to --domain, if known at the point of failure (install.sh
+   *  requires it up front; a truly early failure, e.g. missing Docker, may have none yet). Not
+   *  secret — it's the customer's own public DNS name for their instance. */
+  domain: string;
+  /** The exact stderr line already shown to the customer via fail()/log() — never a stack trace,
+   *  never a secret (the scripts' own fail() message text never includes LICENSE/REGISTRY_CREDENTIAL
+   *  values). Truncated defensively by the route handler regardless. */
+  message: string;
+  /** Best-effort caller IP, for noticing "many failures from one place" patterns — not used for
+   *  anything else. */
+  reporterIp: string;
+}
+
 /** Mirrors warmhawk-enterprise-operator's own `InviteEmailResult` shape exactly — the operator's
  *  `/api/team/members` passes this straight back to its caller, so the two must stay in sync. See
  *  `app/api/operator/relay-invite/route.ts`'s module doc for why this send happens here at all. */
@@ -188,6 +205,7 @@ export interface EmailSender {
   sendLicenseEmail(input: LicenseEmailInput): Promise<void>;
   sendSalesInquiryEmail(input: SalesInquiryEmailInput): Promise<void>;
   sendInviteRelayEmail(input: InviteRelayEmailInput): Promise<InviteRelayEmailResult>;
+  sendInstallFailureEmail(input: InstallFailureEmailInput): Promise<void>;
 }
 
 /** The deploy's own site URL, shown in the email only when it isn't the real production domain —
@@ -416,6 +434,46 @@ class ZeptomailEmailSender implements EmailSender {
       const detail = error instanceof Error ? error.message : 'Unknown email error';
       console.error(`[invite-relay-email] send failed for ${input.toEmail}: ${detail}`);
       return { delivered: false, reason: 'send_failed', detail };
+    }
+  }
+
+  /** Notifies support@warmhawk.com when a customer's own install.sh/update.sh reports a failure —
+   *  see app/api/install-events/route.ts's module doc for the full flow (registry.warmhawk.com
+   *  being NXDOMAIN for 5 days, silently failing every real install, is exactly the class of bug
+   *  this exists to surface immediately instead of waiting for a customer to complain, or never
+   *  hearing from them at all since a customer who can't get the product running has nothing to
+   *  file a ticket about yet). Fire-and-forget from the route's perspective — never throws, since a
+   *  failed notification about a failure shouldn't itself become a 500 the customer's script sees. */
+  async sendInstallFailureEmail(input: InstallFailureEmailInput): Promise<void> {
+    const subject = `[WarmHawk] ${input.script}.sh failed — ${input.domain || 'domain unknown'}`;
+    const text = [
+      `A customer's ${input.script}.sh reported a failure.`,
+      '',
+      `Domain: ${input.domain || '(not yet known at time of failure)'}`,
+      `Reporter IP: ${input.reporterIp}`,
+      '',
+      'Error message (verbatim, as shown to the customer):',
+      input.message,
+    ].join('\n');
+
+    if (!zeptomailConfigured()) {
+      console.log(`[install-failure-email STUB — ZEPTOMAIL_TOKEN not set]`, {
+        script: input.script,
+        domain: input.domain,
+        message: input.message,
+      });
+      return;
+    }
+
+    try {
+      await sendViaZeptomail({
+        from: process.env.EMAIL_FROM || siteConfig.defaultFrom,
+        to: siteConfig.supportEmail,
+        subject,
+        text,
+      });
+    } catch (error) {
+      console.error('[install-failure-email] send failed', error);
     }
   }
 }
