@@ -1,5 +1,10 @@
 import { createSign, createVerify, createPublicKey, createHash, randomUUID } from 'node:crypto';
 
+/** .env files commonly escape real newlines as literal `\n`; unescape if needed. See module doc. */
+function unescapePem(pem: string): string {
+  return pem.includes('\\n') ? pem.replace(/\\n/g, '\n') : pem;
+}
+
 /**
  * Mints and verifies short-lived RS256 JWTs for the Docker Registry v2 Token Authentication
  * protocol (https://distribution.github.io/distribution/spec/auth/token/) -- the
@@ -17,13 +22,13 @@ import { createSign, createVerify, createPublicKey, createHash, randomUUID } fro
  * a signing key is ever compromised -- sharing one key here would mean a registry-token leak also
  * forges licenses, and vice versa. A verified license token is still the THING BEING CHECKED before
  * one of these gets minted (see the route: it calls lib/license.ts's `verifyLicense` first) -- it
- * just isn't what's being signed. PEM-from-env-var handling deliberately matches
- * `lib/license.ts`/`app/api/stripe/webhook/route.ts`'s own convention: the caller reads
- * `process.env.REGISTRY_TOKEN_SIGNING_PRIVATE_KEY` and passes the PEM straight in here, no
- * unescaping step -- despite `.env/.env.example`'s LICENSE_SIGNING_PRIVATE_KEY comment describing a
- * literal-`\n` convention, no code in this repo actually unescapes one; both `.env.example` and
- * `.env.local` carry the real, quoted, multi-line PEM as-is (dotenv and `bash source` both parse
- * that correctly), and that is the convention this module follows too.
+ * just isn't what's being signed. PEM-from-env-var handling matches `lib/license.ts`'s own
+ * convention: `.env.example` and `.env.local` carry the real, quoted, multi-line PEM as-is (dotenv
+ * and `bash source` both parse that correctly), which is what this module expects -- but every PEM
+ * read here is passed through `unescapePem` first as a defensive tolerance for a literal-`\n`
+ * value too, matching `lib/license.ts`'s own fix after a production incident where
+ * LICENSE_SIGNING_PRIVATE_KEY was pasted into its deployment secret pre-escaped and nothing
+ * unescaped it.
  *
  * FIXED ACCESS, NOT CALLER-SUPPLIED. `mintRegistryToken` takes no `access`/`scope` parameter --
  * every token this module ever mints grants exactly `GRANTED_ACCESS` below, regardless of what
@@ -96,7 +101,7 @@ function base64UrlEncodeJson(value: unknown): string {
  *  `keyIDFromCryptoKey` (github.com/docker/libtrust/key.go) -- reimplemented here rather than
  *  imported since libtrust is unmaintained and this is the entire algorithm. */
 function libtrustKeyId(privateKeyPem: string): string {
-  const spkiDer = createPublicKey(privateKeyPem).export({ type: 'spki', format: 'der' });
+  const spkiDer = createPublicKey(unescapePem(privateKeyPem)).export({ type: 'spki', format: 'der' });
   const digest = createHash('sha256').update(spkiDer).digest().subarray(0, 30);
 
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
@@ -145,7 +150,7 @@ export function mintRegistryToken({
   const signer = createSign(SIGNATURE_ALGORITHM);
   signer.update(signingInput);
   signer.end();
-  const encodedSignature = signer.sign(privateKeyPem).toString('base64url');
+  const encodedSignature = signer.sign(unescapePem(privateKeyPem)).toString('base64url');
 
   return `${signingInput}.${encodedSignature}`;
 }
@@ -188,7 +193,7 @@ export function verifyRegistryToken(
     verifier.update(`${encodedHeader}.${encodedPayload}`);
     verifier.end();
     const signatureBuffer = Buffer.from(encodedSignature, 'base64url');
-    signatureValid = verifier.verify(publicKeyPem, signatureBuffer);
+    signatureValid = verifier.verify(unescapePem(publicKeyPem), signatureBuffer);
   } catch {
     signatureValid = false;
   }
@@ -224,5 +229,5 @@ export function verifyRegistryToken(
  *  -- that cert (not this function's output) is what docker-compose.deploy.yml's `registry`
  *  service needs mounted at REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE; see that file's own comment. */
 export function derivePublicKeyPem(privateKeyPem: string): string {
-  return createPublicKey(privateKeyPem).export({ type: 'spki', format: 'pem' }).toString();
+  return createPublicKey(unescapePem(privateKeyPem)).export({ type: 'spki', format: 'pem' }).toString();
 }
