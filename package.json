@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "generate:og-image": "node scripts/generate-og-image.mjs",
     "submit:indexnow": "node scripts/submit-indexnow.mjs",
+    "check:tier-sync": "node scripts/check-tier-sync.mjs",
     "test": "vitest run -c tests/vitest.config.mts",
     "test:coverage": "vitest run -c tests/vitest.config.mts --coverage",
     "test:unit": "vitest run -c tests/vitest.config.mts --exclude \"**/*.integration.test.ts\"",

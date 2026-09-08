@@ -25,7 +25,16 @@ export const metadata: Metadata = pageSeo({
 // this site's own AEO-oriented content beyond what the single-page artifact needed — kept as-is,
 // since it's real, accurate supporting detail, not a mockup section to prune down to match.
 
-const matrixRows: { feature: string; tier0: string; tier1: string; tier2: string }[] = [
+const matrixRows: {
+  feature: string;
+  tier0: string;
+  tier1: string;
+  tier2: string;
+  // Marks the five Tier-2-only dashboard rows below so the table can wash them with the same
+  // rust tint the pricing card uses for its "Tier 2 exclusive" group — otherwise they read as
+  // just five more rows in a 21-row table instead of the actual reason to buy Tier 2.
+  highlight?: boolean;
+}[] = [
   {
     feature: 'API + sending/queueing engine, direct API access',
     tier0: 'Yes',
@@ -121,6 +130,47 @@ const matrixRows: { feature: string; tier0: string; tier1: string; tier2: string
     tier1: 'No',
     tier2: 'Planned — Tier 2 only, procurement-driven',
   },
+  // The five rows below are the same Tier-2-only dashboard surfaces PricingTable.tsx's "Tier 2
+  // exclusive" group (lib/tierConfig.ts's `exclusiveFeatures`) renders — kept as five separate
+  // rows here too, not one combined row, so the matrix and the pricing card never describe a
+  // different feature count. See lib/tierConfig.ts's `ExclusiveFeature` doc comment for why
+  // "DNS change history" is gated differently (server-side `getServerTier()`) than the other four
+  // (the client `isTier2` flag).
+  {
+    feature: 'DNS change history',
+    tier0: 'No',
+    tier1: 'No',
+    tier2: 'Yes',
+    highlight: true,
+  },
+  {
+    feature: 'Trust badge embed',
+    tier0: 'No',
+    tier1: 'No',
+    tier2: 'Yes',
+    highlight: true,
+  },
+  {
+    feature: 'Domain certificate PDF',
+    tier0: 'No',
+    tier1: 'No',
+    tier2: 'Yes',
+    highlight: true,
+  },
+  {
+    feature: 'Compliance report PDF',
+    tier0: 'No',
+    tier1: 'No',
+    tier2: 'Yes',
+    highlight: true,
+  },
+  {
+    feature: 'Lookalike-domain monitoring',
+    tier0: 'No',
+    tier1: 'No',
+    tier2: 'Yes',
+    highlight: true,
+  },
   {
     feature: 'Support channel',
     tier0: 'Community (GitHub, best-effort)',
@@ -128,9 +178,9 @@ const matrixRows: { feature: string; tier0: string; tier1: string; tier2: string
     tier2: 'Direct founder line, same-business-day',
   },
   {
-    feature: 'Managed deployment, DNS, dedicated IPs, white-glove migration, BYO-cert support',
-    tier0: 'No',
-    tier1: 'No',
+    feature: 'BYO-cert support',
+    tier0: 'Yes',
+    tier1: 'Yes',
     tier2: 'Yes',
   },
   {
@@ -140,6 +190,45 @@ const matrixRows: { feature: string; tier0: string; tier1: string; tier2: string
     tier2: 'Yes — on the $199/mo fee; the $1,999 setup fee is separate and non-refundable',
   },
 ];
+
+// Turns a bare "Yes"/"Yes — ..." or exact "No" cell into a scannable glyph + the original text,
+// so a reader can scan down a column for gaps instead of reading all 21 rows word-for-word. Icon
+// and text render as siblings (not wrapped in a shared span) so the cell's own textContent stays
+// exactly what it was before — existing tests that match on the full cell string keep working.
+function MatrixValue({ value }: { value: string }) {
+  if (value === 'No') {
+    return (
+      <>
+        <span aria-hidden="true" className="text-ink-muted/40">
+          –
+        </span>{' '}
+        {value}
+      </>
+    );
+  }
+  if (value.startsWith('Yes')) {
+    return (
+      <>
+        <svg
+          viewBox="0 0 14 14"
+          fill="none"
+          aria-hidden="true"
+          className="inline-block w-3.5 h-3.5 -mt-0.5 mr-1 text-rust align-middle"
+        >
+          <path
+            d="M2.5 7.2l3 3L11.5 4"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        {value}
+      </>
+    );
+  }
+  return <>{value}</>;
+}
 
 export default function PricingComparisonPage() {
   return (
@@ -166,17 +255,19 @@ export default function PricingComparisonPage() {
             WarmHawk has three tiers, and the split is deliberate: Tier 0 is a free,
             fully-functional sending engine you run yourself. Tier 1 (Self-Hosted Pro) is $199/mo
             flat for the operator dashboard and a founder-staffed support SLA on top of that same
-            engine. Tier 2 (Enterprise DFY) is a $1,999 one-time setup fee for WarmHawk to handle
-            DNS, dedicated IPs, and migration, and deploy it for you, plus the same $199/mo software
-            fee Tier 1 pays. Billing runs entirely through Stripe — Checkout to start, the Stripe
-            Customer Portal to manage cards, invoices, upgrades, and cancellations afterward.
+            engine. Tier 2 (Enterprise DFY) is a $1,999 one-time setup fee for WarmHawk&rsquo;s
+            founder to run the deployment for you, instead of you running install.sh yourself, plus
+            the same $199/mo software fee Tier 1 pays. Billing runs entirely through Stripe —
+            Checkout to start, the Stripe Customer Portal to manage cards, invoices, upgrades, and
+            cancellations afterward.
           </p>
           <AnswerBlock>
             WarmHawk has three tiers: Tier 0 is free and open, giving you the full sending engine
             via API with no dashboard or SLA. Tier 1 is $199/mo flat for the operator dashboard,
             live monitoring, and a founder support SLA — unlimited users and domains, no per-seat
-            pricing. Tier 2 is a $1,999 one-time setup fee for WarmHawk to deploy and migrate it for
-            you, plus that same $199/mo software fee, self-serve checkout and no sales call.
+            pricing. Tier 2 is a $1,999 one-time setup fee for WarmHawk&rsquo;s founder to run the
+            deployment for you, plus that same $199/mo software fee, self-serve checkout and no
+            sales call.
           </AnswerBlock>
           <p className="text-base leading-relaxed text-ink-muted">
             Every tier runs the identical sending, queueing, and AI-personalization engine —{' '}
@@ -231,14 +322,16 @@ export default function PricingComparisonPage() {
               </thead>
               <tbody>
                 {matrixRows.map((row) => (
-                  <tr key={row.feature}>
+                  <tr key={row.feature} className={row.highlight ? 'bg-rust-tint/40' : undefined}>
                     <td className="p-5 border-t border-border align-top">{row.feature}</td>
                     <td className="p-5 border-t border-l border-border align-top text-ink-muted">
-                      {row.tier0}
+                      <MatrixValue value={row.tier0} />
                     </td>
-                    <td className="p-5 border-t border-l border-border align-top">{row.tier1}</td>
+                    <td className="p-5 border-t border-l border-border align-top">
+                      <MatrixValue value={row.tier1} />
+                    </td>
                     <td className="p-5 border-t border-l border-border align-top text-ink-muted">
-                      {row.tier2}
+                      <MatrixValue value={row.tier2} />
                     </td>
                   </tr>
                 ))}
@@ -274,8 +367,8 @@ export default function PricingComparisonPage() {
             Tier 0 is free because WarmHawk operates nothing on your behalf at that tier — no
             dashboard, no SLA, no managed infrastructure, just code you run. Tier 1&rsquo;s $199/mo
             buys the dashboard layer, a founder-staffed support SLA, and zero-per-seat pricing at
-            any team size. Tier 2&rsquo;s $1,999 one-time fee buys WarmHawk&rsquo;s hours: doing the
-            deployment, DNS, and migration for you, once.
+            any team size. Tier 2&rsquo;s $1,999 one-time fee buys WarmHawk&rsquo;s founder hours:
+            running the deployment for you, once, instead of you running install.sh yourself.
           </AnswerBlock>
 
           <h3 className="font-display text-xl font-semibold mt-10 mb-3">Tier 0 — $0</h3>
@@ -315,15 +408,15 @@ export default function PricingComparisonPage() {
             Tier 2 — $1,999 one-time setup + $199/mo
           </h3>
           <p className="text-base leading-relaxed text-ink-muted mb-4">
-            The $1,999 fee is founder-hours, once: DNS configuration, dedicated IP setup,
-            white-glove migration off whatever you were running before, and doing the deployment
-            itself instead of walking you through install.sh. On top of that, Tier 2 pays the same
-            $199/mo software fee every Tier 1 customer pays — once it&rsquo;s deployed and handed
-            over, you run it, with the same support@warmhawk.com SLA every Tier 1 customer gets.
-            What Tier 2 does <em>not</em> buy is a different product: the observability stack
-            (bundled Uptime Kuma plus native OTEL export) is identical on Tier 1 and Tier 2. The
-            $1,999 fee is priced for WarmHawk&rsquo;s setup hours, not for extra features the
-            dashboard is missing or for someone else operating your server long-term.
+            The $1,999 fee is founder-hours, once: doing the deployment itself instead of walking
+            you through install.sh. On top of that, Tier 2 pays the same $199/mo software fee every
+            Tier 1 customer pays — once it&rsquo;s deployed and handed over, you run it day to day,
+            with a direct founder-line, same-business-day support SLA (Tier 1&rsquo;s is 1 business
+            day via support@warmhawk.com). What Tier 2 does <em>not</em> buy is a different product:
+            the observability stack (bundled Uptime Kuma plus native OTEL export) is identical on
+            Tier 1 and Tier 2. The $1,999 fee is priced for WarmHawk&rsquo;s setup hours, not for
+            extra features the dashboard is missing or for someone else operating your server
+            long-term.
           </p>
         </div>
       </div>

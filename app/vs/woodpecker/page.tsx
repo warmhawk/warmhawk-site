@@ -61,7 +61,7 @@ const faqItems = [
   {
     question: 'Can I switch from Woodpecker without losing my sequences?',
     answer:
-      'Yes. CSV import and webhook ingestion both cover migration, and the Enterprise DFY tier includes white-glove list migration if you’d rather have it done for you.',
+      'Yes. CSV import and webhook ingestion both cover migration at every tier — nothing Tier-2-exclusive there. What the Enterprise DFY tier actually adds is WarmHawk’s founder running the initial deployment for you, if you’d rather not run install.sh yourself.',
   },
   {
     question: 'Does rotation logic actually change deliverability outcomes?',
