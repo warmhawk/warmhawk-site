@@ -45,7 +45,7 @@ describe('PricingTable', () => {
     render(createElement(PricingTable));
 
     expect(screen.getByText('White-Label / MSP')).toBeInTheDocument();
-    const link = screen.getByRole('link', { name: 'Contact us' });
+    const link = screen.getByRole('link', { name: /Contact us/ });
     expect(link).toHaveAttribute('href', expect.stringContaining('mailto:hello@warmhawk.com'));
     expect(tiers.map((t) => t.id)).toEqual(['open-core', 'self-hosted-pro', 'enterprise-dfy']);
   });
