@@ -68,7 +68,9 @@ describe('PricingTable', () => {
     render(createElement(PricingTable));
 
     expect(
-      screen.getByText(/trust badge embed, certificate & compliance PDFs, lookalike-domain monitoring/i),
+      screen.getByText(
+        /trust badge embed, certificate & compliance PDFs, lookalike-domain monitoring/i,
+      ),
     ).toBeInTheDocument();
   });
 });

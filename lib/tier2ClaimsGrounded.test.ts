@@ -67,10 +67,13 @@ describe('Tier 2 pricing/comparison copy stays grounded in real code', () => {
     expect(files.length).toBeGreaterThan(20);
   });
 
-  it.each(BANNED_PATTERNS)('never claims Tier 2 provides managed DNS/IP/migration service (%s)', (pattern) => {
-    const offenders = files.filter((file) =>
-      pattern.test(readFileSync(path.join(REPO_ROOT, file), 'utf8')),
-    );
-    expect(offenders).toEqual([]);
-  });
+  it.each(BANNED_PATTERNS)(
+    'never claims Tier 2 provides managed DNS/IP/migration service (%s)',
+    (pattern) => {
+      const offenders = files.filter((file) =>
+        pattern.test(readFileSync(path.join(REPO_ROOT, file), 'utf8')),
+      );
+      expect(offenders).toEqual([]);
+    },
+  );
 });
