@@ -201,7 +201,15 @@ export function PricingTable() {
               installs. The front square's fill matches the chip's own bg-rust-tint exactly, so it
               visually occludes the back square rather than just crossing outlines. */}
           <svg viewBox="0 0 20 20" fill="none" className="w-5 h-5">
-            <rect x="3.5" y="3.5" width="9" height="9" rx="2" stroke="currentColor" strokeWidth="1.4" />
+            <rect
+              x="3.5"
+              y="3.5"
+              width="9"
+              height="9"
+              rx="2"
+              stroke="currentColor"
+              strokeWidth="1.4"
+            />
             <rect
               x="7.5"
               y="7.5"
