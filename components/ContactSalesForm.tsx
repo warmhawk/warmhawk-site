@@ -6,8 +6,8 @@ import { useState, type FormEvent } from 'react';
  * Tier 2 (Enterprise DFY) setup-intake form — POSTs to /api/contact-sales, an optional,
  * non-blocking questionnaire (never a Stripe charge; see app/api/contact-sales/route.ts). It sits
  * alongside Tier2CheckoutButton, the actual $1,999 self-serve purchase — this form doesn't gate or
- * schedule that purchase, it just hands the founder DNS/volume details ahead of setup for anyone
- * who wants to fill it in first. Follows the same fetch/loading/error-state shape as
+ * schedule that purchase, it just hands the founder domain/volume details ahead of setup for
+ * anyone who wants to fill it in first. Follows the same fetch/loading/error-state shape as
  * components/CheckoutButtons.tsx and components/DomainCheckTool.tsx — this repo's established
  * pattern for a client-side form hitting this site's own API.
  *
@@ -77,9 +77,9 @@ export function ContactSalesForm() {
   return (
     <form onSubmit={handleSubmit} className="card p-7 flex flex-col gap-4">
       <p className="text-sm leading-relaxed text-ink-muted mb-1">
-        Optional: send over your DNS, migration, and volume details ahead of time so setup starts
-        faster. This form doesn&rsquo;t charge a card and doesn&rsquo;t book a call — buy Tier 2
-        with the button above whenever you&rsquo;re ready, in any order relative to this.
+        Optional: send over your domain and volume details ahead of time so setup starts faster.
+        This form doesn&rsquo;t charge a card and doesn&rsquo;t book a call — buy Tier 2 with the
+        button above whenever you&rsquo;re ready, in any order relative to this.
       </p>
       <div className="grid sm:grid-cols-2 gap-4">
         <label className="flex flex-col gap-1.5 text-sm">

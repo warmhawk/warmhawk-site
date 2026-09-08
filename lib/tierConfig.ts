@@ -10,14 +10,37 @@
  * that TypeScript file directly — this is the one place, like the equivalent
  * `llms.txt` and legal pages elsewhere in this product family, that has to stay hand-synced instead.
  *
- * RULE: before every release, diff this file's numbers against
- * `warmhawk-core-engine`'s `packages/tier-config/src/constants.ts` by hand.
- * Drift here is exactly the failure mode the Single Source of Truth
- * section exists to prevent — don't let the marketing site's copy of the
- * pricing table quietly go stale.
+ * RULE: before every release, run `npm run check:tier-sync` (scripts/check-tier-sync.mjs) with
+ * `warmhawk-core-engine` checked out as a sibling directory — it diffs this file's `isTier2`,
+ * `auditLog`, and support-SLA claims against `packages/tier-config/src/constants.ts`
+ * mechanically. It is NOT wired into CI (that repo isn't checked out there), so it only catches
+ * drift when someone actually runs it — still run it by hand if the sibling repo isn't available
+ * locally. Drift here is exactly the failure mode the Single Source of Truth section exists to
+ * prevent — don't let the marketing site's copy of the pricing table quietly go stale.
  */
 
 export type TierId = 'open-core' | 'self-hosted-pro' | 'enterprise-dfy';
+
+/** The five glyphs available to an exclusive-feature row — see `ExclusiveFeature` below. Add a
+ *  new one in `EXCLUSIVE_FEATURE_ICONS` (components/PricingTable.tsx) before using it here. */
+export type ExclusiveFeatureIcon = 'badge' | 'certificate' | 'compliance' | 'radar' | 'history';
+
+/**
+ * A feature gated to Tier 2 in warmhawk-enterprise-operator — currently exactly five UI surfaces
+ * (its own code comments number these "Item 2/3/4/6/7"): `ChangeHistoryPanel` ("DNS change
+ * history", gated server-side via `getServerTier() === 'tier_2'` directly rather than the
+ * `isTier2` client flag — easy to miss in a client-side-only grep, and originally missed here),
+ * `BadgeEmbedPanel` ("Get your badge"), the per-domain "Download certificate" button, the
+ * per-domain "Export compliance report" button, and `LookalikeCandidatesPanel` ("Lookalike domain
+ * monitoring") — the latter four do read the client `isTier2` flag
+ * (packages/tier-config/src/constants.ts, `TierFeatures.isTier2`). Rendered by PricingTable.tsx
+ * with its own icon instead of the plain checkmark used for `features` below, so it visually reads
+ * as Tier-2-exclusive rather than blending into the generic bullet list.
+ */
+export interface ExclusiveFeature {
+  icon: ExclusiveFeatureIcon;
+  label: string;
+}
 
 export interface TierDefinition {
   id: TierId;
@@ -29,6 +52,8 @@ export interface TierDefinition {
   ctaLabel: string;
   ctaHref: string;
   features: string[];
+  /** Only `enterprise-dfy` has these today — see `ExclusiveFeature` above. */
+  exclusiveFeatures?: ExclusiveFeature[];
   // The fields below feed PricingTable.tsx's `.price-card` layout specifically —
   // the artifact splits what `name`/`price`/`priceDetail` conflate above into
   // five distinct pieces (a small "Tier N —" label, a separate price-name,
@@ -107,11 +132,15 @@ export const tiers: TierDefinition[] = [
     priceNote: '$1,999 one-time setup, then $199/month for the software',
     features: [
       'Everything in Self-Hosted Pro',
-      'Managed deployment, DNS, dedicated IPs',
-      'White-glove list migration',
-      'BYO-cert support',
       'Direct founder line, same-business-day response',
       'Audit log (planned, procurement-driven)',
+    ],
+    exclusiveFeatures: [
+      { icon: 'history', label: 'DNS change history' },
+      { icon: 'badge', label: 'Trust badge embed' },
+      { icon: 'certificate', label: 'Domain certificate PDF' },
+      { icon: 'compliance', label: 'Compliance report PDF' },
+      { icon: 'radar', label: 'Lookalike-domain monitoring' },
     ],
   },
 ];
