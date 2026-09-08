@@ -6,9 +6,29 @@ import { siteConfig } from '@/lib/siteConfig';
 /**
  * One glyph per `ExclusiveFeatureIcon` value in lib/tierConfig.ts — 16x16, stroke="currentColor",
  * matching the inline-SVG convention already used elsewhere on the site (e.g.
- * components/DomainCheckTool.tsx) rather than pulling in an icon library for four glyphs.
+ * components/DomainCheckTool.tsx) rather than pulling in an icon library for five glyphs.
  */
 const EXCLUSIVE_FEATURE_ICONS: Record<ExclusiveFeatureIcon, ReactNode> = {
+  // Clock with a back-arrow sweep — DNS change history.
+  history: (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M8 2a6 6 0 105.2 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      <path
+        d="M13.6 1.8v3.2h-3.2"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8 5v3.3l2.4 1.4"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  ),
   // Shield with a check — trust badge embed.
   badge: (
     <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">

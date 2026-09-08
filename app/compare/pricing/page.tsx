@@ -121,10 +121,18 @@ const matrixRows: { feature: string; tier0: string; tier1: string; tier2: string
     tier1: 'No',
     tier2: 'Planned — Tier 2 only, procurement-driven',
   },
-  // The four rows below are gated by the same `isTier2` flag in warmhawk-enterprise-operator
-  // (packages/tier-config/src/constants.ts) that PricingTable.tsx's "Tier 2 exclusive" group
-  // (lib/tierConfig.ts's `exclusiveFeatures`) renders — kept as four separate rows here too, not
-  // one combined row, so the matrix and the pricing card never describe a different feature count.
+  // The five rows below are the same Tier-2-only dashboard surfaces PricingTable.tsx's "Tier 2
+  // exclusive" group (lib/tierConfig.ts's `exclusiveFeatures`) renders — kept as five separate
+  // rows here too, not one combined row, so the matrix and the pricing card never describe a
+  // different feature count. See lib/tierConfig.ts's `ExclusiveFeature` doc comment for why
+  // "DNS change history" is gated differently (server-side `getServerTier()`) than the other four
+  // (the client `isTier2` flag).
+  {
+    feature: 'DNS change history',
+    tier0: 'No',
+    tier1: 'No',
+    tier2: 'Yes',
+  },
   {
     feature: 'Trust badge embed',
     tier0: 'No',
