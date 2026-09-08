@@ -1,6 +1,78 @@
+import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { tiers } from '@/lib/tierConfig';
+import { tiers, type ExclusiveFeatureIcon } from '@/lib/tierConfig';
 import { siteConfig } from '@/lib/siteConfig';
+
+/**
+ * One glyph per `ExclusiveFeatureIcon` value in lib/tierConfig.ts — 16x16, stroke="currentColor",
+ * matching the inline-SVG convention already used elsewhere on the site (e.g.
+ * components/DomainCheckTool.tsx) rather than pulling in an icon library for four glyphs.
+ */
+const EXCLUSIVE_FEATURE_ICONS: Record<ExclusiveFeatureIcon, ReactNode> = {
+  // Shield with a check — trust badge embed.
+  badge: (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M8 1.5l5 1.8v4.2c0 3.4-2.1 5.9-5 7-2.9-1.1-5-3.6-5-7V3.3l5-1.8z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M5.7 8.1l1.6 1.6 3-3.2"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  ),
+  // Document with a rosette/ribbon seal — the per-domain certificate PDF.
+  certificate: (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M3.5 1.5h6.4L12.5 4v9a1 1 0 01-1 1h-8a1 1 0 01-1-1v-10a1 1 0 011-1z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+      <circle cx="8" cy="8.4" r="1.9" stroke="currentColor" strokeWidth="1.3" />
+      <path
+        d="M6.6 10.1L6 13.5l2-1.1 2 1.1-.6-3.4"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+    </svg>
+  ),
+  // Document with checklist lines — the per-domain compliance-report PDF.
+  compliance: (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M3.5 1.5h6.4L12.5 4v9a1 1 0 01-1 1h-8a1 1 0 01-1-1v-10a1 1 0 011-1z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M5.3 7.4l1 1 1.9-2.1M5.3 11h5.4"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  ),
+  // Radar sweep — lookalike-domain monitoring.
+  radar: (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="8" cy="8" r="0.9" fill="currentColor" />
+      <path d="M8 8L11.5 4.7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  ),
+};
 
 /**
  * Matches the artifact's `.price-card`/`.price-badge`/`.price-tier`/
@@ -51,21 +123,44 @@ export function PricingTable() {
               {tier.priceNote}
             </div>
 
-            <ul className="list-none m-0 mt-5 mb-6 p-0 flex-1">
-              {tier.features.map((feature, i) => (
-                <li
-                  key={feature}
-                  className={`text-sm py-[9px] pl-6 relative ${i === 0 ? '' : tier.highlight ? 'border-t border-border-dark' : 'border-t border-border'} ${tier.highlight ? 'text-slate-soft' : 'text-ink-muted'}`}
-                >
-                  <span
-                    className={`absolute left-0 font-bold ${tier.highlight ? 'text-amber' : 'text-rust'}`}
+            <div className="flex-1 mt-5 mb-6">
+              <ul className="list-none m-0 p-0">
+                {tier.features.map((feature, i) => (
+                  <li
+                    key={feature}
+                    className={`text-sm py-[9px] pl-6 relative ${i === 0 ? '' : tier.highlight ? 'border-t border-border-dark' : 'border-t border-border'} ${tier.highlight ? 'text-slate-soft' : 'text-ink-muted'}`}
                   >
-                    &#10003;
-                  </span>
-                  {feature}
-                </li>
-              ))}
-            </ul>
+                    <span
+                      className={`absolute left-0 font-bold ${tier.highlight ? 'text-amber' : 'text-rust'}`}
+                    >
+                      &#10003;
+                    </span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+
+              {tier.exclusiveFeatures && (
+                <div className="mt-4 pt-4 border-t border-dashed border-border">
+                  <div className="font-mono text-[10px] font-semibold tracking-[0.1em] uppercase text-rust mb-2.5">
+                    Tier 2 exclusive
+                  </div>
+                  <ul className="list-none m-0 p-0 space-y-2">
+                    {tier.exclusiveFeatures.map((exclusive) => (
+                      <li
+                        key={exclusive.label}
+                        className="flex items-center gap-2.5 text-sm text-ink-muted"
+                      >
+                        <span className="flex-none flex items-center justify-center w-6 h-6 rounded-full bg-rust-tint text-rust">
+                          {EXCLUSIVE_FEATURE_ICONS[exclusive.icon]}
+                        </span>
+                        {exclusive.label}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
 
             <Link
               href={tier.ctaHref}

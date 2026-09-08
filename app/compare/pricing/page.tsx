@@ -121,6 +121,34 @@ const matrixRows: { feature: string; tier0: string; tier1: string; tier2: string
     tier1: 'No',
     tier2: 'Planned — Tier 2 only, procurement-driven',
   },
+  // The four rows below are gated by the same `isTier2` flag in warmhawk-enterprise-operator
+  // (packages/tier-config/src/constants.ts) that PricingTable.tsx's "Tier 2 exclusive" group
+  // (lib/tierConfig.ts's `exclusiveFeatures`) renders — kept as four separate rows here too, not
+  // one combined row, so the matrix and the pricing card never describe a different feature count.
+  {
+    feature: 'Trust badge embed',
+    tier0: 'No',
+    tier1: 'No',
+    tier2: 'Yes',
+  },
+  {
+    feature: 'Domain certificate PDF',
+    tier0: 'No',
+    tier1: 'No',
+    tier2: 'Yes',
+  },
+  {
+    feature: 'Compliance report PDF',
+    tier0: 'No',
+    tier1: 'No',
+    tier2: 'Yes',
+  },
+  {
+    feature: 'Lookalike-domain monitoring',
+    tier0: 'No',
+    tier1: 'No',
+    tier2: 'Yes',
+  },
   {
     feature: 'Support channel',
     tier0: 'Community (GitHub, best-effort)',
