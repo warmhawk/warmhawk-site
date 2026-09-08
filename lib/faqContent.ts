@@ -25,7 +25,7 @@ export const homeFaqItems: FaqItem[] = [
   {
     question: 'What’s the difference between Tier 1 and Tier 2?',
     answer:
-      'Tier 1 is self-hosted by you — you run the one-command install, for $199/mo. Tier 2 has WarmHawk’s founder handle DNS, dedicated IPs, migration, and the deployment itself as a one-time $1,999 setup fee, plus that same $199/mo software fee. Once it’s handed over, you run it day to day, on the same support@warmhawk.com SLA as Tier 1.',
+      'Tier 1 is self-hosted by you — you run the one-command install, for $199/mo. Tier 2 has WarmHawk’s founder run the deployment for you instead, as a one-time $1,999 setup fee, plus that same $199/mo software fee. Once it’s handed over, you run it day to day, with a direct founder-line, same-business-day support SLA — Tier 1’s is 1 business day via support@warmhawk.com.',
   },
   {
     question: 'If it’s single-tenant, is each of my clients isolated too?',
@@ -35,7 +35,7 @@ export const homeFaqItems: FaqItem[] = [
   {
     question: 'What if I don’t want to manage a server myself?',
     answer:
-      'Tier 2 is a $1,999 one-time setup service plus the same $199/mo software fee Tier 1 pays — WarmHawk’s founder handles DNS, dedicated IPs, migration, and the deployment itself, then hands you the keys. It’s done-for-you at setup, not run-for-you ongoing: from there you operate it yourself, the same as a Tier 1 customer would.',
+      'Tier 2 is a $1,999 one-time setup service plus the same $199/mo software fee Tier 1 pays — WarmHawk’s founder runs the deployment for you instead of walking you through install.sh, then hands you the keys. It’s done-for-you at setup, not run-for-you ongoing: from there you operate it yourself, with a direct founder-line, same-business-day support SLA on top.',
   },
   {
     question: 'Is there a guarantee?',

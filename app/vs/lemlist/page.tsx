@@ -61,7 +61,7 @@ const faqItems = [
   {
     question: 'Can I migrate my Lemlist sequences and leads to WarmHawk?',
     answer:
-      'Yes. CSV import and webhook ingestion both work day one, and the Enterprise DFY tier includes white-glove migration if you’d rather not do it yourself.',
+      'Yes. CSV import and webhook ingestion both work day one, at every tier — nothing Tier-2-exclusive there. What the Enterprise DFY tier actually adds is WarmHawk’s founder running the initial deployment for you, if you’d rather not run install.sh yourself.',
   },
 ];
 
