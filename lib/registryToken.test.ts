@@ -241,3 +241,24 @@ describe('derivePublicKeyPem', () => {
     expect(verifyRegistryToken(token, derived).valid).toBe(true);
   });
 });
+
+// Regression test for the same bug class fixed in lib/license.ts after the 2026-09-08 prod
+// outage (LICENSE_SIGNING_PRIVATE_KEY stored with literal \n instead of real newlines) --
+// REGISTRY_TOKEN_SIGNING_PRIVATE_KEY is a separate env var but shares the same PEM-from-env
+// convention, so it was equally exposed to the same mistake.
+describe('literal \\n-escaped PEM tolerance', () => {
+  it('mints and verifies correctly when the private/public key PEMs have literal \\n instead of real newlines', () => {
+    const escapedPrivateKey = TEST_PRIVATE_KEY.replace(/\n/g, '\\n');
+    const escapedPublicKey = TEST_PUBLIC_KEY.replace(/\n/g, '\\n');
+
+    const token = mintRegistryToken({
+      subject: 'whk_live_test123',
+      service: 'registry.warmhawk.com',
+      privateKeyPem: escapedPrivateKey,
+    });
+    const result = verifyRegistryToken(token, escapedPublicKey);
+    expect(result.valid).toBe(true);
+
+    expect(derivePublicKeyPem(escapedPrivateKey).trim()).toBe(TEST_PUBLIC_KEY.trim());
+  });
+});
