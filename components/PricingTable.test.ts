@@ -64,13 +64,35 @@ describe('PricingTable', () => {
     expect(screen.queryByText(/BYO-cert support/i)).toBeNull();
   });
 
-  it('lists Tier 2 dashboard extras that are actually gated behind isTier2 in the operator app', () => {
+  /**
+   * Copy audit (2026-09-08, second pass): the four isTier2-gated dashboard extras used to be one
+   * combined bullet ("Trust badge embed, certificate & compliance PDFs, lookalike-domain
+   * monitoring"). Split into `lib/tierConfig.ts`'s `exclusiveFeatures` so each renders as its own
+   * row with its own icon — this test is sourced from that array (not a hardcoded duplicate list),
+   * so it stays in sync with tierConfig.ts by construction rather than by someone remembering to
+   * update two places.
+   */
+  it('renders each Tier 2 exclusive feature as its own labeled, icon-marked row', () => {
     render(createElement(PricingTable));
 
-    expect(
-      screen.getByText(
-        /trust badge embed, certificate & compliance PDFs, lookalike-domain monitoring/i,
-      ),
-    ).toBeInTheDocument();
+    const enterpriseDfy = tiers.find((tier) => tier.id === 'enterprise-dfy');
+    expect(enterpriseDfy?.exclusiveFeatures?.length).toBeGreaterThan(0);
+
+    expect(screen.getByText('Tier 2 exclusive')).toBeInTheDocument();
+    for (const exclusive of enterpriseDfy?.exclusiveFeatures ?? []) {
+      const row = screen.getByText(exclusive.label);
+      expect(row).toBeInTheDocument();
+      // Each row carries its own <svg> icon, not the shared checkmark used by plain features.
+      expect(row.closest('li')?.querySelector('svg')).not.toBeNull();
+    }
+
+    // The old combined, comma-separated bullet must not survive alongside the split rows.
+    expect(screen.queryByText(/trust badge embed, certificate & compliance PDFs/i)).toBeNull();
+  });
+
+  it('never shows the "Tier 2 exclusive" marker on Tier 0 or Tier 1 cards', () => {
+    render(createElement(PricingTable));
+
+    expect(screen.getAllByText('Tier 2 exclusive')).toHaveLength(1);
   });
 });
