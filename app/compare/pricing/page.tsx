@@ -321,10 +321,11 @@ export default function PricingComparisonPage() {
             you through install.sh. On top of that, Tier 2 pays the same $199/mo software fee every
             Tier 1 customer pays — once it&rsquo;s deployed and handed over, you run it day to day,
             with a direct founder-line, same-business-day support SLA (Tier 1&rsquo;s is 1 business
-            day via support@warmhawk.com). What Tier 2 does <em>not</em> buy is a different product: the observability stack
-            (bundled Uptime Kuma plus native OTEL export) is identical on Tier 1 and Tier 2. The
-            $1,999 fee is priced for WarmHawk&rsquo;s setup hours, not for extra features the
-            dashboard is missing or for someone else operating your server long-term.
+            day via support@warmhawk.com). What Tier 2 does <em>not</em> buy is a different product:
+            the observability stack (bundled Uptime Kuma plus native OTEL export) is identical on
+            Tier 1 and Tier 2. The $1,999 fee is priced for WarmHawk&rsquo;s setup hours, not for
+            extra features the dashboard is missing or for someone else operating your server
+            long-term.
           </p>
         </div>
       </div>
