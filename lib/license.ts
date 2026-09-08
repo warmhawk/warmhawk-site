@@ -156,7 +156,9 @@ export function generateLicenseKey(): string {
  *  RSA private keys embed their own public modulus/exponent, so this is a pure local derivation —
  *  no I/O, nothing new to provision. */
 export function derivePublicKeyPem(privateKeyPem: string): string {
-  return createPublicKey(unescapePem(privateKeyPem)).export({ type: 'spki', format: 'pem' }).toString();
+  return createPublicKey(unescapePem(privateKeyPem))
+    .export({ type: 'spki', format: 'pem' })
+    .toString();
 }
 
 /**

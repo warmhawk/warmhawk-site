@@ -101,7 +101,10 @@ function base64UrlEncodeJson(value: unknown): string {
  *  `keyIDFromCryptoKey` (github.com/docker/libtrust/key.go) -- reimplemented here rather than
  *  imported since libtrust is unmaintained and this is the entire algorithm. */
 function libtrustKeyId(privateKeyPem: string): string {
-  const spkiDer = createPublicKey(unescapePem(privateKeyPem)).export({ type: 'spki', format: 'der' });
+  const spkiDer = createPublicKey(unescapePem(privateKeyPem)).export({
+    type: 'spki',
+    format: 'der',
+  });
   const digest = createHash('sha256').update(spkiDer).digest().subarray(0, 30);
 
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
@@ -229,5 +232,7 @@ export function verifyRegistryToken(
  *  -- that cert (not this function's output) is what docker-compose.deploy.yml's `registry`
  *  service needs mounted at REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE; see that file's own comment. */
 export function derivePublicKeyPem(privateKeyPem: string): string {
-  return createPublicKey(unescapePem(privateKeyPem)).export({ type: 'spki', format: 'pem' }).toString();
+  return createPublicKey(unescapePem(privateKeyPem))
+    .export({ type: 'spki', format: 'pem' })
+    .toString();
 }
