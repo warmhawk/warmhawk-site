@@ -107,8 +107,6 @@ export const tiers: TierDefinition[] = [
     priceNote: '$1,999 one-time setup, then $199/month for the software',
     features: [
       'Everything in Self-Hosted Pro',
-      'Managed deployment, DNS, dedicated IPs',
-      'White-glove list migration',
       'BYO-cert support',
       'Direct founder line, same-business-day response',
       'Audit log (planned, procurement-driven)',
