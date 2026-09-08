@@ -25,7 +25,16 @@ export const metadata: Metadata = pageSeo({
 // this site's own AEO-oriented content beyond what the single-page artifact needed — kept as-is,
 // since it's real, accurate supporting detail, not a mockup section to prune down to match.
 
-const matrixRows: { feature: string; tier0: string; tier1: string; tier2: string }[] = [
+const matrixRows: {
+  feature: string;
+  tier0: string;
+  tier1: string;
+  tier2: string;
+  // Marks the five Tier-2-only dashboard rows below so the table can wash them with the same
+  // rust tint the pricing card uses for its "Tier 2 exclusive" group — otherwise they read as
+  // just five more rows in a 21-row table instead of the actual reason to buy Tier 2.
+  highlight?: boolean;
+}[] = [
   {
     feature: 'API + sending/queueing engine, direct API access',
     tier0: 'Yes',
@@ -132,30 +141,35 @@ const matrixRows: { feature: string; tier0: string; tier1: string; tier2: string
     tier0: 'No',
     tier1: 'No',
     tier2: 'Yes',
+    highlight: true,
   },
   {
     feature: 'Trust badge embed',
     tier0: 'No',
     tier1: 'No',
     tier2: 'Yes',
+    highlight: true,
   },
   {
     feature: 'Domain certificate PDF',
     tier0: 'No',
     tier1: 'No',
     tier2: 'Yes',
+    highlight: true,
   },
   {
     feature: 'Compliance report PDF',
     tier0: 'No',
     tier1: 'No',
     tier2: 'Yes',
+    highlight: true,
   },
   {
     feature: 'Lookalike-domain monitoring',
     tier0: 'No',
     tier1: 'No',
     tier2: 'Yes',
+    highlight: true,
   },
   {
     feature: 'Support channel',
@@ -176,6 +190,45 @@ const matrixRows: { feature: string; tier0: string; tier1: string; tier2: string
     tier2: 'Yes — on the $199/mo fee; the $1,999 setup fee is separate and non-refundable',
   },
 ];
+
+// Turns a bare "Yes"/"Yes — ..." or exact "No" cell into a scannable glyph + the original text,
+// so a reader can scan down a column for gaps instead of reading all 21 rows word-for-word. Icon
+// and text render as siblings (not wrapped in a shared span) so the cell's own textContent stays
+// exactly what it was before — existing tests that match on the full cell string keep working.
+function MatrixValue({ value }: { value: string }) {
+  if (value === 'No') {
+    return (
+      <>
+        <span aria-hidden="true" className="text-ink-muted/40">
+          –
+        </span>{' '}
+        {value}
+      </>
+    );
+  }
+  if (value.startsWith('Yes')) {
+    return (
+      <>
+        <svg
+          viewBox="0 0 14 14"
+          fill="none"
+          aria-hidden="true"
+          className="inline-block w-3.5 h-3.5 -mt-0.5 mr-1 text-rust align-middle"
+        >
+          <path
+            d="M2.5 7.2l3 3L11.5 4"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        {value}
+      </>
+    );
+  }
+  return <>{value}</>;
+}
 
 export default function PricingComparisonPage() {
   return (
@@ -269,14 +322,16 @@ export default function PricingComparisonPage() {
               </thead>
               <tbody>
                 {matrixRows.map((row) => (
-                  <tr key={row.feature}>
+                  <tr key={row.feature} className={row.highlight ? 'bg-rust-tint/40' : undefined}>
                     <td className="p-5 border-t border-border align-top">{row.feature}</td>
                     <td className="p-5 border-t border-l border-border align-top text-ink-muted">
-                      {row.tier0}
+                      <MatrixValue value={row.tier0} />
                     </td>
-                    <td className="p-5 border-t border-l border-border align-top">{row.tier1}</td>
+                    <td className="p-5 border-t border-l border-border align-top">
+                      <MatrixValue value={row.tier1} />
+                    </td>
                     <td className="p-5 border-t border-l border-border align-top text-ink-muted">
-                      {row.tier2}
+                      <MatrixValue value={row.tier2} />
                     </td>
                   </tr>
                 ))}
