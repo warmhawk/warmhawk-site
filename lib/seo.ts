@@ -208,3 +208,31 @@ export function breadcrumbSchema(items: BreadcrumbItem[]) {
     })),
   };
 }
+
+/** BlogPosting JSON-LD for a /blog article — gives answer engines and classic search the
+ * headline/date/author structure they look for on a post, the same way breadcrumbSchema above
+ * does for navigation. `datePublished` must be the post's real lib/blogPosts.ts `date`, not the
+ * render date — this is a one-time publish date, not a "last checked" timestamp. */
+export function blogPostingSchema({
+  title,
+  description,
+  path,
+  datePublished,
+}: {
+  title: string;
+  description: string;
+  path: string;
+  datePublished: string;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: title,
+    description,
+    datePublished,
+    url: `${siteConfig.url}${path}`,
+    mainEntityOfPage: `${siteConfig.url}${path}`,
+    author: { '@type': 'Organization', name: siteConfig.name, url: siteConfig.url },
+    publisher: { '@type': 'Organization', name: siteConfig.name, url: siteConfig.url },
+  };
+}
