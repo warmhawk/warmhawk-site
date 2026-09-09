@@ -68,8 +68,18 @@ test.describe('Human journey: real checkout', () => {
   // against the production site.
   test.skip(target.label === 'prod', 'Real checkout only runs against local/stage, never prod');
 
-  test('a visitor can buy Tier 1 via a real Stripe checkout', async ({ page }) => {
-    test.setTimeout(120_000);
+  // Journey A step 6 (added 2026-09-08): extended past "checkout completes" to close the
+  // /account/billing lookup+refresh gap. Reuses the exact subscription-metadata-polling technique
+  // Journey M step 1 added to the Tier 2 test below, which sidesteps the KNOWN GAP documented at
+  // the top of this file (the email provider's sent-log API can't hand back a delivered message's
+  // body, so the license token can no longer be recovered from the actual license email) — the
+  // token was never only reachable via email; it's on the subscription's own metadata the whole
+  // time. Confirms `/account/billing`'s `BillingPortalForm` really opens a real Stripe Customer
+  // Portal session for a token that was never touched by hand.
+  test('a visitor can buy Tier 1 via a real Stripe checkout, then look up and refresh billing with the issued license', async ({
+    page,
+  }) => {
+    test.setTimeout(150_000);
 
     await page.goto(`${target.baseURL}/checkout`);
 
@@ -86,6 +96,43 @@ test.describe('Human journey: real checkout', () => {
 
     // Matches app/api/checkout/session/route.ts's success_url.
     expect(page.url()).toContain('checkout=success');
+
+    const sessionId = new URL(page.url()).searchParams.get('session_id');
+    expect(sessionId, 'success redirect must carry session_id').toBeTruthy();
+
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    expect(stripeSecretKey, 'STRIPE_SECRET_KEY must be set for this target').toBeTruthy();
+    const stripe = new Stripe(stripeSecretKey!);
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId!);
+    const subscriptionId =
+      typeof session.subscription === 'string' ? session.subscription : session.subscription?.id;
+    expect(subscriptionId, 'a subscription must be attached to a mode:subscription session').toBeTruthy();
+
+    // Same async-webhook-lag reasoning as the Tier 2 test below.
+    let tokenChunk1: string | undefined;
+    let tokenChunk2: string | undefined;
+    let tierMetadata: string | undefined;
+    for (let attempt = 0; attempt < 15; attempt++) {
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId!);
+      tokenChunk1 = subscription.metadata.warmhawk_license_token_1;
+      tokenChunk2 = subscription.metadata.warmhawk_license_token_2;
+      tierMetadata = subscription.metadata.tier;
+      if (tokenChunk1 && tokenChunk2) break;
+      await new Promise((resolve) => setTimeout(resolve, 2_000));
+    }
+    expect(tokenChunk1, 'invoice.paid must have persisted a license token onto the subscription').toBeTruthy();
+    expect(tierMetadata).toBe('tier_1');
+    const licenseToken = `${tokenChunk1}${tokenChunk2}`;
+
+    // --- /account/billing: paste the real, freshly-issued token and open a real portal session ---
+    await page.goto(`${target.baseURL}/account/billing`);
+    await page.getByLabel('Your license token').fill(licenseToken);
+    await Promise.all([
+      page.waitForURL(/^https:\/\/billing\.stripe\.com\//, { timeout: 20_000 }),
+      page.getByRole('button', { name: 'Open billing portal' }).click(),
+    ]);
+    expect(page.url()).toContain('billing.stripe.com');
   });
 
   // P11a (found 2026-09-08 auditing recent commits — see Journey M): Tier 2 (Enterprise DFY)
