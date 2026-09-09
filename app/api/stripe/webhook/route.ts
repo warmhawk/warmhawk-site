@@ -94,7 +94,9 @@ function resolveInvoiceSubscriptionId(invoice: Stripe.Invoice): string | undefin
     return typeof parentSub === 'string' ? parentSub : parentSub.id;
   }
   if (invoice.subscription) {
-    return typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription.id;
+    return typeof invoice.subscription === 'string'
+      ? invoice.subscription
+      : invoice.subscription.id;
   }
   return undefined;
 }
