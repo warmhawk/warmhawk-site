@@ -16,7 +16,9 @@ let testCustomerIdCounter = 0;
 const sendPasswordResetRelayEmailMock = vi.fn();
 
 vi.mock('@/lib/email', () => ({
-  emailSender: { sendPasswordResetRelayEmail: (...args: unknown[]) => sendPasswordResetRelayEmailMock(...args) },
+  emailSender: {
+    sendPasswordResetRelayEmail: (...args: unknown[]) => sendPasswordResetRelayEmailMock(...args),
+  },
 }));
 
 function licenseToken(overrides: Partial<LicensePayload> = {}): string {
@@ -91,7 +93,9 @@ describe('POST /api/operator/relay-password-reset', () => {
   });
 
   it('returns 400 and never sends when any required field is missing', async () => {
-    const res = await POST(relayRequest({ license: licenseToken(), toEmail: 'member@example.com' }));
+    const res = await POST(
+      relayRequest({ license: licenseToken(), toEmail: 'member@example.com' }),
+    );
     expect(res.status).toBe(400);
     expect(sendPasswordResetRelayEmailMock).not.toHaveBeenCalled();
   });
