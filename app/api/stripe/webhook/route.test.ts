@@ -147,6 +147,62 @@ describe('POST /api/stripe/webhook', () => {
     );
   });
 
+  it('persists the license onto the subscription named by the legacy flat invoice.subscription field', async () => {
+    constructEventMock.mockReturnValue(
+      invoicePaidEvent({
+        subscription: 'sub_legacy_flat',
+        metadata: { tier: 'tier_1', billingInterval: 'monthly' },
+      }),
+    );
+
+    await POST(webhookRequest('{}'));
+
+    expect(subscriptionsUpdateMock).toHaveBeenCalledWith(
+      'sub_legacy_flat',
+      expect.objectContaining({
+        metadata: expect.objectContaining({ warmhawk_license_token_1: expect.any(String) }),
+      }),
+    );
+  });
+
+  // Regression test for a real bug found 2026-09-08 via a real Stripe test-mode Tier 2 purchase
+  // (Journey M): on this account, a real invoice.paid event's `invoice` object no longer carries
+  // a top-level `subscription` id or a populated top-level `metadata` — both moved under
+  // `invoice.parent.subscription_details`, a shape this SDK's own TypeScript types (still on the
+  // old flat shape) never flagged. Before the fix, this silently defaulted every Tier 2 purchase
+  // to a `tier_1` license AND never persisted any license token anywhere durable (the
+  // "no subscription — storing in logs only" branch fired on every real invoice). See
+  // resolveInvoiceSubscriptionId()/resolveInvoiceMetadata()'s doc comments in route.ts.
+  it('resolves tier and subscription id from invoice.parent.subscription_details (the current real Stripe shape), not just the legacy flat fields', async () => {
+    constructEventMock.mockReturnValue(
+      invoicePaidEvent({
+        // Deliberately absent/empty at the legacy locations, proving the parent-shaped read path
+        // is what actually resolves these, not an accidental fallback still finding real data.
+        subscription: null,
+        metadata: {},
+        parent: {
+          subscription_details: {
+            subscription: 'sub_parent_shape',
+            metadata: { tier: 'tier_2', billingInterval: 'monthly' },
+          },
+        },
+      }),
+    );
+
+    await POST(webhookRequest('{}'));
+
+    expect(issueLicenseMock).toHaveBeenCalledWith(
+      expect.objectContaining({ tier: 'tier_2' }),
+      expect.anything(),
+    );
+    expect(subscriptionsUpdateMock).toHaveBeenCalledWith(
+      'sub_parent_shape',
+      expect.objectContaining({
+        metadata: expect.objectContaining({ warmhawk_license_token_1: expect.any(String) }),
+      }),
+    );
+  });
+
   it('issues a Tier 2 license on its FIRST invoice — the one that also carries the one-time $1,999 setup fee', async () => {
     constructEventMock.mockReturnValue(
       invoicePaidEvent({
