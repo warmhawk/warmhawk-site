@@ -1,4 +1,4 @@
-import { createSign, createVerify, createPublicKey, randomBytes } from 'node:crypto';
+import { createSign, createVerify, createPublicKey, createHash, randomBytes } from 'node:crypto';
 
 /** .env files commonly escape real newlines as literal `\n`; unescape if needed. Matches
  *  warmhawk-enterprise-operator's `lib/license/verify.ts` — added here after a production
@@ -186,6 +186,50 @@ export function authenticateLicenseToken(
   // trustworthy payload; `invalid_signature`/`malformed` carry none and must never authenticate.
   if (result.valid || result.expired) return result.payload;
   return null;
+}
+
+/**
+ * 2026-09-09 incident: `LICENSE_SIGNING_PRIVATE_KEY` changed in production (during the same deploy
+ * that shipped the password-reset relay route) with nothing to notice the swap. Every
+ * already-issued license instantly failed `verifyLicense` against the new key — `/api/operator/
+ * relay-invite` and `/api/operator/relay-password-reset` silently 401'd for every customer, with no
+ * customer-facing error (both fold the failure into the same generic response) and nothing alerting
+ * anyone. There happened to be zero real subscriptions at the time, so no customer was actually
+ * locked out, but the same swap after go-live would have broken this for every paying customer at
+ * once. This pinned fingerprint plus `checkLicenseSigningKeyFingerprint()` (asserted once at boot in
+ * instrumentation.ts, production only) exists so that failure mode is a refused deploy, not a silent
+ * one.
+ *
+ * Value is the SHA-256 (hex) of the SPKI PEM this repo's current live `LICENSE_SIGNING_PRIVATE_KEY`
+ * derives — re-confirm with `publicKeyFingerprint(derivePublicKeyPem(privateKeyPem))` before ever
+ * changing it. Update this ONLY as a deliberate part of a real key rotation, in the same commit that
+ * changes the `LICENSE_SIGNING_PRIVATE_KEY` secret — never as an unrelated drive-by edit.
+ */
+export const EXPECTED_LICENSE_PUBLIC_KEY_FINGERPRINT =
+  'd16b2042af570838967b736b86a42ca631a851629602e1b7a1e8307a0f7693c0';
+
+export function publicKeyFingerprint(publicKeyPem: string): string {
+  return createHash('sha256').update(publicKeyPem).digest('hex');
+}
+
+export type LicenseSigningKeyCheckResult =
+  | { ok: true }
+  | { ok: false; expectedFingerprint: string; actualFingerprint: string };
+
+/** Confirms `privateKeyPem` still derives the pinned production public key. A boot-time sanity
+ *  check (see instrumentation.ts) — never called per-request, and never a substitute for
+ *  `verifyLicense`'s real signature check on each token.
+ *
+ *  `expectedFingerprint` defaults to the real pinned constant for every production caller; the
+ *  parameter exists so tests can exercise both branches against a throwaway keypair instead of the
+ *  real production private key, which must never appear in this repo's source or test fixtures. */
+export function checkLicenseSigningKeyFingerprint(
+  privateKeyPem: string,
+  expectedFingerprint: string = EXPECTED_LICENSE_PUBLIC_KEY_FINGERPRINT,
+): LicenseSigningKeyCheckResult {
+  const actualFingerprint = publicKeyFingerprint(derivePublicKeyPem(privateKeyPem));
+  if (actualFingerprint === expectedFingerprint) return { ok: true };
+  return { ok: false, expectedFingerprint, actualFingerprint };
 }
 
 const BILLING_PERIOD_SECONDS = 31 * 24 * 60 * 60; // ~1 month grace beyond a 30-day cycle
