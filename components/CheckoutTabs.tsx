@@ -6,6 +6,7 @@ import { tiers } from '@/lib/tierConfig';
 import { CheckoutButtons } from '@/components/CheckoutButtons';
 import { Tier2CheckoutButton } from '@/components/Tier2CheckoutButton';
 import { ContactSalesForm } from '@/components/ContactSalesForm';
+import { ExclusiveFeaturesList } from '@/components/ExclusiveFeatures';
 
 type TierKey = 'tier1' | 'tier2';
 
@@ -86,6 +87,9 @@ export function CheckoutTabs({ initialTier }: { initialTier: TierKey }) {
               </li>
             ))}
           </ul>
+          {active === 'tier2' && tier2?.exclusiveFeatures && (
+            <ExclusiveFeaturesList features={tier2.exclusiveFeatures} />
+          )}
         </div>
         <div className="card p-6">
           <div className="font-semibold text-sm mb-2">Questions before you buy?</div>
