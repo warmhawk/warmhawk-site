@@ -182,6 +182,14 @@ export interface PasswordResetRelayEmailInput {
   resetUrl: string;
 }
 
+export interface LicenseVerificationFailureEmailInput {
+  /** Which relay endpoint rejected the call. */
+  route: 'relay-invite' | 'relay-password-reset';
+  /** The reason `verifyLicense` gave — deliberately excludes 'expired' (see call sites: a lapsed
+   *  subscription failing here is expected lifecycle behavior, not a signal anything is broken). */
+  reason: 'invalid_signature' | 'malformed';
+}
+
 export interface InstallFailureEmailInput {
   /** Which installer script reported this — 'install' (fresh install) or 'update' (in-place
    *  upgrade). See warmhawk-enterprise-operator/scripts/{install,update}.sh's own report_failure(). */
@@ -222,6 +230,7 @@ export interface EmailSender {
     input: PasswordResetRelayEmailInput,
   ): Promise<PasswordResetRelayEmailResult>;
   sendInstallFailureEmail(input: InstallFailureEmailInput): Promise<void>;
+  sendLicenseVerificationFailureEmail(input: LicenseVerificationFailureEmailInput): Promise<void>;
 }
 
 /** The deploy's own site URL, shown in the email only when it isn't the real production domain —
@@ -536,6 +545,52 @@ class ZeptomailEmailSender implements EmailSender {
       });
     } catch (error) {
       console.error('[install-failure-email] send failed', error);
+    }
+  }
+
+  /** Alerts support@warmhawk.com the moment a relay call's license token fails cryptographic
+   *  verification for a reason that should never happen in ordinary use — see
+   *  `LicenseVerificationFailureEmailInput.reason`'s doc comment for why 'expired' never reaches
+   *  here. Regression for the 2026-09-09 incident (see lib/license.ts's
+   *  `EXPECTED_LICENSE_PUBLIC_KEY_FINGERPRINT` doc comment for the full story): a
+   *  `LICENSE_SIGNING_PRIVATE_KEY` change in production silently 401'd every relay call for every
+   *  customer, and nothing told anyone. instrumentation.ts's boot-time fingerprint check is the
+   *  primary guard against causing this; this is the backstop for every other way a token could stop
+   *  verifying (a corrupted DB row, a customer submitting a tampered token) that a boot-time check
+   *  can't catch. Same fire-and-forget-safe convention as sendInstallFailureEmail: never throws, so
+   *  a failed alert about a failure can't itself break the 401 response the caller already sends. */
+  async sendLicenseVerificationFailureEmail(
+    input: LicenseVerificationFailureEmailInput,
+  ): Promise<void> {
+    const subject = `[WarmHawk] License verification failed on ${input.route} (${input.reason})`;
+    const text = [
+      `A license-relay call to ${input.route} failed cryptographic verification.`,
+      '',
+      `Reason: ${input.reason}`,
+      '',
+      'This never happens for an ordinary expired subscription (that case is excluded from this ' +
+        'alert) — it means either the production LICENSE_SIGNING_PRIVATE_KEY no longer matches the ' +
+        "key a real license was signed with, or a customer's stored token is corrupted/tampered. " +
+        "Check instrumentation.ts's boot-time fingerprint guard output first.",
+    ].join('\n');
+
+    if (!zeptomailConfigured()) {
+      console.log(`[license-verification-failure-email STUB — ZEPTOMAIL_TOKEN not set]`, {
+        route: input.route,
+        reason: input.reason,
+      });
+      return;
+    }
+
+    try {
+      await sendViaZeptomail({
+        from: process.env.EMAIL_FROM || siteConfig.defaultFrom,
+        to: siteConfig.supportEmail,
+        subject,
+        text,
+      });
+    } catch (error) {
+      console.error('[license-verification-failure-email] send failed', error);
     }
   }
 }

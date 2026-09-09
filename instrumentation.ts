@@ -8,8 +8,39 @@
 // NEXT_RUNTIME guard: register() also fires for the edge runtime, which can't run the Node OTEL
 // SDK at all (this app has no edge middleware today, but the guard is the documented-correct
 // pattern regardless, not a response to a real collision).
+// 2026-09-09 incident: LICENSE_SIGNING_PRIVATE_KEY changed in production with nothing to notice the
+// swap, silently invalidating every already-issued license's signature (relay-invite and
+// relay-password-reset both 401'd for every customer, folded into the same generic response either
+// route already gives a caller). Checked only on the real production domain — stage intentionally
+// runs its own, different signing key (see .env.stage's own comment), so this must never fire there
+// or in local/CI dev, both of which commonly have no LICENSE_SIGNING_PRIVATE_KEY configured at all.
+async function assertLicenseSigningKeyUnchanged(): Promise<void> {
+  if (process.env.NEXT_PUBLIC_SITE_URL !== 'https://warmhawk.com') return;
+
+  const privateKeyPem = process.env.LICENSE_SIGNING_PRIVATE_KEY;
+  if (!privateKeyPem) return; // Existing routes already degrade to a clear 503 for this case.
+
+  const { checkLicenseSigningKeyFingerprint } = await import('./lib/license');
+  const result = checkLicenseSigningKeyFingerprint(privateKeyPem);
+  if (result.ok) return;
+
+  // Thrown, not logged: a mismatch here means every previously-issued license is about to start
+  // silently failing verification the moment this instance takes traffic. Refusing to boot is the
+  // whole point — see EXPECTED_LICENSE_PUBLIC_KEY_FINGERPRINT's doc comment in lib/license.ts for
+  // the deliberate-rotation update path.
+  throw new Error(
+    `LICENSE_SIGNING_PRIVATE_KEY does not derive the pinned production public key — refusing to ` +
+      `start. Expected fingerprint ${result.expectedFingerprint}, got ${result.actualFingerprint}. ` +
+      `If this is a real, deliberate key rotation, update EXPECTED_LICENSE_PUBLIC_KEY_FINGERPRINT in ` +
+      `lib/license.ts in the same change that rotates the secret.`,
+  );
+}
+
 export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return;
+
+  await assertLicenseSigningKeyUnchanged();
+
   if (!process.env.OTEL_EXPORTER_OTLP_ENDPOINT) return;
 
   // webpackIgnore: serverExternalPackages only stops webpack from bundling the four packages named

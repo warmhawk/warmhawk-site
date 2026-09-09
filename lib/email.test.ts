@@ -208,6 +208,66 @@ describe('sendPasswordResetRelayEmail (ZeptomailEmailSender)', () => {
   });
 });
 
+describe('sendLicenseVerificationFailureEmail (ZeptomailEmailSender)', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  it('degrades to a console-log stub, never throwing, when ZEPTOMAIL_TOKEN is unset', async () => {
+    vi.stubEnv('ZEPTOMAIL_TOKEN', '');
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    await expect(
+      emailSender.sendLicenseVerificationFailureEmail({
+        route: 'relay-password-reset',
+        reason: 'invalid_signature',
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining('license-verification-failure-email STUB'),
+      expect.objectContaining({ route: 'relay-password-reset', reason: 'invalid_signature' }),
+    );
+  });
+
+  it('alerts support@warmhawk.com, naming the route and reason, when configured', async () => {
+    vi.stubEnv('ZEPTOMAIL_TOKEN', 'test-token');
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response(JSON.stringify({ request_id: 'abc' }), { status: 200 }));
+
+    await emailSender.sendLicenseVerificationFailureEmail({
+      route: 'relay-invite',
+      reason: 'malformed',
+    });
+
+    const [, init] = fetchSpy.mock.calls[0]!;
+    const sentBody = JSON.parse((init as RequestInit).body as string);
+    expect(sentBody.to).toEqual([{ email_address: { address: 'support@warmhawk.com' } }]);
+    expect(sentBody.subject).toContain('relay-invite');
+    expect(sentBody.subject).toContain('malformed');
+    expect(sentBody.textbody).toContain('relay-invite');
+    expect(sentBody.textbody).toContain('malformed');
+  });
+
+  it('never throws even when the ZeptoMail send itself fails — a failed alert must not break the caller', async () => {
+    vi.stubEnv('ZEPTOMAIL_TOKEN', 'test-token');
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ error: { message: 'Access Denied' } }), { status: 401 }),
+    );
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await expect(
+      emailSender.sendLicenseVerificationFailureEmail({
+        route: 'relay-invite',
+        reason: 'invalid_signature',
+      }),
+    ).resolves.toBeUndefined();
+    expect(errorSpy).toHaveBeenCalled();
+  });
+});
+
 describe('escapeHtml', () => {
   it('escapes all five reserved HTML characters', () => {
     expect(escapeHtml(`<a href="x">'&'</a>`)).toBe(

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { generateKeyPairSync } from 'node:crypto';
 import { NextRequest } from 'next/server';
 import { POST } from './route';
 import { issueLicense, type LicensePayload } from '@/lib/license';
@@ -14,14 +15,20 @@ const DAY = 60 * 60 * 24;
 let testCustomerIdCounter = 0;
 
 const sendPasswordResetRelayEmailMock = vi.fn();
+const sendLicenseVerificationFailureEmailMock = vi.fn();
 
 vi.mock('@/lib/email', () => ({
   emailSender: {
     sendPasswordResetRelayEmail: (...args: unknown[]) => sendPasswordResetRelayEmailMock(...args),
+    sendLicenseVerificationFailureEmail: (...args: unknown[]) =>
+      sendLicenseVerificationFailureEmailMock(...args),
   },
 }));
 
-function licenseToken(overrides: Partial<LicensePayload> = {}): string {
+function licenseToken(
+  overrides: Partial<LicensePayload> = {},
+  signingKey: string = LICENSE_TEST_PRIVATE_KEY,
+): string {
   const now = Math.floor(Date.now() / 1000);
   return issueLicense(
     {
@@ -32,7 +39,7 @@ function licenseToken(overrides: Partial<LicensePayload> = {}): string {
       expiresAt: now + 30 * DAY,
       ...overrides,
     },
-    LICENSE_TEST_PRIVATE_KEY,
+    signingKey,
   ).token;
 }
 
@@ -50,6 +57,8 @@ describe('POST /api/operator/relay-password-reset', () => {
     process.env.LICENSE_SIGNING_PRIVATE_KEY = LICENSE_TEST_PRIVATE_KEY;
     sendPasswordResetRelayEmailMock.mockReset();
     sendPasswordResetRelayEmailMock.mockResolvedValue({ delivered: true });
+    sendLicenseVerificationFailureEmailMock.mockReset();
+    sendLicenseVerificationFailureEmailMock.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -110,7 +119,7 @@ describe('POST /api/operator/relay-password-reset', () => {
     expect(res.status).toBe(400);
   });
 
-  it('returns 401 and never sends for an invalid license', async () => {
+  it('returns 401, never sends the reset email, and alerts support — a malformed token should never happen in ordinary use', async () => {
     const res = await POST(
       relayRequest({
         license: 'garbage.token',
@@ -120,9 +129,36 @@ describe('POST /api/operator/relay-password-reset', () => {
     );
     expect(res.status).toBe(401);
     expect(sendPasswordResetRelayEmailMock).not.toHaveBeenCalled();
+    expect(sendLicenseVerificationFailureEmailMock).toHaveBeenCalledWith({
+      route: 'relay-password-reset',
+      reason: 'malformed',
+    });
   });
 
-  it('returns 401 for an expired license — no lenient "still authenticates when expired" behavior here', async () => {
+  it('returns 401 and alerts support for a signature that no longer verifies — the 2026-09-09 failure mode', async () => {
+    const otherKeyPair = generateKeyPairSync('rsa', {
+      modulusLength: 2048,
+      publicKeyEncoding: { type: 'spki', format: 'pem' },
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+    });
+    const wrongKeyToken = licenseToken({}, otherKeyPair.privateKey);
+
+    const res = await POST(
+      relayRequest({
+        license: wrongKeyToken,
+        toEmail: 'member@example.com',
+        resetUrl: 'https://dashboard.example.com/reset-password?token=abc',
+      }),
+    );
+    expect(res.status).toBe(401);
+    expect(sendPasswordResetRelayEmailMock).not.toHaveBeenCalled();
+    expect(sendLicenseVerificationFailureEmailMock).toHaveBeenCalledWith({
+      route: 'relay-password-reset',
+      reason: 'invalid_signature',
+    });
+  });
+
+  it('returns 401 for an expired license — no lenient "still authenticates when expired" behavior here — and does NOT alert, since a lapsed subscription is expected', async () => {
     const now = Math.floor(Date.now() / 1000);
     const expired = licenseToken({ issuedAt: now - 60 * DAY, expiresAt: now - DAY });
 
@@ -135,6 +171,7 @@ describe('POST /api/operator/relay-password-reset', () => {
     );
     expect(res.status).toBe(401);
     expect(sendPasswordResetRelayEmailMock).not.toHaveBeenCalled();
+    expect(sendLicenseVerificationFailureEmailMock).not.toHaveBeenCalled();
   });
 
   it('returns 503 without sending when LICENSE_SIGNING_PRIVATE_KEY is not configured', async () => {
