@@ -154,6 +154,60 @@ describe('sendInviteRelayEmail (ZeptomailEmailSender)', () => {
   });
 });
 
+describe('sendPasswordResetRelayEmail (ZeptomailEmailSender)', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  it('degrades to a console-log stub and reports email_not_configured when ZEPTOMAIL_TOKEN is unset', async () => {
+    vi.stubEnv('ZEPTOMAIL_TOKEN', '');
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const result = await emailSender.sendPasswordResetRelayEmail({
+      toEmail: 'member@example.com',
+      resetUrl: 'https://dashboard.example.com/reset-password?token=abc',
+    });
+
+    expect(result).toEqual({ delivered: false, reason: 'email_not_configured' });
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('password-reset-relay-email STUB'));
+  });
+
+  it('sends via ZeptoMail and reports delivered:true when configured', async () => {
+    vi.stubEnv('ZEPTOMAIL_TOKEN', 'test-token');
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response(JSON.stringify({ request_id: 'abc' }), { status: 200 }));
+
+    const result = await emailSender.sendPasswordResetRelayEmail({
+      toEmail: 'member@example.com',
+      resetUrl: 'https://dashboard.example.com/reset-password?token=abc',
+    });
+
+    expect(result).toEqual({ delivered: true });
+    const [, init] = fetchSpy.mock.calls[0]!;
+    const sentBody = JSON.parse((init as RequestInit).body as string);
+    expect(sentBody.to).toEqual([{ email_address: { address: 'member@example.com' } }]);
+    expect(sentBody.textbody).toContain('https://dashboard.example.com/reset-password?token=abc');
+  });
+
+  it('reports send_failed, not a thrown error, when the ZeptoMail send fails', async () => {
+    vi.stubEnv('ZEPTOMAIL_TOKEN', 'test-token');
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ error: { message: 'Access Denied' } }), { status: 401 }),
+    );
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const result = await emailSender.sendPasswordResetRelayEmail({
+      toEmail: 'member@example.com',
+      resetUrl: 'https://dashboard.example.com/reset-password?token=abc',
+    });
+
+    expect(result).toEqual({ delivered: false, reason: 'send_failed', detail: 'Access Denied' });
+    expect(errorSpy).toHaveBeenCalled();
+  });
+});
+
 describe('escapeHtml', () => {
   it('escapes all five reserved HTML characters', () => {
     expect(escapeHtml(`<a href="x">'&'</a>`)).toBe(
