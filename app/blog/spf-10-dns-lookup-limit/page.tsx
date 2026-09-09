@@ -40,9 +40,9 @@ export default function SpfLookupLimitPost() {
       </h1>
       <AnswerBlock>
         RFC 7208 caps SPF evaluation at exactly 10 DNS lookups. Go over, and a receiver is required
-        to treat the whole record as a <code className="font-mono">permerror</code> — not &ldquo;fail
-        the check,&rdquo; but stop evaluating it entirely, with nothing in your own DNS ever showing
-        you the count.
+        to treat the whole record as a <code className="font-mono">permerror</code> — not
+        &ldquo;fail the check,&rdquo; but stop evaluating it entirely, with nothing in your own DNS
+        ever showing you the count.
       </AnswerBlock>
 
       <h2 className="font-display text-2xl font-semibold mb-4 mt-10">
@@ -50,27 +50,28 @@ export default function SpfLookupLimitPost() {
       </h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-6">
         A DNS lookup for a TXT record either resolves or it doesn&rsquo;t — there&rsquo;s no such
-        thing as a query that fails because there were &ldquo;too many other queries.&rdquo; That&rsquo;s
-        exactly why this failure mode is so easy to miss: the record itself resolves fine, lists
-        the right senders, and passes a casual read. The failure happens one layer up, during{' '}
-        <em>evaluation</em> — the receiver walks the record, follows every mechanism that requires
-        its own DNS lookup, and once that walk passes 10, RFC 7208 requires it to stop and return{' '}
-        <code className="font-mono">permerror</code> for the whole record, not just the mechanisms
-        past the limit.
+        thing as a query that fails because there were &ldquo;too many other queries.&rdquo;
+        That&rsquo;s exactly why this failure mode is so easy to miss: the record itself resolves
+        fine, lists the right senders, and passes a casual read. The failure happens one layer up,
+        during <em>evaluation</em> — the receiver walks the record, follows every mechanism that
+        requires its own DNS lookup, and once that walk passes 10, RFC 7208 requires it to stop and
+        return <code className="font-mono">permerror</code> for the whole record, not just the
+        mechanisms past the limit.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4 mt-10">
         What actually counts against the budget
       </h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
-        Five mechanism types cost a lookup each time they appear: <code className="font-mono">include</code>,{' '}
-        <code className="font-mono">a</code>, <code className="font-mono">mx</code>,{' '}
-        <code className="font-mono">ptr</code>, and <code className="font-mono">exists</code>. A{' '}
-        <code className="font-mono">redirect</code> also costs one, and then hands off evaluation to
-        the record it points at — so its cost doesn&rsquo;t stop there. <code className="font-mono">mx</code>{' '}
-        is the sneakiest of the five: it doesn&rsquo;t just cost one lookup for itself, it costs one
-        lookup <em>per MX record</em> the domain has, since each one has to be resolved to an IP.
-        A domain with 4 mail exchangers spends 4 of its 10 lookups on a single{' '}
+        Five mechanism types cost a lookup each time they appear:{' '}
+        <code className="font-mono">include</code>, <code className="font-mono">a</code>,{' '}
+        <code className="font-mono">mx</code>, <code className="font-mono">ptr</code>, and{' '}
+        <code className="font-mono">exists</code>. A <code className="font-mono">redirect</code>{' '}
+        also costs one, and then hands off evaluation to the record it points at — so its cost
+        doesn&rsquo;t stop there. <code className="font-mono">mx</code> is the sneakiest of the
+        five: it doesn&rsquo;t just cost one lookup for itself, it costs one lookup{' '}
+        <em>per MX record</em> the domain has, since each one has to be resolved to an IP. A domain
+        with 4 mail exchangers spends 4 of its 10 lookups on a single{' '}
         <code className="font-mono">mx</code> mechanism.
       </p>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-6">
@@ -83,14 +84,13 @@ export default function SpfLookupLimitPost() {
         Why it creeps up without anyone editing the record
       </h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-6">
-        The usual path to 11 lookups isn&rsquo;t someone hand-editing a TXT record until it breaks
-        — it&rsquo;s <code className="font-mono">include</code> chains. Most cold-email and
-        marketing platforms publish their own SPF record as an{' '}
-        <code className="font-mono">include:</code> target, and that record often includes another
-        provider&rsquo;s record in turn. Add a second ESP, a helpdesk tool, and a CRM that each ask
-        to be included, and the budget is gone before you&rsquo;ve written a single mechanism
-        yourself — nobody touched the record&rsquo;s visible content, the total lookup count just
-        grew underneath it.
+        The usual path to 11 lookups isn&rsquo;t someone hand-editing a TXT record until it breaks —
+        it&rsquo;s <code className="font-mono">include</code> chains. Most cold-email and marketing
+        platforms publish their own SPF record as an <code className="font-mono">include:</code>{' '}
+        target, and that record often includes another provider&rsquo;s record in turn. Add a second
+        ESP, a helpdesk tool, and a CRM that each ask to be included, and the budget is gone before
+        you&rsquo;ve written a single mechanism yourself — nobody touched the record&rsquo;s visible
+        content, the total lookup count just grew underneath it.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4 mt-10">Bringing it back under 10</h2>
@@ -101,9 +101,9 @@ export default function SpfLookupLimitPost() {
         </li>
         <li>
           Replace <code className="font-mono">mx</code> or <code className="font-mono">a</code>{' '}
-          mechanisms with the literal <code className="font-mono">ip4</code>/<code className="font-mono">ip6</code>{' '}
-          ranges they resolve to, if those ranges are stable — this trades a per-request DNS lookup
-          for a free literal.
+          mechanisms with the literal <code className="font-mono">ip4</code>/
+          <code className="font-mono">ip6</code> ranges they resolve to, if those ranges are stable
+          — this trades a per-request DNS lookup for a free literal.
         </li>
         <li>
           Remove <code className="font-mono">ptr</code> entirely if present — it&rsquo;s deprecated

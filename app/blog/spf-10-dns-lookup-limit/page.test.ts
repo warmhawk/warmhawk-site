@@ -11,9 +11,7 @@ describe('SpfLookupLimitPost (app/blog/spf-10-dns-lookup-limit/page.tsx)', () =>
   it('renders the h1 and links to the SPF checker tool', () => {
     render(createElement(SpfLookupLimitPost));
 
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      "SPF's 10-lookup limit",
-    );
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent("SPF's 10-lookup limit");
     expect(screen.getByRole('link', { name: 'Check your SPF record →' })).toHaveAttribute(
       'href',
       '/tools/spf-checker',

@@ -41,8 +41,8 @@ export default function AuthenticationExplainedPost() {
       <AnswerBlock>
         SPF checks which servers may send for a domain. DKIM checks whether a specific message was
         altered in transit. DMARC checks whether the two agree, and tells the receiver what to do
-        when they don&rsquo;t. None of the three does the other two&rsquo;s job — a domain needs
-        all three to actually stop spoofing.
+        when they don&rsquo;t. None of the three does the other two&rsquo;s job — a domain needs all
+        three to actually stop spoofing.
       </AnswerBlock>
 
       <h2 className="font-display text-2xl font-semibold mb-4 mt-10">
@@ -51,11 +51,10 @@ export default function AuthenticationExplainedPost() {
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-6">
         SPF (Sender Policy Framework) is a TXT record listing the servers, IP ranges, and other
         domains&rsquo; records authorized to send mail claiming to be from yours. A receiver checks
-        the connecting server&rsquo;s IP against that list. It says nothing about the message
-        itself — a server on the list can send anything, and a forwarded message (where the
-        connecting server is the forwarder, not the original sender) routinely fails SPF through no
-        fault of the original sender. SPF also carries a hard ceiling worth knowing about on its
-        own:{' '}
+        the connecting server&rsquo;s IP against that list. It says nothing about the message itself
+        — a server on the list can send anything, and a forwarded message (where the connecting
+        server is the forwarder, not the original sender) routinely fails SPF through no fault of
+        the original sender. SPF also carries a hard ceiling worth knowing about on its own:{' '}
         <Link href="/blog/spf-10-dns-lookup-limit" className="text-rust font-semibold">
           exactly 10 DNS lookups
         </Link>
@@ -67,13 +66,13 @@ export default function AuthenticationExplainedPost() {
       </h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-6">
         DKIM (DomainKeys Identified Mail) signs each outgoing message with a private key, and
-        publishes the matching public key at a DNS TXT record under a selector
-        (<code className="font-mono">selector._domainkey.example.com</code>). The receiver
-        recomputes the signature from the message it actually received and compares it to the one
-        in the header — a mismatch means something changed the message (or the headers it signs) in
-        transit. Unlike SPF, DKIM travels with the message itself and survives most forwarding, but
-        it verifies integrity, not authorization: a message can be validly DKIM-signed by a
-        completely different domain than the one in the visible From address.
+        publishes the matching public key at a DNS TXT record under a selector (
+        <code className="font-mono">selector._domainkey.example.com</code>). The receiver recomputes
+        the signature from the message it actually received and compares it to the one in the header
+        — a mismatch means something changed the message (or the headers it signs) in transit.
+        Unlike SPF, DKIM travels with the message itself and survives most forwarding, but it
+        verifies integrity, not authorization: a message can be validly DKIM-signed by a completely
+        different domain than the one in the visible From address.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4 mt-10">
@@ -84,8 +83,8 @@ export default function AuthenticationExplainedPost() {
         or DKIM <em>align</em> with the domain in the visible From header — not just that{' '}
         <em>some</em> domain passed one of the two checks. A message can pass SPF for a completely
         unrelated sending domain and still fail DMARC, because DMARC is asking the more specific
-        question a spoofing attack actually depends on. DMARC also carries its own published
-        policy, telling receivers what to do with a message that fails alignment:
+        question a spoofing attack actually depends on. DMARC also carries its own published policy,
+        telling receivers what to do with a message that fails alignment:
       </p>
       <ul className="list-disc pl-6 space-y-2 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-6">
         <li>
@@ -103,8 +102,8 @@ export default function AuthenticationExplainedPost() {
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
         A DMARC record without a <code className="font-mono">rua</code> reporting address is
         enforcing a policy blind — it can quarantine or reject spoofed mail, but nobody at the
-        domain ever sees the aggregate reports that would reveal who&rsquo;s actually being
-        spoofed, or whether a legitimate sending source was accidentally caught by the policy.
+        domain ever sees the aggregate reports that would reveal who&rsquo;s actually being spoofed,
+        or whether a legitimate sending source was accidentally caught by the policy.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4 mt-10">
