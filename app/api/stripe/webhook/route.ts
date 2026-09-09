@@ -64,6 +64,51 @@ import { emailSender } from '@/lib/email';
 const METADATA_CHUNK_SIZE = 450;
 
 /**
+ * Bug found 2026-09-08 (Journey M, live Tier 2 checkout verification): on this account, as of
+ * whatever Stripe API version now actually governs webhook-event payloads, an `invoice` object no
+ * longer carries a top-level `subscription` id string OR a populated top-level `metadata` object
+ * for a subscription-mode invoice — both moved under `invoice.parent.subscription_details`. The
+ * `stripe` SDK here (16.12.0, client pinned to apiVersion '2024-06-20' in lib/stripe.ts) still
+ * types `Invoice` the old, flat way, so TypeScript never caught this; only a real webhook proved
+ * it. Confirmed live: every real invoice.paid event's `invoice.subscription` was `null` (silently
+ * hit `persistLicenseOnSubscription`'s "no subscription, storing in logs only" branch — meaning
+ * NO real customer's license token has ever actually been persisted to Stripe subscription
+ * metadata) and `invoice.metadata` was always `{}` (silently defaulting every Tier 2 purchase's
+ * issued license to `tier: 'tier_1'`, the wrong tier). Reading from `invoice.parent
+ * .subscription_details` first, with the old flat fields kept as a fallback so this survives
+ * whichever direction Stripe's shape drifts back or forward again, fixes both at once.
+ */
+interface InvoiceWithParentShape {
+  parent?: {
+    subscription_details?: {
+      subscription?: string | Stripe.Subscription | null;
+      metadata?: Record<string, string> | null;
+    } | null;
+  } | null;
+}
+
+function resolveInvoiceSubscriptionId(invoice: Stripe.Invoice): string | undefined {
+  const parentSub = (invoice as unknown as InvoiceWithParentShape).parent?.subscription_details
+    ?.subscription;
+  if (parentSub) {
+    return typeof parentSub === 'string' ? parentSub : parentSub.id;
+  }
+  if (invoice.subscription) {
+    return typeof invoice.subscription === 'string'
+      ? invoice.subscription
+      : invoice.subscription.id;
+  }
+  return undefined;
+}
+
+function resolveInvoiceMetadata(invoice: Stripe.Invoice): Record<string, string> {
+  const parentMetadata = (invoice as unknown as InvoiceWithParentShape).parent?.subscription_details
+    ?.metadata;
+  if (parentMetadata && Object.keys(parentMetadata).length > 0) return parentMetadata;
+  return invoice.metadata ?? {};
+}
+
+/**
  * Writes the issued license onto the Stripe SUBSCRIPTION the invoice belongs to, so the token has
  * a durable home outside the customer's inbox. The subscription (not the invoice) is the right
  * anchor: it is the object that persists across billing cycles, so each renewal overwrites these
@@ -74,8 +119,7 @@ async function persistLicenseOnSubscription(
   token: string,
   payload: LicensePayload,
 ): Promise<void> {
-  const subscriptionId =
-    typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
+  const subscriptionId = resolveInvoiceSubscriptionId(invoice);
   if (!subscriptionId) {
     // A one-off invoice with no subscription (e.g. a hand-raised invoice from the Stripe
     // dashboard) has nowhere durable to hang this. Log the token itself so it is at least
@@ -150,9 +194,12 @@ export async function POST(request: NextRequest) {
         // one-time setup-fee line item differs, and that line item is absent from every renewal
         // invoice after the first. Price ID cannot disambiguate the tiers, so tier is read from
         // `subscription_data.metadata` (propagated onto every invoice by Stripe), exactly like
-        // `billingInterval` below.
-        const tier = invoice.metadata?.tier === 'tier_2' ? 'tier_2' : 'tier_1';
-        const interval = invoice.metadata?.billingInterval === 'annual' ? 'annual' : 'monthly';
+        // `billingInterval` below. `resolveInvoiceMetadata()` checks the current
+        // `invoice.parent.subscription_details.metadata` location first, falling back to the old
+        // flat `invoice.metadata` — see that function's doc comment for the live bug this fixed.
+        const invoiceMetadata = resolveInvoiceMetadata(invoice);
+        const tier = invoiceMetadata.tier === 'tier_2' ? 'tier_2' : 'tier_1';
+        const interval = invoiceMetadata.billingInterval === 'annual' ? 'annual' : 'monthly';
 
         const now = Math.floor(Date.now() / 1000);
         const payload: LicensePayload = {
