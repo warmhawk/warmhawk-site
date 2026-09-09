@@ -177,6 +177,11 @@ export interface InviteRelayEmailInput {
   acceptUrl: string;
 }
 
+export interface PasswordResetRelayEmailInput {
+  toEmail: string;
+  resetUrl: string;
+}
+
 export interface InstallFailureEmailInput {
   /** Which installer script reported this — 'install' (fresh install) or 'update' (in-place
    *  upgrade). See warmhawk-enterprise-operator/scripts/{install,update}.sh's own report_failure(). */
@@ -201,10 +206,19 @@ export type InviteRelayEmailResult =
   | { delivered: true }
   | { delivered: false; reason: 'email_not_configured' | 'send_failed'; detail?: string };
 
+/** Mirrors warmhawk-enterprise-operator's own `PasswordResetEmailResult` shape exactly, same
+ *  reasoning as `InviteRelayEmailResult` above — the operator's `/api/auth/forgot-password`
+ *  passes this straight back to its caller (as the generic "if that email exists" response, so a
+ *  failed send never itself leaks account existence). */
+export type PasswordResetRelayEmailResult =
+  | { delivered: true }
+  | { delivered: false; reason: 'email_not_configured' | 'send_failed'; detail?: string };
+
 export interface EmailSender {
   sendLicenseEmail(input: LicenseEmailInput): Promise<void>;
   sendSalesInquiryEmail(input: SalesInquiryEmailInput): Promise<void>;
   sendInviteRelayEmail(input: InviteRelayEmailInput): Promise<InviteRelayEmailResult>;
+  sendPasswordResetRelayEmail(input: PasswordResetRelayEmailInput): Promise<PasswordResetRelayEmailResult>;
   sendInstallFailureEmail(input: InstallFailureEmailInput): Promise<void>;
 }
 
@@ -433,6 +447,50 @@ class ZeptomailEmailSender implements EmailSender {
     } catch (error) {
       const detail = error instanceof Error ? error.message : 'Unknown email error';
       console.error(`[invite-relay-email] send failed for ${input.toEmail}: ${detail}`);
+      return { delivered: false, reason: 'send_failed', detail };
+    }
+  }
+
+  /** Sends a self-hosted operator's forgot-password email on its behalf — same relay rationale as
+   *  sendInviteRelayEmail above (`app/api/operator/relay-password-reset/route.ts`'s module doc),
+   *  reusing the same live SMTP credential rather than requiring a customer's own email-provider
+   *  account for a feature this rare. Deliberately carries NO inviterEmail-equivalent field: the
+   *  reset was self-initiated by the account holder, not sent by another teammate, so there's no
+   *  second party to name in the copy. */
+  async sendPasswordResetRelayEmail(input: PasswordResetRelayEmailInput): Promise<PasswordResetRelayEmailResult> {
+    const subject = 'Reset your WarmHawk password';
+    const text = [
+      'A password reset was requested for your WarmHawk dashboard.',
+      '',
+      `Reset your password: ${input.resetUrl}`,
+      '',
+      "This link expires in 1 hour and can only be used once. If you didn't request this, you can ignore this email — your password won't change.",
+    ].join('\n');
+    const html = `
+      <p>A password reset was requested for your WarmHawk dashboard.</p>
+      <p><a href="${escapeHtml(input.resetUrl)}">Reset your password</a></p>
+      <p style="color:#666;font-size:0.9em">This link expires in 1 hour and can only be used once. If you didn't request this, you can ignore this email — your password won't change.</p>
+    `.trim();
+
+    if (!zeptomailConfigured()) {
+      console.log(
+        `[password-reset-relay-email STUB — ZEPTOMAIL_TOKEN not set] Would send reset link to ${input.toEmail}: ${input.resetUrl}`,
+      );
+      return { delivered: false, reason: 'email_not_configured' };
+    }
+
+    try {
+      await sendViaZeptomail({
+        from: process.env.EMAIL_FROM || siteConfig.defaultFrom,
+        to: input.toEmail,
+        subject,
+        text,
+        html,
+      });
+      return { delivered: true };
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : 'Unknown email error';
+      console.error(`[password-reset-relay-email] send failed for ${input.toEmail}: ${detail}`);
       return { delivered: false, reason: 'send_failed', detail };
     }
   }
