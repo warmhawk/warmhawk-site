@@ -48,11 +48,16 @@ set -a
 source .env/.env.local
 set +a
 
+# WARMHAWK_E2E_DOCKER: .env/.env.local's NEXT_PUBLIC_SITE_URL is the real prod value on purpose (to
+# exercise prod-like URLs), which instrumentation.ts's boot-time license-key guard would otherwise
+# mistake for an actual production instance running a non-production test key. This flag is the
+# only thing that tells it otherwise — see instrumentation.ts's own comment on this var.
 docker run -d \
   --name "$CONTAINER_NAME" \
   -p "${HOST_PORT}:4600" \
   --env-file "$ENV_FILE_FILTERED" \
   -e "LICENSE_SIGNING_PRIVATE_KEY=${LICENSE_SIGNING_PRIVATE_KEY}" \
+  -e "WARMHAWK_E2E_DOCKER=1" \
   "$IMAGE_TAG" >/dev/null
 
 echo "[e2e-docker] Waiting for ${HEALTH_URL} to respond 200 (timeout ${TIMEOUT_SECONDS}s)..."
