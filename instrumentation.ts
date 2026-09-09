@@ -14,7 +14,14 @@
 // route already gives a caller). Checked only on the real production domain — stage intentionally
 // runs its own, different signing key (see .env.stage's own comment), so this must never fire there
 // or in local/CI dev, both of which commonly have no LICENSE_SIGNING_PRIVATE_KEY configured at all.
+//
+// WARMHAWK_E2E_DOCKER: scripts/e2e-docker-up.sh builds a throwaway container from
+// .env/.env.local for `npm run test:e2e:docker`, which deliberately sets NEXT_PUBLIC_SITE_URL to
+// the real prod value to exercise prod-like URLs — the only signal that container is not actually
+// production is this flag, which that script alone injects via `docker run -e`. Discovered
+// 2026-09-09 when this guard's first deploy failed the e2e-docker CI job outright.
 async function assertLicenseSigningKeyUnchanged(): Promise<void> {
+  if (process.env.WARMHAWK_E2E_DOCKER) return;
   if (process.env.NEXT_PUBLIC_SITE_URL !== 'https://warmhawk.com') return;
 
   const privateKeyPem = process.env.LICENSE_SIGNING_PRIVATE_KEY;

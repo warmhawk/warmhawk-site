@@ -47,4 +47,13 @@ describe('register() — license-signing-key boot guard', () => {
 
     await expect(register()).rejects.toThrow(/does not derive the pinned production public key/);
   });
+
+  it('does not check inside the e2e-docker test container, even with prod URL + a mismatched key — this guard broke that CI job on its first deploy', async () => {
+    vi.stubEnv('NEXT_RUNTIME', 'nodejs');
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://warmhawk.com');
+    vi.stubEnv('LICENSE_SIGNING_PRIVATE_KEY', TEST_PRIVATE_KEY);
+    vi.stubEnv('WARMHAWK_E2E_DOCKER', '1');
+
+    await expect(register()).resolves.toBeUndefined();
+  });
 });
