@@ -218,7 +218,9 @@ export interface EmailSender {
   sendLicenseEmail(input: LicenseEmailInput): Promise<void>;
   sendSalesInquiryEmail(input: SalesInquiryEmailInput): Promise<void>;
   sendInviteRelayEmail(input: InviteRelayEmailInput): Promise<InviteRelayEmailResult>;
-  sendPasswordResetRelayEmail(input: PasswordResetRelayEmailInput): Promise<PasswordResetRelayEmailResult>;
+  sendPasswordResetRelayEmail(
+    input: PasswordResetRelayEmailInput,
+  ): Promise<PasswordResetRelayEmailResult>;
   sendInstallFailureEmail(input: InstallFailureEmailInput): Promise<void>;
 }
 
@@ -457,7 +459,9 @@ class ZeptomailEmailSender implements EmailSender {
    *  account for a feature this rare. Deliberately carries NO inviterEmail-equivalent field: the
    *  reset was self-initiated by the account holder, not sent by another teammate, so there's no
    *  second party to name in the copy. */
-  async sendPasswordResetRelayEmail(input: PasswordResetRelayEmailInput): Promise<PasswordResetRelayEmailResult> {
+  async sendPasswordResetRelayEmail(
+    input: PasswordResetRelayEmailInput,
+  ): Promise<PasswordResetRelayEmailResult> {
     const subject = 'Reset your WarmHawk password';
     const text = [
       'A password reset was requested for your WarmHawk dashboard.',
