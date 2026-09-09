@@ -6,6 +6,9 @@ import {
   derivePublicKeyPem,
   generateLicenseKey,
   computeExpiry,
+  publicKeyFingerprint,
+  checkLicenseSigningKeyFingerprint,
+  EXPECTED_LICENSE_PUBLIC_KEY_FINGERPRINT,
   type LicensePayload,
 } from './license';
 
@@ -110,6 +113,70 @@ describe('RSA license sign/verify (canonical scheme)', () => {
     }
 
     expect(derivePublicKeyPem(escapedPrivateKey).trim()).toBe(TEST_PUBLIC_KEY.trim());
+  });
+});
+
+describe('publicKeyFingerprint', () => {
+  it('is a deterministic 64-char hex sha256 of the PEM text', () => {
+    const fp = publicKeyFingerprint(TEST_PUBLIC_KEY);
+    expect(fp).toMatch(/^[0-9a-f]{64}$/);
+    expect(publicKeyFingerprint(TEST_PUBLIC_KEY)).toBe(fp);
+  });
+
+  it('changes when the key changes', () => {
+    const otherKeyPair = generateKeyPairSync('rsa', {
+      modulusLength: 2048,
+      publicKeyEncoding: { type: 'spki', format: 'pem' },
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+    });
+    expect(publicKeyFingerprint(otherKeyPair.publicKey)).not.toBe(
+      publicKeyFingerprint(TEST_PUBLIC_KEY),
+    );
+  });
+});
+
+describe('checkLicenseSigningKeyFingerprint', () => {
+  // Regression test for the 2026-09-09 incident: LICENSE_SIGNING_PRIVATE_KEY changed in production
+  // with nothing to notice it, silently invalidating every already-issued license's signature. This
+  // is the function instrumentation.ts calls once at boot (production only) to turn that into a
+  // refused deploy instead. Never exercised against the real pinned production constant here — see
+  // the `expectedFingerprint` param's own doc comment for why.
+
+  it('reports ok:true when the derived fingerprint matches what was expected', () => {
+    const expected = publicKeyFingerprint(derivePublicKeyPem(TEST_PRIVATE_KEY));
+    expect(checkLicenseSigningKeyFingerprint(TEST_PRIVATE_KEY, expected)).toEqual({ ok: true });
+  });
+
+  it('reports ok:false with both fingerprints when the live key no longer matches — the exact 2026-09-09 failure mode', () => {
+    const otherKeyPair = generateKeyPairSync('rsa', {
+      modulusLength: 2048,
+      publicKeyEncoding: { type: 'spki', format: 'pem' },
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+    });
+    const wrongExpectation = publicKeyFingerprint(otherKeyPair.publicKey);
+    const actual = publicKeyFingerprint(derivePublicKeyPem(TEST_PRIVATE_KEY));
+
+    expect(checkLicenseSigningKeyFingerprint(TEST_PRIVATE_KEY, wrongExpectation)).toEqual({
+      ok: false,
+      expectedFingerprint: wrongExpectation,
+      actualFingerprint: actual,
+    });
+  });
+
+  it('defaults to the real pinned EXPECTED_LICENSE_PUBLIC_KEY_FINGERPRINT constant when no override is passed', () => {
+    // Confirms the wiring, not the value: a throwaway key will never match the real pinned constant,
+    // but the returned expectedFingerprint must be exactly that constant, unmodified.
+    const result = checkLicenseSigningKeyFingerprint(TEST_PRIVATE_KEY);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.expectedFingerprint).toBe(EXPECTED_LICENSE_PUBLIC_KEY_FINGERPRINT);
+    }
+  });
+
+  it('tolerates a literal \\n private key PEM, matching every other function in this module', () => {
+    const escapedPrivateKey = TEST_PRIVATE_KEY.replace(/\n/g, '\\n');
+    const expected = publicKeyFingerprint(derivePublicKeyPem(TEST_PRIVATE_KEY));
+    expect(checkLicenseSigningKeyFingerprint(escapedPrivateKey, expected)).toEqual({ ok: true });
   });
 });
 

@@ -68,6 +68,15 @@ export async function POST(request: NextRequest) {
 
   const licenseResult = verifyLicense(license, derivePublicKeyPem(licenseSigningPrivateKeyPem));
   if (!licenseResult.valid) {
+    // 'expired' is ordinary lifecycle behavior (a lapsed subscription) and not alerted on; 'malformed'
+    // and 'invalid_signature' should never happen in ordinary use — see
+    // sendLicenseVerificationFailureEmail's doc comment (lib/email.ts) for why this is worth paging on.
+    if (licenseResult.reason !== 'expired') {
+      await emailSender.sendLicenseVerificationFailureEmail({
+        route: 'relay-invite',
+        reason: licenseResult.reason,
+      });
+    }
     return NextResponse.json(
       { error: 'That license is invalid or expired — cannot relay this invite.' },
       { status: 401 },
