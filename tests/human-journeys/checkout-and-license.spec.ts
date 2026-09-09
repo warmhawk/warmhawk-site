@@ -107,7 +107,10 @@ test.describe('Human journey: real checkout', () => {
     const session = await stripe.checkout.sessions.retrieve(sessionId!);
     const subscriptionId =
       typeof session.subscription === 'string' ? session.subscription : session.subscription?.id;
-    expect(subscriptionId, 'a subscription must be attached to a mode:subscription session').toBeTruthy();
+    expect(
+      subscriptionId,
+      'a subscription must be attached to a mode:subscription session',
+    ).toBeTruthy();
 
     // Same async-webhook-lag reasoning as the Tier 2 test below.
     let tokenChunk1: string | undefined;
@@ -121,7 +124,10 @@ test.describe('Human journey: real checkout', () => {
       if (tokenChunk1 && tokenChunk2) break;
       await new Promise((resolve) => setTimeout(resolve, 2_000));
     }
-    expect(tokenChunk1, 'invoice.paid must have persisted a license token onto the subscription').toBeTruthy();
+    expect(
+      tokenChunk1,
+      'invoice.paid must have persisted a license token onto the subscription',
+    ).toBeTruthy();
     expect(tierMetadata).toBe('tier_1');
     const licenseToken = `${tokenChunk1}${tokenChunk2}`;
 
@@ -194,12 +200,18 @@ test.describe('Human journey: real checkout', () => {
     const oneTimeItem = lineItems.find((li) => li.amount_total === 199_900 && !li.price?.recurring);
     const recurringItem = lineItems.find((li) => li.amount_total === 19_900 && li.price?.recurring);
     expect(oneTimeItem, 'a $1,999 one-time setup-fee line item must be present').toBeTruthy();
-    expect(recurringItem, 'a $199/mo recurring software-fee line item must be present').toBeTruthy();
+    expect(
+      recurringItem,
+      'a $199/mo recurring software-fee line item must be present',
+    ).toBeTruthy();
 
     // --- Confirm the invoice.paid webhook really issued a tier_2 license ---
     const subscriptionId =
       typeof session.subscription === 'string' ? session.subscription : session.subscription?.id;
-    expect(subscriptionId, 'a subscription must be attached to a mode:subscription session').toBeTruthy();
+    expect(
+      subscriptionId,
+      'a subscription must be attached to a mode:subscription session',
+    ).toBeTruthy();
 
     // The webhook fires asynchronously after checkout completes — poll rather than assume it has
     // already landed by the time this browser-driven flow returns control.
@@ -214,7 +226,10 @@ test.describe('Human journey: real checkout', () => {
       if (tokenChunk1 && tokenChunk2) break;
       await new Promise((resolve) => setTimeout(resolve, 2_000));
     }
-    expect(tokenChunk1, 'invoice.paid must have persisted a license token onto the subscription').toBeTruthy();
+    expect(
+      tokenChunk1,
+      'invoice.paid must have persisted a license token onto the subscription',
+    ).toBeTruthy();
     expect(tierMetadata).toBe('tier_2');
 
     const licenseToken = `${tokenChunk1}${tokenChunk2}`;
@@ -222,7 +237,10 @@ test.describe('Human journey: real checkout', () => {
     expect(privateKeyPem, 'LICENSE_SIGNING_PRIVATE_KEY must be set for this target').toBeTruthy();
     const publicKeyPem = derivePublicKeyPem(privateKeyPem!);
     const verification = verifyLicense(licenseToken, publicKeyPem);
-    expect(verification.valid, `license signature must verify: ${JSON.stringify(verification)}`).toBe(true);
+    expect(
+      verification.valid,
+      `license signature must verify: ${JSON.stringify(verification)}`,
+    ).toBe(true);
     expect(verification.payload?.tier).toBe('tier_2');
   });
 });
