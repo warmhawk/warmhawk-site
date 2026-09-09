@@ -1,5 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
+import Stripe from 'stripe';
 import { target } from './targets';
+import { verifyLicense, derivePublicKeyPem } from '../../lib/license';
 
 /**
  * Real-purchase journey: /checkout -> real Stripe Checkout Session -> real test-mode card payment
@@ -66,8 +68,18 @@ test.describe('Human journey: real checkout', () => {
   // against the production site.
   test.skip(target.label === 'prod', 'Real checkout only runs against local/stage, never prod');
 
-  test('a visitor can buy Tier 1 via a real Stripe checkout', async ({ page }) => {
-    test.setTimeout(120_000);
+  // Journey A step 6 (added 2026-09-08): extended past "checkout completes" to close the
+  // /account/billing lookup+refresh gap. Reuses the exact subscription-metadata-polling technique
+  // Journey M step 1 added to the Tier 2 test below, which sidesteps the KNOWN GAP documented at
+  // the top of this file (the email provider's sent-log API can't hand back a delivered message's
+  // body, so the license token can no longer be recovered from the actual license email) — the
+  // token was never only reachable via email; it's on the subscription's own metadata the whole
+  // time. Confirms `/account/billing`'s `BillingPortalForm` really opens a real Stripe Customer
+  // Portal session for a token that was never touched by hand.
+  test('a visitor can buy Tier 1 via a real Stripe checkout, then look up and refresh billing with the issued license', async ({
+    page,
+  }) => {
+    test.setTimeout(150_000);
 
     await page.goto(`${target.baseURL}/checkout`);
 
@@ -84,6 +96,49 @@ test.describe('Human journey: real checkout', () => {
 
     // Matches app/api/checkout/session/route.ts's success_url.
     expect(page.url()).toContain('checkout=success');
+
+    const sessionId = new URL(page.url()).searchParams.get('session_id');
+    expect(sessionId, 'success redirect must carry session_id').toBeTruthy();
+
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    expect(stripeSecretKey, 'STRIPE_SECRET_KEY must be set for this target').toBeTruthy();
+    const stripe = new Stripe(stripeSecretKey!);
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId!);
+    const subscriptionId =
+      typeof session.subscription === 'string' ? session.subscription : session.subscription?.id;
+    expect(
+      subscriptionId,
+      'a subscription must be attached to a mode:subscription session',
+    ).toBeTruthy();
+
+    // Same async-webhook-lag reasoning as the Tier 2 test below.
+    let tokenChunk1: string | undefined;
+    let tokenChunk2: string | undefined;
+    let tierMetadata: string | undefined;
+    for (let attempt = 0; attempt < 15; attempt++) {
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId!);
+      tokenChunk1 = subscription.metadata.warmhawk_license_token_1;
+      tokenChunk2 = subscription.metadata.warmhawk_license_token_2;
+      tierMetadata = subscription.metadata.tier;
+      if (tokenChunk1 && tokenChunk2) break;
+      await new Promise((resolve) => setTimeout(resolve, 2_000));
+    }
+    expect(
+      tokenChunk1,
+      'invoice.paid must have persisted a license token onto the subscription',
+    ).toBeTruthy();
+    expect(tierMetadata).toBe('tier_1');
+    const licenseToken = `${tokenChunk1}${tokenChunk2}`;
+
+    // --- /account/billing: paste the real, freshly-issued token and open a real portal session ---
+    await page.goto(`${target.baseURL}/account/billing`);
+    await page.getByLabel('Your license token').fill(licenseToken);
+    await Promise.all([
+      page.waitForURL(/^https:\/\/billing\.stripe\.com\//, { timeout: 20_000 }),
+      page.getByRole('button', { name: 'Open billing portal' }).click(),
+    ]);
+    expect(page.url()).toContain('billing.stripe.com');
   });
 
   // P11a (found 2026-09-08 auditing recent commits — see Journey M): Tier 2 (Enterprise DFY)
@@ -96,8 +151,21 @@ test.describe('Human journey: real checkout', () => {
   // `completeStripeCheckoutViaBrowser()` helper, `?tier=2` starts the page on the Tier 2 tab
   // (app/checkout/page.tsx), and `STRIPE_PRICE_TIER_2` is confirmed populated in this target env's
   // real (test-mode) Stripe config — checked directly in `.env/.env.local`, not assumed.
-  test('a visitor can buy Tier 2 (Enterprise DFY) via a real Stripe checkout', async ({ page }) => {
-    test.setTimeout(120_000);
+  //
+  // Journey M step 1 (added 2026-09-08): extended past "checkout completes" to confirm, against
+  // the real Stripe test-mode API, both line items actually appear on the session ($199/mo
+  // recurring + $1,999 one-time setup fee) and that the async `invoice.paid` webhook really does
+  // issue a license carrying `tier: 'tier_2'` in its signed payload — the exact round trip flagged
+  // as "not yet fully live-tested" in [[warmhawk-prod-license-key-malformed-pem-outage]] after that
+  // outage's fix. Reads the token back off the subscription's `warmhawk_license_token_1/2`
+  // metadata chunks (see app/api/stripe/webhook/route.ts's `persistLicenseOnSubscription`) and
+  // cryptographically verifies it with this target's own `LICENSE_SIGNING_PRIVATE_KEY` (stage has
+  // its own dedicated keypair, deliberately different from prod's — see that key's own env comment)
+  // rather than trusting the metadata fields alone.
+  test('a visitor can buy Tier 2 (Enterprise DFY) via a real Stripe checkout, with both line items and a real tier_2 license issued', async ({
+    page,
+  }) => {
+    test.setTimeout(150_000);
 
     await page.goto(`${target.baseURL}/checkout?tier=2`);
 
@@ -114,6 +182,66 @@ test.describe('Human journey: real checkout', () => {
     // Matches app/api/checkout/session/route.ts's Tier 2 success_url
     // (`/checkout?tier=2&checkout=success&session_id=...`).
     expect(page.url()).toContain('checkout=success');
+
+    const sessionId = new URL(page.url()).searchParams.get('session_id');
+    expect(sessionId, 'success redirect must carry session_id').toBeTruthy();
+
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    expect(stripeSecretKey, 'STRIPE_SECRET_KEY must be set for this target').toBeTruthy();
+    const stripe = new Stripe(stripeSecretKey!);
+
+    // --- Confirm both line items appear on the real session ---
+    const session = await stripe.checkout.sessions.retrieve(sessionId!, {
+      expand: ['line_items'],
+    });
+    const lineItems = session.line_items?.data ?? [];
+    expect(lineItems, 'Tier 2 session must have exactly 2 line items').toHaveLength(2);
+
+    const oneTimeItem = lineItems.find((li) => li.amount_total === 199_900 && !li.price?.recurring);
+    const recurringItem = lineItems.find((li) => li.amount_total === 19_900 && li.price?.recurring);
+    expect(oneTimeItem, 'a $1,999 one-time setup-fee line item must be present').toBeTruthy();
+    expect(
+      recurringItem,
+      'a $199/mo recurring software-fee line item must be present',
+    ).toBeTruthy();
+
+    // --- Confirm the invoice.paid webhook really issued a tier_2 license ---
+    const subscriptionId =
+      typeof session.subscription === 'string' ? session.subscription : session.subscription?.id;
+    expect(
+      subscriptionId,
+      'a subscription must be attached to a mode:subscription session',
+    ).toBeTruthy();
+
+    // The webhook fires asynchronously after checkout completes — poll rather than assume it has
+    // already landed by the time this browser-driven flow returns control.
+    let tokenChunk1: string | undefined;
+    let tokenChunk2: string | undefined;
+    let tierMetadata: string | undefined;
+    for (let attempt = 0; attempt < 15; attempt++) {
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId!);
+      tokenChunk1 = subscription.metadata.warmhawk_license_token_1;
+      tokenChunk2 = subscription.metadata.warmhawk_license_token_2;
+      tierMetadata = subscription.metadata.tier;
+      if (tokenChunk1 && tokenChunk2) break;
+      await new Promise((resolve) => setTimeout(resolve, 2_000));
+    }
+    expect(
+      tokenChunk1,
+      'invoice.paid must have persisted a license token onto the subscription',
+    ).toBeTruthy();
+    expect(tierMetadata).toBe('tier_2');
+
+    const licenseToken = `${tokenChunk1}${tokenChunk2}`;
+    const privateKeyPem = process.env.LICENSE_SIGNING_PRIVATE_KEY;
+    expect(privateKeyPem, 'LICENSE_SIGNING_PRIVATE_KEY must be set for this target').toBeTruthy();
+    const publicKeyPem = derivePublicKeyPem(privateKeyPem!);
+    const verification = verifyLicense(licenseToken, publicKeyPem);
+    expect(
+      verification.valid,
+      `license signature must verify: ${JSON.stringify(verification)}`,
+    ).toBe(true);
+    expect(verification.payload?.tier).toBe('tier_2');
   });
 });
 
