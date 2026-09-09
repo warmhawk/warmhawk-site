@@ -106,6 +106,7 @@ export const footerLinks = {
     { label: 'Full domain health check', href: '/tools/domain-check' },
   ],
   company: [
+    { label: 'Blog', href: '/blog' },
     { label: 'Docs & quickstart', href: '/docs' },
     { label: 'Security', href: '/security' },
     // Points at core-engine's GitHub Discussions once that repo is public — it is private today,

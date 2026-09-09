@@ -130,11 +130,13 @@ export const tiers: TierDefinition[] = [
     priceName: 'Done-For-You',
     priceAmount: '$1,999',
     priceNote: '$1,999 one-time setup, then $199/month for the software',
-    features: [
-      'Everything in Self-Hosted Pro',
-      'Direct founder line, same-business-day response',
-      'Audit log (planned, procurement-driven)',
-    ],
+    // Deliberately does NOT list "Audit log" here: every renderer of this array (CheckoutTabs,
+    // PricingTable) puts an unconditional ✓ next to each entry — a checkout/pricing-card checklist
+    // means "you get this today," so a planned-but-unbuilt feature doesn't belong in it regardless
+    // of caveat text in the string. The detailed /compare/pricing matrix (app/compare/pricing/
+    // page.tsx's matrixRows) is the correct place for "planned" disclosure — it already renders
+    // it as plain text, no checkmark.
+    features: ['Everything in Self-Hosted Pro', 'Direct founder line, same-business-day response'],
     exclusiveFeatures: [
       { icon: 'history', label: 'DNS change history' },
       { icon: 'badge', label: 'Trust badge embed' },
