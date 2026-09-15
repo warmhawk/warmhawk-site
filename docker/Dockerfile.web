@@ -45,6 +45,19 @@ ENV STRIPE_WEBHOOK_SECRET=$STRIPE_WEBHOOK_SECRET
 ARG NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAAEpyt1Fwxww4Oho2
 ENV NEXT_PUBLIC_TURNSTILE_SITE_KEY=$NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
+# GA4 + PostHog, same story as every other NEXT_PUBLIC_* value above: lib/analytics.ts reads these
+# via process.env at module scope, and Next.js inlines that into the client bundle at `next build`
+# time — a runtime env var supplied at container start is read too late (Analytics.tsx.ANALYTICS_ENABLED
+# is already baked to false). Blank defaults keep local dev/stage/e2e builds inert, matching
+# analytics.ts's own "entirely optional" comment; ks-woodpecker-config's repo-map.ts entry for this
+# repo supplies the real values as build args for the prod/stage image build.
+ARG NEXT_PUBLIC_GA4_MEASUREMENT_ID=""
+ENV NEXT_PUBLIC_GA4_MEASUREMENT_ID=$NEXT_PUBLIC_GA4_MEASUREMENT_ID
+ARG NEXT_PUBLIC_POSTHOG_KEY=""
+ENV NEXT_PUBLIC_POSTHOG_KEY=$NEXT_PUBLIC_POSTHOG_KEY
+ARG NEXT_PUBLIC_POSTHOG_HOST=""
+ENV NEXT_PUBLIC_POSTHOG_HOST=$NEXT_PUBLIC_POSTHOG_HOST
+
 RUN npm run build && npm prune --omit=dev
 
 FROM node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293 AS runtime
