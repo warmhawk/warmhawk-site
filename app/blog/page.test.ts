@@ -17,7 +17,10 @@ describe('BlogIndexPage (app/blog/page.tsx)', () => {
     );
 
     for (const post of blogPosts) {
-      expect(screen.getByRole('link', { name: new RegExp(post.title) })).toHaveAttribute(
+      // Escape regex metacharacters in the title (e.g. the parens in "... (2026)") so this
+      // matches the literal title text instead of being parsed as a regex pattern.
+      const escapedTitle = post.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      expect(screen.getByRole('link', { name: new RegExp(escapedTitle) })).toHaveAttribute(
         'href',
         `/blog/${post.slug}`,
       );
