@@ -19,8 +19,10 @@ afterEach(() => {
 
 describe('sitemap()', () => {
   it('never includes /vs/instantly', () => {
+    // endsWith, not includes: /vs/instantly-vs-smartlead-vs-lemlist and /vs/instantly-alternatives
+    // are separate, always-live pages that legitimately share the "/vs/instantly" prefix.
     const routes = sitemap();
-    expect(routes.some((route) => route.url.includes('/vs/instantly'))).toBe(false);
+    expect(routes.some((route) => route.url.endsWith('/vs/instantly'))).toBe(false);
   });
 
   it('includes the other five /vs/* comparison pages', () => {

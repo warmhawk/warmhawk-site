@@ -39,6 +39,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/vs/woodpecker',
     '/vs/custom-n8n',
     '/vs/inframail',
+    '/vs/instantly-vs-smartlead-vs-lemlist',
+    '/vs/instantly-alternatives',
     '/compare/pricing',
     '/tools/domain-check',
     '/tools/mx-checker',

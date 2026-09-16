@@ -37,6 +37,13 @@ const nextConfig = {
     '@opentelemetry/auto-instrumentations-node',
     '@opentelemetry/exporter-trace-otlp-http',
   ],
+  // /pricing has never been a real route — the actual page has always lived at
+  // /compare/pricing — so it 404'd for anyone typing the guessable bare URL or following a
+  // stale external link. Permanent since /compare/pricing is the stable canonical location,
+  // not a temporary reroute.
+  async redirects() {
+    return [{ source: '/pricing', destination: '/compare/pricing', permanent: true }];
+  },
   async headers() {
     return [
       {
