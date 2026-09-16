@@ -12,6 +12,24 @@ export interface BlogPost {
 // three places. Newest first; the index and sitemap both render in this order.
 export const blogPosts: BlogPost[] = [
   {
+    slug: 'what-is-email-warmup',
+    title: 'Email Warmup: The Complete Guide (2026)',
+    description:
+      'What email warmup actually does to sender reputation, why it takes 2-4 weeks and cannot be rushed, the difference between manual warmup, automated warmup, and shared warmup-pool networks, and where placement sampling fits once warmup is done.',
+    excerpt:
+      'Warmup is a sender-reputation mechanism, not a checkbox — a mailbox that skips it gets treated as suspicious by every receiver on day one, no matter how good the copy is.',
+    date: '2026-09-15',
+  },
+  {
+    slug: 'dedicated-ip-vs-shared-warmup-pool',
+    title: 'Dedicated IP vs Shared Warmup Pool: The Reputation Risk Nobody Explains',
+    description:
+      "Most cold-email warmup runs through a shared pool of accounts across every customer of that vendor. Here's the actual mechanism by which one bad sender in that pool degrades placement for every other domain warming through it, and why a dedicated, per-customer setup doesn't have that failure mode.",
+    excerpt:
+      "A shared warmup pool means your domain's reputation is partly a function of strangers you've never met and can't audit — one of them gets flagged, and the whole pool's placement can suffer.",
+    date: '2026-09-15',
+  },
+  {
     slug: 'spf-10-dns-lookup-limit',
     title: "SPF's 10-lookup limit: why a valid-looking record can still silently fail",
     description:

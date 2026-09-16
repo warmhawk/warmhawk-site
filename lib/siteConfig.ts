@@ -96,6 +96,8 @@ export const footerLinks = {
     { label: 'vs Woodpecker', href: '/vs/woodpecker' },
     { label: 'vs Custom n8n', href: '/vs/custom-n8n' },
     { label: 'vs Inframail', href: '/vs/inframail' },
+    { label: 'Instantly vs Smartlead vs Lemlist', href: '/vs/instantly-vs-smartlead-vs-lemlist' },
+    { label: 'Instantly Alternatives', href: '/vs/instantly-alternatives' },
   ],
   tools: [
     { label: 'MX record checker', href: '/tools/mx-checker' },
