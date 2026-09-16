@@ -22,6 +22,7 @@ import {
   landingAttribution,
   pageview,
   readConsent,
+  setPosthogReady,
   track,
   trackCheckoutComplete,
   type ConsentState,
@@ -113,6 +114,11 @@ export function Analytics() {
   const [consent, setConsent] = useState<ConsentState>('unset');
   const booted = useRef(false);
   const lastPath = useRef<string | null>(null);
+  // Resolves once bootPostHog's dynamic import has actually set
+  // window.posthog — see lib/analytics.ts's setPosthogReady for why this
+  // exists. Defaults to already-resolved so GA4-only or analytics-disabled
+  // builds proceed exactly as before.
+  const postHogReady = useRef<Promise<void>>(Promise.resolve());
 
   // Boot once. Guarded on isAutomatedClient() so the e2e/human-journey
   // Playwright runs never load a tag at all — no beacon, no session replay,
@@ -125,7 +131,10 @@ export function Analytics() {
     setConsent(stored);
 
     if (GA4_ENABLED) bootGa4(stored);
-    if (POSTHOG_ENABLED) void bootPostHog(stored);
+    if (POSTHOG_ENABLED) {
+      postHogReady.current = bootPostHog(stored);
+      setPosthogReady(postHogReady.current);
+    }
 
     // Funnel step 1. Carries referrer + utm_* so "nobody arrives" and "the
     // wrong people arrive" are distinguishable.

@@ -97,6 +97,22 @@ declare global {
   }
 }
 
+// posthog-js is dynamically imported (Analytics.tsx's bootPostHog), so
+// `window.posthog` doesn't exist yet on the very first tick(s) after mount —
+// exactly when the boot effect fires the landing_view event and the pathname
+// effect fires the first pageview. Every function below that touches
+// `window.posthog` waits on this promise first, instead of racing it and
+// silently losing the event via optional chaining. Analytics.tsx sets it
+// once bootPostHog's dynamic import settles; everything before that point
+// (e.g. server-rendered no-op calls) sees the resolved default and proceeds
+// immediately, matching the old behavior for GA4-only or analytics-disabled
+// builds.
+let posthogReady: Promise<void> = Promise.resolve();
+
+export function setPosthogReady(promise: Promise<void>): void {
+  posthogReady = promise;
+}
+
 /**
  * Send one funnel event to every configured destination.
  *
@@ -112,11 +128,13 @@ export function track(event: AnalyticsEvent, props: EventProps = {}): void {
   } catch {
     /* ignore */
   }
-  try {
-    window.posthog?.capture(event, props);
-  } catch {
-    /* ignore */
-  }
+  void posthogReady.then(() => {
+    try {
+      window.posthog?.capture(event, props);
+    } catch {
+      /* ignore */
+    }
+  });
 }
 
 /**
@@ -137,11 +155,13 @@ export function pageview(path: string): void {
   } catch {
     /* ignore */
   }
-  try {
-    window.posthog?.capture('$pageview', { $current_url: window.location.href });
-  } catch {
-    /* ignore */
-  }
+  void posthogReady.then(() => {
+    try {
+      window.posthog?.capture('$pageview', { $current_url: window.location.href });
+    } catch {
+      /* ignore */
+    }
+  });
 }
 
 // --- checkout completion (funnel step 4) ------------------------------------
