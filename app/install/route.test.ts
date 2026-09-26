@@ -84,6 +84,12 @@ describe('GET /install', () => {
     expect(script).toContain('--core-engine-service-token "$CORE_SERVICE_TOKEN"');
   });
 
+  it('reads core-engine settings from .env/.env, the file its install.sh writes (.env is a directory)', async () => {
+    const script = await (await GET()).text();
+    expect(script).toContain('CORE_ENV="$CORE_DIR/.env/.env"');
+    expect(script).not.toContain('CORE_ENV="$CORE_DIR/.env"\n');
+  });
+
   it('passes --core-engine-url with no /api suffix (core-engine only proxies /v1, /health, /status)', async () => {
     const script = await (await GET()).text();
     expect(script).toContain('--core-engine-url "https://${API_DOMAIN}"');
