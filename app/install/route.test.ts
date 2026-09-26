@@ -147,6 +147,13 @@ describe('GET /install', () => {
     );
   });
 
+  it('tells core the dashboard URL on a licensed install, only if that core accepts the flag', async () => {
+    const script = await (await GET()).text();
+    expect(script).toContain(`grep -q -- '--dashboard-url)' "$CORE_DIR/scripts/install.sh"`);
+    expect(script).toContain('CORE_EXTRA_ARGS+=(--dashboard-url "https://${DASHBOARD_DOMAIN}")');
+    expect(script).toContain('${CORE_EXTRA_ARGS[@]+"${CORE_EXTRA_ARGS[@]}"}');
+  });
+
   it('accepts --skip-dns-check and hands it to the operator install (Cloudflare-proxied domains)', async () => {
     const script = await (await GET()).text();
     expect(script).toContain('--skip-dns-check) OPERATOR_EXTRA_ARGS+=(--skip-dns-check); shift ;;');
@@ -180,16 +187,18 @@ describe('GET /install', () => {
         writeFileSync(path, `#!/usr/bin/env bash\n${body}\n`);
         chmodSync(path, 0o755);
       };
-      writeExec(
-        join(root, 'core-src/scripts/install.sh'),
-        'cat >/dev/null; mkdir -p .env && echo OPERATOR_SERVICE_TOKEN=tok > .env/.env',
-      );
+      const coreStub =
+        'echo "CORE_INSTALL_RAN $*"; cat >/dev/null; mkdir -p .env && echo OPERATOR_SERVICE_TOKEN=tok > .env/.env';
+      writeExec(join(root, 'core-src/scripts/install.sh'), coreStub);
+      // A core release that knows --dashboard-url (its arg parser has the case label).
+      writeExec(join(root, 'core-new/scripts/install.sh'), `# --dashboard-url) ...\n${coreStub}`);
       writeExec(join(root, 'tooling/scripts/install.sh'), 'echo "OPERATOR_INSTALL_RAN $*"');
       spawnSync('tar', ['-czf', join(root, 'tooling.tar.gz'), '-C', join(root, 'tooling'), '.']);
       // The operator step fetches its tooling with curl; serve the local tarball instead.
       writeExec(join(root, 'bin/curl'), `cat '${join(root, 'tooling.tar.gz')}'`);
 
-      const runInstaller = (...extra: string[]) =>
+      const runInstaller = (...extra: string[]) => runFrom('core-src', 'install', ...extra);
+      const runFrom = (coreSrc: string, installDir: string, ...extra: string[]) =>
         spawnSync(
           'bash',
           [
@@ -202,9 +211,9 @@ describe('GET /install', () => {
             '--owner-email',
             'o@example.com',
             '--core-engine-source',
-            join(root, 'core-src'),
+            join(root, coreSrc),
             '--install-dir',
-            join(root, 'install'),
+            join(root, installDir),
             ...extra,
           ],
           {
@@ -223,6 +232,16 @@ describe('GET /install', () => {
       const proxied = runInstaller('--skip-dns-check');
       expect(proxied.status).toBe(0);
       expect(proxied.stdout).toMatch(/OPERATOR_INSTALL_RAN .*--skip-dns-check/);
+
+      // Core needs the dashboard's URL for OAuth redirects, but an older core checkout (reused on a
+      // re-run) rejects unknown flags -- so it's passed only when that core's install.sh accepts it.
+      expect(run.stdout).not.toContain('--dashboard-url');
+      expect(run.stdout).toContain('too old to record the dashboard URL');
+      const current = runFrom('core-new', 'install-new');
+      expect(current.status).toBe(0);
+      expect(current.stdout).toContain(
+        'CORE_INSTALL_RAN --domain api.example.com --dashboard-url https://dashboard.example.com',
+      );
     },
   );
 });
