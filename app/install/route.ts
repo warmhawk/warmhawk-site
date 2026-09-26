@@ -201,7 +201,8 @@ if [ -z "\$LICENSE" ]; then
   exit 0
 fi
 
-CORE_ENV="\$CORE_DIR/.env"
+# core-engine's install.sh writes .env/.env -- .env is a directory, so testing it with -f always fails.
+CORE_ENV="\$CORE_DIR/.env/.env"
 [ -f "\$CORE_ENV" ] || fail "warmhawk-core-engine's install completed but \${CORE_ENV} is missing -- cannot read its OPERATOR_SERVICE_TOKEN."
 CORE_SERVICE_TOKEN="\$(grep -m1 '^OPERATOR_SERVICE_TOKEN=' "\$CORE_ENV" | cut -d= -f2-)"
 [ -n "\$CORE_SERVICE_TOKEN" ] || fail "Could not read OPERATOR_SERVICE_TOKEN from \${CORE_ENV} after install -- check: cat \${CORE_ENV}"
