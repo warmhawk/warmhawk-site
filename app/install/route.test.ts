@@ -147,6 +147,12 @@ describe('GET /install', () => {
     );
   });
 
+  it('accepts --skip-dns-check and hands it to the operator install (Cloudflare-proxied domains)', async () => {
+    const script = await (await GET()).text();
+    expect(script).toContain('--skip-dns-check) OPERATOR_EXTRA_ARGS+=(--skip-dns-check); shift ;;');
+    expect(script).toContain('${OPERATOR_EXTRA_ARGS[@]+"${OPERATOR_EXTRA_ARGS[@]}"}');
+  });
+
   it('does not print its own setup-link message, letting the operator install.sh output flow through', async () => {
     const script = await (await GET()).text();
     expect(script).not.toContain('accept-invite?token=');
@@ -178,35 +184,45 @@ describe('GET /install', () => {
         join(root, 'core-src/scripts/install.sh'),
         'cat >/dev/null; mkdir -p .env && echo OPERATOR_SERVICE_TOKEN=tok > .env/.env',
       );
-      writeExec(join(root, 'tooling/scripts/install.sh'), 'echo OPERATOR_INSTALL_RAN');
+      writeExec(join(root, 'tooling/scripts/install.sh'), 'echo "OPERATOR_INSTALL_RAN $*"');
       spawnSync('tar', ['-czf', join(root, 'tooling.tar.gz'), '-C', join(root, 'tooling'), '.']);
       // The operator step fetches its tooling with curl; serve the local tarball instead.
       writeExec(join(root, 'bin/curl'), `cat '${join(root, 'tooling.tar.gz')}'`);
 
-      const run = spawnSync(
-        'bash',
-        [
-          '-s',
-          '--',
-          '--domain',
-          'example.com',
-          '--license',
-          'lic',
-          '--owner-email',
-          'o@example.com',
-          '--core-engine-source',
-          join(root, 'core-src'),
-          '--install-dir',
-          join(root, 'install'),
-        ],
-        {
-          input: script,
-          encoding: 'utf8',
-          env: { ...process.env, PATH: `${join(root, 'bin')}:${process.env.PATH}` },
-        },
-      );
+      const runInstaller = (...extra: string[]) =>
+        spawnSync(
+          'bash',
+          [
+            '-s',
+            '--',
+            '--domain',
+            'example.com',
+            '--license',
+            'lic',
+            '--owner-email',
+            'o@example.com',
+            '--core-engine-source',
+            join(root, 'core-src'),
+            '--install-dir',
+            join(root, 'install'),
+            ...extra,
+          ],
+          {
+            input: script,
+            encoding: 'utf8',
+            env: { ...process.env, PATH: `${join(root, 'bin')}:${process.env.PATH}` },
+          },
+        );
+      const run = runInstaller();
       expect(run.status).toBe(0);
       expect(run.stdout).toContain('OPERATOR_INSTALL_RAN');
+      expect(run.stdout).not.toContain('--skip-dns-check');
+
+      // A Cloudflare-proxied dashboard domain never resolves to the box, so the operator's DNS
+      // preflight can never pass; the one-liner has to be able to hand it --skip-dns-check.
+      const proxied = runInstaller('--skip-dns-check');
+      expect(proxied.status).toBe(0);
+      expect(proxied.stdout).toMatch(/OPERATOR_INSTALL_RAN .*--skip-dns-check/);
     },
   );
 });
