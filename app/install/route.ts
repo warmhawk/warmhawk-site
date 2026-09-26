@@ -95,6 +95,12 @@ const INSTALL_SCRIPT = `#!/usr/bin/env bash
 #   --install-dir <path>                 (default: \$WARMHAWK_INSTALL_DIR or ~/warmhawk)
 set -euo pipefail
 
+# Everything runs inside main(), called on the script's last line. Under \`curl ... | bash\` bash reads
+# this script from stdin as it goes, and a step that also reads stdin (core-engine's install.sh does)
+# would swallow the rest of it -- bash then hits EOF after the core step, skips the dashboard and
+# exits 0. Wrapping it makes bash read the whole script before running any of it.
+main() {
+
 log()  { echo "[warmhawk-install] \$*"; }
 fail() {
   echo "[warmhawk-install] ERROR: \$*" >&2
@@ -232,6 +238,9 @@ log "Installing WarmHawk Enterprise Operator (dashboard) at https://\${DASHBOARD
 
 log "Done. Core Engine: https://\${API_DOMAIN}/ -- Dashboard: https://\${DASHBOARD_DOMAIN}/"
 log "See the owner setup link in warmhawk-enterprise-operator's own install.sh output above."
+}
+
+main "\$@"
 `;
 
 export async function GET() {

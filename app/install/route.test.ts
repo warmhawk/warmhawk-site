@@ -1,4 +1,8 @@
 import { describe, it, expect } from 'vitest';
+import { spawnSync } from 'node:child_process';
+import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { GET } from './route';
 
 /**
@@ -147,4 +151,62 @@ describe('GET /install', () => {
     const script = await (await GET()).text();
     expect(script).not.toContain('accept-invite?token=');
   });
+
+  it('wraps the whole script in main(), called on its last line, so piped bash reads it all first', async () => {
+    const script = await (await GET()).text();
+    expect(script).toContain('\nmain() {\n');
+    expect(script.trimEnd().endsWith('main "$@"')).toBe(true);
+  });
+
+  // CI runs unit tests in node:20-alpine, which has no bash; the text check above still guards it there.
+  const hasBash = spawnSync('bash', ['-c', 'true']).status === 0;
+  it.skipIf(!hasBash)(
+    'runs every step when piped into bash, even if a step reads stdin',
+    async () => {
+      // Customers run `curl ... | bash`, so the script arrives on bash's stdin. A child command that
+      // reads stdin (as core-engine's install.sh does) swallows the rest of the script: bash then hits
+      // EOF after the core step, skips the dashboard and still exits 0. Stub both products' install.sh
+      // (the core one drains stdin), pipe the real script in, and require the operator step to run.
+      const script = await (await GET()).text();
+      const root = mkdtempSync(join(tmpdir(), 'wh-install-'));
+      const writeExec = (path: string, body: string) => {
+        mkdirSync(join(path, '..'), { recursive: true });
+        writeFileSync(path, `#!/usr/bin/env bash\n${body}\n`);
+        chmodSync(path, 0o755);
+      };
+      writeExec(
+        join(root, 'core-src/scripts/install.sh'),
+        'cat >/dev/null; mkdir -p .env && echo OPERATOR_SERVICE_TOKEN=tok > .env/.env',
+      );
+      writeExec(join(root, 'tooling/scripts/install.sh'), 'echo OPERATOR_INSTALL_RAN');
+      spawnSync('tar', ['-czf', join(root, 'tooling.tar.gz'), '-C', join(root, 'tooling'), '.']);
+      // The operator step fetches its tooling with curl; serve the local tarball instead.
+      writeExec(join(root, 'bin/curl'), `cat '${join(root, 'tooling.tar.gz')}'`);
+
+      const run = spawnSync(
+        'bash',
+        [
+          '-s',
+          '--',
+          '--domain',
+          'example.com',
+          '--license',
+          'lic',
+          '--owner-email',
+          'o@example.com',
+          '--core-engine-source',
+          join(root, 'core-src'),
+          '--install-dir',
+          join(root, 'install'),
+        ],
+        {
+          input: script,
+          encoding: 'utf8',
+          env: { ...process.env, PATH: `${join(root, 'bin')}:${process.env.PATH}` },
+        },
+      );
+      expect(run.status).toBe(0);
+      expect(run.stdout).toContain('OPERATOR_INSTALL_RAN');
+    },
+  );
 });
