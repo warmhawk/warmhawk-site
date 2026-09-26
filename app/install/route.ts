@@ -193,8 +193,21 @@ fetch_source() {
 CORE_DIR="\$INSTALL_DIR/warmhawk-core-engine"
 fetch_source "\$CORE_REPO_SOURCE" "\$CORE_DIR" "warmhawk-core-engine" "\$CORE_REPO_REF"
 
+# A licensed install also gets the dashboard, and core has to know its URL: mailbox-connect OAuth
+# redirects and CORS use it, and without it they point at localhost:4610. A core checkout reused
+# from before core learned --dashboard-url would reject it as unknown, so it's passed only when
+# that install.sh accepts it.
+CORE_EXTRA_ARGS=()
+if [ -n "\$LICENSE" ]; then
+  if grep -q -- '--dashboard-url)' "\$CORE_DIR/scripts/install.sh" 2>/dev/null; then
+    CORE_EXTRA_ARGS+=(--dashboard-url "https://\${DASHBOARD_DOMAIN}")
+  else
+    log "WARNING: this warmhawk-core-engine is too old to record the dashboard URL -- run 'warmhawk update', then re-run this command."
+  fi
+fi
+
 log "Installing WarmHawk Core Engine at https://\${API_DOMAIN}/ ..."
-( cd "\$CORE_DIR" && ./scripts/install.sh --domain "\$API_DOMAIN" )
+( cd "\$CORE_DIR" && ./scripts/install.sh --domain "\$API_DOMAIN" \${CORE_EXTRA_ARGS[@]+"\${CORE_EXTRA_ARGS[@]}"} )
 
 # --- 2. Tier 0 stops here -----------------------------------------------------------------------
 # No license means no dashboard to install: the operator repo is the licensed component, and Tier 0
