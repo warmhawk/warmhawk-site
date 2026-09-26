@@ -93,6 +93,9 @@ const INSTALL_SCRIPT = `#!/usr/bin/env bash
 #                                         stays in that permanently-private repo and never reaches
 #                                         this script at all)
 #   --install-dir <path>                 (default: \$WARMHAWK_INSTALL_DIR or ~/warmhawk)
+#   --skip-dns-check                     the dashboard domain is behind Cloudflare/a CDN proxy, NAT or
+#                                        split DNS, so it never resolves to this server's own IP --
+#                                        without this, license activation stays deferred forever
 set -euo pipefail
 
 # Everything runs inside main(), called on the script's last line. Under \`curl ... | bash\` bash reads
@@ -125,6 +128,7 @@ DOMAIN=""
 OWNER_EMAIL=""
 API_DOMAIN=""
 DASHBOARD_DOMAIN=""
+OPERATOR_EXTRA_ARGS=()
 
 while [ \$# -gt 0 ]; do
   case "\$1" in
@@ -137,7 +141,8 @@ while [ \$# -gt 0 ]; do
     --core-engine-ref) CORE_REPO_REF="\$2"; shift 2 ;;
     --operator-deploy-tooling-url) OPERATOR_DEPLOY_TOOLING_URL="\$2"; shift 2 ;;
     --install-dir) INSTALL_DIR="\$2"; shift 2 ;;
-    *) fail "Unknown argument: \$1 (expected --license, --domain, --owner-email, and optionally --api-domain/--dashboard-domain/--core-engine-source/--operator-deploy-tooling-url/--install-dir)" ;;
+    --skip-dns-check) OPERATOR_EXTRA_ARGS+=(--skip-dns-check); shift ;;
+    *) fail "Unknown argument: \$1 (expected --license, --domain, --owner-email, and optionally --api-domain/--dashboard-domain/--core-engine-source/--operator-deploy-tooling-url/--install-dir/--skip-dns-check)" ;;
   esac
 done
 
@@ -234,7 +239,8 @@ log "Installing WarmHawk Enterprise Operator (dashboard) at https://\${DASHBOARD
     --domain "\$DASHBOARD_DOMAIN" \\
     --core-engine-url "https://\${API_DOMAIN}" \\
     --core-engine-service-token "\$CORE_SERVICE_TOKEN" \\
-    --owner-email "\$OWNER_EMAIL" )
+    --owner-email "\$OWNER_EMAIL" \\
+    \${OPERATOR_EXTRA_ARGS[@]+"\${OPERATOR_EXTRA_ARGS[@]}"} )
 
 log "Done. Core Engine: https://\${API_DOMAIN}/ -- Dashboard: https://\${DASHBOARD_DOMAIN}/"
 log "See the owner setup link in warmhawk-enterprise-operator's own install.sh output above."
