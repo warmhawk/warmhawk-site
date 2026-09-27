@@ -41,11 +41,23 @@ import {
  *  avoid. A genuinely failed subscription lands in `canceled`/`unpaid`, which are excluded. */
 const ENTITLING_STATUSES: ReadonlySet<string> = new Set(['active', 'trialing', 'past_due']);
 
+/** A bare hostname: what an operator's `WARMHAWK_DOMAIN` holds. `localhost` is allowed so a local
+ *  development install can bind too; WarmHawk Connect only accepts http for that one case. */
+const INSTALL_DOMAIN_PATTERN =
+  /^(localhost|[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+)$/;
+
 export async function POST(request: NextRequest) {
   let licenseToken: string | undefined;
+  let installDomain: string | undefined;
   try {
-    const body = (await request.json()) as { licenseToken?: string };
+    const body = (await request.json()) as { licenseToken?: string; installDomain?: unknown };
     licenseToken = body.licenseToken?.trim();
+    if (typeof body.installDomain === 'string') {
+      const candidate = body.installDomain.trim().toLowerCase();
+      if (candidate.length <= 253 && INSTALL_DOMAIN_PATTERN.test(candidate)) {
+        installDomain = candidate;
+      }
+    }
   } catch {
     // fall through to the validation below
   }
@@ -121,7 +133,16 @@ export async function POST(request: NextRequest) {
     expiresAt: computeExpiry(new Date(), interval),
     // Preserved so the Guardrails "License piracy signal" reuse check keeps working across a
     // refresh — a refreshed license stays bound to whatever domain it was activated against.
-    ...(existing.boundDomain ? { boundDomain: existing.boundDomain } : {}),
+    //
+    // WarmHawk Connect pins its return domain to this value (lib/connect.ts), so it is set ONCE,
+    // trust-on-first-use, from the operator's `installDomain` — and never overwritten here. Once
+    // the real owner has connected, a leaked license can't move the pin to someone else's server.
+    // A genuine server move is a support reissue.
+    ...(existing.boundDomain
+      ? { boundDomain: existing.boundDomain }
+      : installDomain
+        ? { boundDomain: installDomain }
+        : {}),
   };
 
   const { token } = issueLicense(payload, privateKeyPem);
@@ -130,5 +151,6 @@ export async function POST(request: NextRequest) {
     licenseToken: token,
     tier: payload.tier,
     expiresAt: new Date(payload.expiresAt * 1000).toISOString(),
+    boundDomain: payload.boundDomain ?? null,
   });
 }
