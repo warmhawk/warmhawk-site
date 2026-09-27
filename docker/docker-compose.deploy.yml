@@ -71,6 +71,15 @@ services:
       # inlined into the client bundle and published to every visitor.
       PROBE_INTERNAL_URL: ${PROBE_INTERNAL_URL:-http://warmhawk-probe:4700}
       PROBE_SHARED_SECRET: ${PROBE_SHARED_SECRET:-}
+      # WarmHawk Connect relay (lib/connect.ts). All optional: a provider whose values are unset
+      # answers 503 provider_not_configured and installs fall back to app passwords / BYO OAuth.
+      # CONNECT_BASE_URL must be this deployment's own public origin — it is the OAuth redirect
+      # URI registered with Google and Microsoft (https://stage.warmhawk.com on stage).
+      CONNECT_BASE_URL: ${CONNECT_BASE_URL:-https://warmhawk.com}
+      CONNECT_TICKET_SECRET: ${CONNECT_TICKET_SECRET:-}
+      GOOGLE_CONNECT_CLIENT_ID: ${GOOGLE_CONNECT_CLIENT_ID:-}
+      GOOGLE_CONNECT_CLIENT_SECRET: ${GOOGLE_CONNECT_CLIENT_SECRET:-}
+      MICROSOFT_CONNECT_CLIENT_ID: ${MICROSOFT_CONNECT_CLIENT_ID:-}
     healthcheck:
       test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:4600/']
       interval: 30s
