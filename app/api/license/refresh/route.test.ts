@@ -251,6 +251,47 @@ describe('POST /api/license/refresh', () => {
     expect(verified.payload?.boundDomain).toBe('acme.example.com');
   });
 
+  it('binds an unbound license to installDomain once (WarmHawk Connect pin)', async () => {
+    subscriptionsListMock.mockResolvedValue({ data: [subscription()] });
+
+    const res = await POST(
+      postRequest({ licenseToken: tokenFor(), installDomain: ' WarmHawk.Acme.Example ' }),
+    );
+    const json = (await res.json()) as { licenseToken: string; boundDomain: string | null };
+    const verified = verifyLicense(json.licenseToken, derivePublicKeyPem(TEST_PRIVATE_KEY));
+
+    expect(verified.payload?.boundDomain).toBe('warmhawk.acme.example');
+    expect(json.boundDomain).toBe('warmhawk.acme.example');
+  });
+
+  it('never moves an existing pin — a leaked license cannot re-aim Connect', async () => {
+    subscriptionsListMock.mockResolvedValue({ data: [subscription()] });
+
+    const res = await POST(
+      postRequest({
+        licenseToken: tokenFor({ boundDomain: 'acme.example.com' }),
+        installDomain: 'attacker.example.net',
+      }),
+    );
+    const json = (await res.json()) as { licenseToken: string };
+    const verified = verifyLicense(json.licenseToken, derivePublicKeyPem(TEST_PRIVATE_KEY));
+
+    expect(verified.payload?.boundDomain).toBe('acme.example.com');
+  });
+
+  it.each(['https://acme.example.com', 'acme.example.com/path', 'acme', '-bad.example.com', 42])(
+    'ignores an installDomain that is not a bare hostname: %s',
+    async (installDomain) => {
+      subscriptionsListMock.mockResolvedValue({ data: [subscription()] });
+
+      const res = await POST(postRequest({ licenseToken: tokenFor(), installDomain }));
+      const json = (await res.json()) as { licenseToken: string; boundDomain: string | null };
+
+      expect(res.status).toBe(200);
+      expect(json.boundDomain).toBeNull();
+    },
+  );
+
   it('returns 502 without leaking Stripe internals when the lookup throws', async () => {
     subscriptionsListMock.mockRejectedValue(new Error('sk_live_super_secret_detail'));
     vi.spyOn(console, 'error').mockImplementation(() => {});
