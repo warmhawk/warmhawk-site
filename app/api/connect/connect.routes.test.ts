@@ -4,6 +4,7 @@ import { POST as start } from './start/route';
 import { POST as token } from './google/token/route';
 import { GET as config } from './config/route';
 import { GET as callback } from '@/app/connect/[provider]/callback/route';
+import { GET as adminConsent } from '@/app/connect/[provider]/admin-consent/route';
 import { issueLicense, type LicensePayload } from '@/lib/license';
 import { signTicket, verifyTicket } from '@/lib/connect';
 import { TEST_PRIVATE_KEY } from '@/tests/fixtures/license-keypair';
@@ -339,5 +340,72 @@ describe('GET /api/connect/config', () => {
   it('shows null for a provider that is switched off', async () => {
     delete process.env.MICROSOFT_CONNECT_CLIENT_ID;
     expect(await (await config()).json()).toMatchObject({ microsoft: null });
+  });
+});
+
+describe('GET /connect/microsoft/admin-consent', () => {
+  const get = (provider: string) =>
+    adminConsent(new NextRequest(`http://localhost/connect/${provider}/admin-consent`), {
+      params: Promise.resolve({ provider }),
+    });
+
+  it("sends the admin to Microsoft's organization-wide consent for the Connect scopes", async () => {
+    const res = await get('microsoft');
+    const location = new URL(res.headers.get('location')!);
+
+    expect(res.status).toBe(302);
+    expect(location.origin + location.pathname).toBe(
+      'https://login.microsoftonline.com/organizations/v2.0/adminconsent',
+    );
+    expect(location.searchParams.get('client_id')).toBe('ms-client-id');
+    expect(location.searchParams.get('redirect_uri')).toBe(
+      'https://stage.warmhawk.com/connect/microsoft/callback',
+    );
+    expect(location.searchParams.get('state')).toBe('admin_consent');
+    expect(location.searchParams.get('scope')!.split(' ')).toEqual([
+      'offline_access',
+      'openid',
+      'email',
+      'https://graph.microsoft.com/User.Read',
+      'https://graph.microsoft.com/Mail.Send',
+      'https://outlook.office.com/IMAP.AccessAsUser.All',
+    ]);
+  });
+
+  it('is Microsoft only, and off while Microsoft Connect is switched off', async () => {
+    expect((await get('google')).status).toBe(404);
+    delete process.env.MICROSOFT_CONNECT_CLIENT_ID;
+    expect((await get('microsoft')).status).toBe(503);
+  });
+
+  it("shows the result of Microsoft's admin consent instead of treating it as a ticket", async () => {
+    const back = (query: Record<string, string>) =>
+      callback(
+        new NextRequest(
+          `http://localhost/connect/microsoft/callback?${new URLSearchParams(query)}`,
+        ),
+        { params: Promise.resolve({ provider: 'microsoft' }) },
+      );
+
+    const approved = await back({ admin_consent: 'True', tenant: 't-1', state: 'admin_consent' });
+    expect(approved.status).toBe(200);
+    expect(approved.headers.get('location')).toBeNull();
+    expect(await approved.text()).toContain('approved for your organization');
+
+    const refused = await back({
+      error: 'access_denied',
+      error_description: 'AADSTS65004: <b>declined</b>. Trace ID: x',
+      state: 'admin_consent',
+    });
+    expect(refused.status).toBe(400);
+    const html = await refused.text();
+    expect(html).toContain('AADSTS65004: &lt;b&gt;declined&lt;/b&gt;.');
+    expect(html).not.toContain('Trace ID');
+
+    // No ticket is involved, so an admin's approval still lands even with Connect's secret unset.
+    delete process.env.CONNECT_TICKET_SECRET;
+    expect(
+      (await back({ admin_consent: 'True', tenant: 't-1', state: 'admin_consent' })).status,
+    ).toBe(200);
   });
 });
