@@ -21,10 +21,10 @@ export default function SecurityPage() {
           </h1>
           <AnswerBlock>
             WarmHawk welcomes good-faith security research into the marketing site, the Stripe
-            checkout/webhook path, and the open-core warmhawk-core-engine codebase. Report findings
-            to {siteConfig.securityEmail} &mdash; confirmed issues get a response within 1 business
-            day (4 hours if critical), and non-destructive, in-scope testing is covered by the
-            safe-harbor terms below.
+            checkout/webhook path, the WarmHawk Connect mailbox sign-in relay, and the open-core
+            warmhawk-core-engine codebase. Report findings to {siteConfig.securityEmail} &mdash;
+            confirmed issues get a response within 1 business day (4 hours if critical), and
+            non-destructive, in-scope testing is covered by the safe-harbor terms below.
           </AnswerBlock>
           <p className="text-base leading-relaxed text-ink-muted">
             This page is the human-readable counterpart to{' '}
@@ -57,6 +57,21 @@ export default function SecurityPage() {
                   /api/stripe/webhook
                 </code>{' '}
                 signature-verification and license-issuance flow.
+              </span>
+            </li>
+            <li className="flex gap-3">
+              <span className="text-rust font-semibold">&bull;</span>
+              <span className="text-base leading-relaxed text-ink-muted">
+                <strong className="text-ink">The WarmHawk Connect relay</strong> &mdash;{' '}
+                <code className="text-[13px] bg-cream-elevated px-1.5 py-0.5 rounded">
+                  /api/connect/*
+                </code>{' '}
+                and{' '}
+                <code className="text-[13px] bg-cream-elevated px-1.5 py-0.5 rounded">
+                  /connect/*/callback
+                </code>
+                : the license check, the signed ticket that pins each sign-in to one install&rsquo;s
+                address, and the Google token pass-through.
               </span>
             </li>
             <li className="flex gap-3">

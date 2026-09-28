@@ -20,6 +20,7 @@ const CONFIG_RESPONSE = {
           monitorList: [
             { id: 1, name: 'Marketing site' },
             { id: 2, name: 'Stripe webhook / license issuance' },
+            { id: 3, name: 'WarmHawk Connect relay' },
           ],
         },
       ],
