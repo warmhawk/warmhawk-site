@@ -8,7 +8,7 @@ import { getStatusChecks } from '@/lib/statusProvider';
 export const metadata: Metadata = pageSeo({
   title: 'Status',
   description:
-    'What WarmHawk operates centrally (the marketing site and Stripe license issuance) versus what runs on your own self-hosted instance, monitored by your own bundled Uptime Kuma and OTEL export.',
+    'What WarmHawk operates centrally (the marketing site, Stripe license issuance and the WarmHawk Connect mailbox sign-in relay) versus what runs on your own self-hosted instance, monitored by your own bundled Uptime Kuma and OTEL export.',
   path: '/status',
 });
 
@@ -21,6 +21,7 @@ export default async function StatusPage() {
   const checks = await getStatusChecks();
   const marketingSite = checks.find((check) => check.key === 'marketing-site');
   const stripeWebhook = checks.find((check) => check.key === 'stripe-webhook');
+  const connectRelay = checks.find((check) => check.key === 'connect-relay');
   const isUnconfigured = checks.some((check) => check.status === 'unconfigured');
 
   return (
@@ -32,11 +33,12 @@ export default async function StatusPage() {
             What&rsquo;s centrally operated, and what isn&rsquo;t
           </h1>
           <AnswerBlock>
-            WarmHawk centrally operates exactly two things: this marketing site and the Stripe
-            webhook that issues licenses. Your self-hosted instance &mdash; containers, nginx, TLS,
-            Postgres &mdash; is entirely yours to run, which is the whole point of a self-hosted
-            product. You get your own bundled Uptime Kuma and a free OTEL export endpoint to monitor
-            it yourself.
+            WarmHawk centrally operates three things: this marketing site, the Stripe webhook that
+            issues licenses, and the WarmHawk Connect relay that lets a licensed install sign a
+            mailbox in with Google or Microsoft. Your self-hosted instance &mdash; containers,
+            nginx, TLS, Postgres &mdash; is entirely yours to run, which is the whole point of a
+            self-hosted product. You get your own bundled Uptime Kuma and a free OTEL export
+            endpoint to monitor it yourself.
           </AnswerBlock>
         </div>
       </div>
@@ -47,10 +49,20 @@ export default async function StatusPage() {
           <h2 className="font-display text-2xl md:text-[28px] font-semibold mb-3">
             What WarmHawk operates centrally
           </h2>
-          <p className="text-base leading-relaxed text-ink-muted mb-6">
-            Two things, and only two things, run on infrastructure WarmHawk itself controls.
+          <p className="text-base leading-relaxed text-ink-muted mb-4">
+            Three things, and only three things, run on infrastructure WarmHawk itself controls.
             Everything else &mdash; every customer&rsquo;s actual sending engine, dashboard,
             database, and mail delivery &mdash; runs on that customer&rsquo;s own server instead.
+          </p>
+          <p className="text-base leading-relaxed text-ink-muted mb-6">
+            The Connect relay stores nothing. It checks your license and forwards the mailbox
+            sign-in back to your own server. Google&rsquo;s sign-in tokens pass through it in
+            transit, because Google requires a secret WarmHawk keeps off customer servers;
+            Microsoft&rsquo;s never reach it. See the{' '}
+            <Link href="/legal/privacy#connect" className="text-rust font-semibold">
+              privacy policy
+            </Link>{' '}
+            for exactly what passes through.
           </p>
 
           <div className="card divide-y divide-border">
@@ -70,11 +82,20 @@ export default async function StatusPage() {
               </div>
               <CheckBadge status={stripeWebhook?.status ?? 'unconfigured'} />
             </div>
+            <div className="flex items-center justify-between gap-4 p-5">
+              <div>
+                <div className="font-semibold text-[15px]">WarmHawk Connect relay</div>
+                <div className="text-sm text-ink-muted mt-0.5">
+                  One-click Google / Microsoft mailbox sign-in for licensed installs
+                </div>
+              </div>
+              <CheckBadge status={connectRelay?.status ?? 'unconfigured'} />
+            </div>
           </div>
           {isUnconfigured && (
             <p className="text-sm leading-relaxed text-ink-muted mt-4">
-              Live status monitoring isn&rsquo;t configured yet &mdash; these two rows will report
-              real, provider-backed status once{' '}
+              Live status monitoring isn&rsquo;t configured yet &mdash; these rows will report real,
+              provider-backed status once{' '}
               <code className="text-[13px] bg-cream px-1.5 py-0.5 rounded">
                 STATUS_KUMA_BASE_URL
               </code>{' '}

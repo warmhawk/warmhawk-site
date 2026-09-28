@@ -12,7 +12,8 @@ import type { CheckStatus } from '@/components/CheckBadge';
  *
  * Monitor -> component matching is by exact (case-insensitive) name match
  * against STATUS_COMPONENTS[].label below — create two monitors in Kuma
- * named exactly "Marketing site" and "Stripe webhook / license issuance"
+ * named exactly "Marketing site", "Stripe webhook / license issuance" and
+ * "WarmHawk Connect relay"
  * (or edit the labels here to match whatever you actually name them),
  * add both to one public status page, and put that page's slug in
  * STATUS_KUMA_SLUG.
@@ -33,6 +34,11 @@ export const STATUS_COMPONENTS: StatusComponentDef[] = [
     key: 'stripe-webhook',
     label: 'Stripe webhook / license issuance',
     sublabel: 'Checkout → webhook → license-key delivery path',
+  },
+  {
+    key: 'connect-relay',
+    label: 'WarmHawk Connect relay',
+    sublabel: 'One-click Google / Microsoft mailbox sign-in for licensed installs',
   },
 ];
 
