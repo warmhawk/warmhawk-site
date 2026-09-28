@@ -2,6 +2,12 @@ import { createElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { DomainCheckTool } from './DomainCheckTool';
+import { EVENTS, track } from '@/lib/analytics';
+
+vi.mock('@/lib/analytics', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/analytics')>()),
+  track: vi.fn(),
+}));
 
 /**
  * (No JSX here on purpose: this repo's Vitest setup runs on Vite's rolldown-based dependency,
@@ -939,5 +945,63 @@ describe('DomainCheckTool', () => {
     expect(
       await screen.findByRole('heading', { name: /watch all 2 domains/i }),
     ).toBeInTheDocument();
+  });
+
+  it('reports a successful check to analytics as counts only, never the domains', async () => {
+    vi.mocked(track).mockClear();
+    vi.stubGlobal(
+      'fetch',
+      okFetch(
+        multiResponse([
+          ['a.com', CLEAN],
+          ['b.com', withStatus('spf', 'fail')],
+        ]),
+      ),
+    );
+
+    render(createElement(DomainCheckTool));
+    paste('a.com\nb.com');
+    submit();
+
+    await screen.findByRole('table');
+    expect(track).toHaveBeenCalledTimes(1);
+    const [event, props] = vi.mocked(track).mock.calls[0]!;
+    expect(event).toBe(EVENTS.domainCheckRun);
+    expect(props).toEqual({ tool: 'all', domains: 2, failing: 1 });
+    expect(JSON.stringify(props)).not.toMatch(/a\.com|b\.com/);
+  });
+
+  it("names the checker page's lead check as the tool", async () => {
+    vi.mocked(track).mockClear();
+    vi.stubGlobal('fetch', okFetch(response('example.com', CLEAN)));
+
+    // A wrapper, because createElement can't infer props through DomainCheckTool's `= {}` default.
+    render(createElement(() => DomainCheckTool({ leadCheck: 'dmarc' })));
+    paste('example.com');
+    submit();
+
+    await screen.findByRole('table');
+    expect(track).toHaveBeenCalledWith(EVENTS.domainCheckRun, {
+      tool: 'dmarc',
+      domains: 1,
+      failing: 0,
+    });
+  });
+
+  it('reports nothing when the check fails', async () => {
+    vi.mocked(track).mockClear();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve({ ok: false, status: 502, json: () => Promise.resolve({}) } as Response),
+      ),
+    );
+
+    render(createElement(DomainCheckTool));
+    paste('example.com');
+    submit();
+
+    await screen.findByText(/isn't reachable right now/i);
+    expect(track).not.toHaveBeenCalled();
   });
 });

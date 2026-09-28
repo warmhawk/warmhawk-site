@@ -33,11 +33,19 @@ export const ANALYTICS_ENABLED = GA4_ENABLED || POSTHOG_ENABLED;
 // any adjacent pair points at a different fix. Names are snake_case because
 // GA4 rejects anything else, and are shared verbatim with PostHog so a
 // funnel defined in one tool reads the same in the other.
+//
+// The free tools add two more. domain_check_run fires on every successful
+// check, on whichever checker page ran it (PostHog's own $pathname says
+// which), and sits between landing and pricing in Signal's WarmHawk funnel.
+// domain_watch_signup fires when the watch form is accepted — the domain
+// count only, never the email.
 export const EVENTS = {
   landingView: 'landing_view',
   pricingView: 'pricing_view',
   checkoutStart: 'checkout_start',
   checkoutComplete: 'checkout_complete',
+  domainCheckRun: 'domain_check_run',
+  domainWatchSignup: 'domain_watch_signup',
 } as const;
 
 export type AnalyticsEvent = (typeof EVENTS)[keyof typeof EVENTS];
