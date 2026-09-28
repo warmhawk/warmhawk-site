@@ -20,14 +20,16 @@
 // the real prod value to exercise prod-like URLs — the only signal that container is not actually
 // production is this flag, which that script alone injects via `docker run -e`. Discovered
 // 2026-09-09 when this guard's first deploy failed the e2e-docker CI job outright.
-async function assertLicenseSigningKeyUnchanged(): Promise<void> {
+async function assertLicenseSigningKeyUnchanged(
+  loadLicense: () => Promise<typeof import('./lib/license')>,
+): Promise<void> {
   if (process.env.WARMHAWK_E2E_DOCKER) return;
   if (process.env.NEXT_PUBLIC_SITE_URL !== 'https://warmhawk.com') return;
 
   const privateKeyPem = process.env.LICENSE_SIGNING_PRIVATE_KEY;
   if (!privateKeyPem) return; // Existing routes already degrade to a clear 503 for this case.
 
-  const { checkLicenseSigningKeyFingerprint } = await import('./lib/license');
+  const { checkLicenseSigningKeyFingerprint } = await loadLicense();
   const result = checkLicenseSigningKeyFingerprint(privateKeyPem);
   if (result.ok) return;
 
@@ -44,10 +46,17 @@ async function assertLicenseSigningKeyUnchanged(): Promise<void> {
 }
 
 export async function register(): Promise<void> {
-  if (process.env.NEXT_RUNTIME !== 'nodejs') return;
+  // An if-block, not an early `return`: Next also compiles this file for the edge runtime, and
+  // webpack only drops the Node-only path when it sits inside a branch it can evaluate as dead.
+  // Behind an early return, import('./lib/license') stayed reachable, pulled node:crypto into the
+  // edge bundle, and every `next dev` request 500'd (found 2026-09-27).
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    await assertLicenseSigningKeyUnchanged(() => import('./lib/license'));
+    await startTracing();
+  }
+}
 
-  await assertLicenseSigningKeyUnchanged();
-
+async function startTracing(): Promise<void> {
   if (!process.env.OTEL_EXPORTER_OTLP_ENDPOINT) return;
 
   // webpackIgnore: serverExternalPackages only stops webpack from bundling the four packages named
