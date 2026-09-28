@@ -28,7 +28,7 @@ export default function PrivacyPage() {
     <div className="wrap py-16">
       <div className="label text-rust mb-5">Legal</div>
       <h1 className="font-display text-4xl font-semibold mb-4">Privacy Policy</h1>
-      <p className="text-sm text-ink-muted mb-8">Last updated: September 1, 2026</p>
+      <p className="text-sm text-ink-muted mb-8">Last updated: September 27, 2026</p>
 
       <p className="text-ink-muted leading-relaxed mb-4">
         This Privacy Policy describes the personal data practices of WarmHawk (&ldquo;we,&rdquo;
@@ -77,6 +77,15 @@ export default function PrivacyPage() {
           {siteConfig.securityEmail}, we keep that correspondence to respond to you and to maintain
           a support history.
         </li>
+        <li>
+          <strong>WarmHawk Connect (licensed installs only):</strong> when someone signs a mailbox
+          in with Google or Microsoft from your dashboard, your instance sends our relay its license
+          token and its own web address. See{' '}
+          <a href="#connect" className="text-rust font-semibold">
+            Section&nbsp;2
+          </a>{' '}
+          for what passes through, and what never does.
+        </li>
       </ul>
 
       <h2 id="what-we-dont-collect" className="font-display text-2xl font-semibold mb-3 mt-10">
@@ -89,7 +98,7 @@ export default function PrivacyPage() {
       </p>
       <ul className="list-disc pl-6 mb-4 text-ink-muted leading-relaxed space-y-1.5">
         <li>your prospect or customer lead lists;</li>
-        <li>your mailbox credentials or connected email account contents;</li>
+        <li>your mailbox passwords or connected email account contents;</li>
         <li>
           the content of any campaign, sequence, or AI-generated copy you send through your own
           instance; or
@@ -103,6 +112,36 @@ export default function PrivacyPage() {
         That data lives exclusively on your own server, under your own control, for the life of your
         installation. WarmHawk has no standing access path into it and no copy of it exists on
         WarmHawk-operated systems.
+      </p>
+      <h3 id="connect" className="font-display text-xl font-semibold mb-3 mt-8">
+        The one exception: WarmHawk Connect, in transit only
+      </h3>
+      <p className="text-ink-muted leading-relaxed mb-4">
+        WarmHawk Connect lets a licensed install sign a mailbox in with Google or Microsoft without
+        building its own OAuth app. It runs through a small relay on warmhawk.com, which checks your
+        license and sends each sign-in back only to your own instance&rsquo;s address. The relay has
+        no database and stores nothing.
+      </p>
+      <ul className="list-disc pl-6 mb-4 text-ink-muted leading-relaxed space-y-1.5">
+        <li>
+          <strong>Google:</strong> Google requires a client secret, and we keep it off customer
+          servers. So the one-time sign-in code, and the tokens Google issues for it, pass through
+          the relay on their way to your instance. So does each hourly token refresh. We don&rsquo;t
+          store or log the tokens. The sign-in code is single-use and spent within seconds.
+        </li>
+        <li>
+          <strong>Microsoft:</strong> the one-time sign-in code passes through the relay, but it is
+          useless without a key only your instance holds. Your instance redeems it with Microsoft
+          directly, so Microsoft tokens never reach warmhawk.com.
+        </li>
+        <li>
+          <strong>What the relay never sees:</strong> mailbox passwords, message contents, lead
+          lists, or campaign data.
+        </li>
+      </ul>
+      <p className="text-ink-muted leading-relaxed mb-4">
+        Prefer nothing to pass through us? Register your own Google or Microsoft OAuth app in your
+        dashboard, or connect with an app password over SMTP/IMAP. Both bypass the relay entirely.
       </p>
 
       <h2 id="gdpr-basis" className="font-display text-2xl font-semibold mb-3 mt-10">
