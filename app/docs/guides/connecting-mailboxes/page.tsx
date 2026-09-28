@@ -24,6 +24,11 @@ const faqItems = [
       'It is encrypted server-side (AES-256-GCM) before being persisted, and is never echoed back in any API response — not even to the authenticated caller who just set it.',
   },
   {
+    question: 'Why does my Google Workspace admin have to trust WarmHawk?',
+    answer:
+      "Google blocks third-party apps that ask for full Gmail access until a Workspace admin marks them trusted. It is a one-time step per company, in admin.google.com, and every mailbox on that Workspace can connect afterward. Personal @gmail.com addresses can't be trusted this way, so connect those with an app password over SMTP/IMAP.",
+  },
+  {
     question: 'Can I connect more than one mailbox per domain?',
     answer:
       'Yes, and it is the normal setup — the send queue rotates weighted across every active mailbox on a campaign rather than hammering one inbox.',
@@ -53,6 +58,57 @@ export default function ConnectingMailboxesPage() {
         directly, or by creating a credential-less mailbox row first and completing OAuth consent
         against GET /v1/oauth/:provider/authorize?mailboxId=&lt;id&gt; for Google or Microsoft.
       </AnswerBlock>
+
+      <div className="card bg-rust-tint border-rust px-6 py-5 mb-10 max-w-2xl">
+        <p className="text-[14px] leading-relaxed text-ink">
+          <span className="font-semibold text-rust">On Tier 1 or Tier 2?</span> Skip the API steps.
+          In your dashboard, open Mailboxes, enter the address, and click{' '}
+          <strong>Connect with Google</strong>. WarmHawk Connect handles the sign-in, so there is no
+          OAuth app to build. The one step your company does once is below.
+        </p>
+      </div>
+
+      <h2 id="google-workspace-trust" className="font-display text-2xl font-semibold mb-4">
+        Google Workspace: trust WarmHawk once
+      </h2>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        Google blocks apps that ask for full Gmail access until your Workspace admin trusts them. It
+        takes about a minute, once per company:
+      </p>
+      <ol className="list-decimal pl-6 mb-4 max-w-2xl text-[15px] leading-relaxed text-ink-muted space-y-1.5">
+        <li>
+          In your WarmHawk dashboard, open Mailboxes and copy the client ID shown under{' '}
+          <strong>Google Workspace: trust WarmHawk once</strong>.
+        </li>
+        <li>Open admin.google.com as a super admin.</li>
+        <li>
+          Go to Security &rarr; Access and data control &rarr; API controls &rarr; Manage
+          third-party app access.
+        </li>
+        <li>Click Configure new app, search for the client ID, and select WarmHawk.</li>
+        <li>Choose your whole organization, then Trusted &rarr; Configure.</li>
+      </ol>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        Then connect each mailbox from the Mailboxes page. If Google&rsquo;s consent screen shows a
+        checkbox for Gmail access, tick it &mdash; without it the mailbox can&rsquo;t send, and
+        WarmHawk will ask you to try again.
+      </p>
+      <ul className="list-disc pl-6 mb-10 max-w-2xl text-[15px] leading-relaxed text-ink-muted space-y-1.5">
+        <li>
+          <strong className="text-ink">Personal @gmail.com?</strong> It can&rsquo;t be trusted by an
+          admin. Use the SMTP/IMAP form with an app password instead.
+        </li>
+        <li>
+          <strong className="text-ink">Microsoft 365?</strong> Connect for Microsoft is coming.
+          Until then, use SMTP/IMAP, or register your own Microsoft app under Settings in your
+          dashboard.
+        </li>
+        <li>
+          <strong className="text-ink">Rather use your own OAuth app?</strong> Register it under
+          Settings in your dashboard. When one is set, it is used instead of Connect, and nothing
+          passes through warmhawk.com.
+        </li>
+      </ul>
 
       <h2 className="font-display text-2xl font-semibold mb-4">1. Register the sending domain</h2>
       <CodeBlock label="POST /v1/domains">
