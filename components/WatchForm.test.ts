@@ -2,6 +2,12 @@ import { createElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { WatchForm } from './WatchForm';
+import { EVENTS, track } from '@/lib/analytics';
+
+vi.mock('@/lib/analytics', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/analytics')>()),
+  track: vi.fn(),
+}));
 
 function okFetch(body: unknown, status = 200) {
   return vi.fn(() =>
@@ -105,5 +111,31 @@ describe('WatchForm', () => {
     submit();
 
     expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('reports an accepted watch request to analytics with the domain count, never the email', async () => {
+    vi.mocked(track).mockClear();
+    vi.stubGlobal('fetch', okFetch({ status: 'pending' }));
+
+    render(createElement(WatchForm, { domains: ['acme-outreach.com', 'try-acme.com'] }));
+    typeEmail('ops@acme-outreach.com');
+    submit();
+
+    await screen.findByText(/check your inbox/i);
+    expect(track).toHaveBeenCalledTimes(1);
+    expect(track).toHaveBeenCalledWith(EVENTS.domainWatchSignup, { domains: 2 });
+    expect(JSON.stringify(vi.mocked(track).mock.calls)).not.toMatch(/@|acme/);
+  });
+
+  it('reports nothing when the watch request is refused', async () => {
+    vi.mocked(track).mockClear();
+    vi.stubGlobal('fetch', okFetch({}, 403));
+
+    render(createElement(WatchForm, { domains: ['acme-outreach.com'] }));
+    typeEmail('ops@acme-outreach.com');
+    submit();
+
+    await screen.findByText(/not a bot/i);
+    expect(track).not.toHaveBeenCalled();
   });
 });

@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { useTurnstile } from '@/components/useTurnstile';
+import { EVENTS, track } from '@/lib/analytics';
 
 /**
  * The gate's real form — replaces the old "Want this watched automatically?" placeholder CTA
@@ -80,6 +81,9 @@ export function WatchForm({ domains }: WatchFormProps) {
       // enumeration-oracle precaution). The UI mirrors that: always "check your inbox", never a
       // branch that reveals which case just happened.
       setState({ kind: 'sent', email });
+      // A request, not a confirmed watch — confirmation happens by email, off the site. The domain
+      // count only: the email address never goes to analytics.
+      track(EVENTS.domainWatchSignup, { domains: n });
     } catch {
       setState({ kind: 'error', message: GENERIC_ERROR });
     }

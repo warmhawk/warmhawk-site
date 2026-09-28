@@ -6,6 +6,7 @@ import { CheckBadge, type CheckStatus } from '@/components/CheckBadge';
 import { normalise, type Rejection } from '@/lib/domainInput';
 import { useTurnstile } from '@/components/useTurnstile';
 import { WatchForm } from '@/components/WatchForm';
+import { EVENTS, track } from '@/lib/analytics';
 
 /**
  * The bulk domain checker.
@@ -588,6 +589,13 @@ export function DomainCheckTool({ leadCheck }: DomainCheckToolProps = {}) {
       }
 
       setState({ kind: 'result', data });
+      // Counts only — never the domains themselves. `tool` is the page's lead check, or 'all' on
+      // /tools/domain-check.
+      track(EVENTS.domainCheckRun, {
+        tool: leadCheck ?? 'all',
+        domains: data.results.length,
+        failing: data.results.filter((r) => r.checks.some((c) => c.status === 'fail')).length,
+      });
     } catch {
       setState({ kind: 'error', message: GENERIC_ERROR });
     }
