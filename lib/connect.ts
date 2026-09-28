@@ -66,6 +66,10 @@ export function redirectUriFor(provider: ConnectProvider): string {
   return `${connectBaseUrl()}/connect/${provider}/callback`;
 }
 
+/** The `state` on the Microsoft 365 admin-consent link (app/connect/[provider]/admin-consent). It
+ *  can't be a ticket — nothing identifies an install there — so the callback recognizes it first. */
+export const ADMIN_CONSENT_STATE = 'admin_consent';
+
 export interface ConnectClients {
   google: { clientId: string; clientSecret: string } | null;
   microsoft: { clientId: string } | null;
