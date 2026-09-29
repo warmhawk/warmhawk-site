@@ -38,7 +38,10 @@ export const ANALYTICS_ENABLED = GA4_ENABLED || POSTHOG_ENABLED;
 // check, on whichever checker page ran it (PostHog's own $pathname says
 // which), and sits between landing and pricing in Signal's WarmHawk funnel.
 // domain_watch_signup fires when the watch form is accepted — the domain
-// count only, never the email.
+// count only, never the email. bounce_decode_run fires when the /errors
+// decoder is used — the matched codes only, never the pasted bounce text.
+// cold_email_calc_run fires once per calculator session on the first
+// change to its inputs — the monthly volume only.
 export const EVENTS = {
   landingView: 'landing_view',
   pricingView: 'pricing_view',
@@ -46,6 +49,8 @@ export const EVENTS = {
   checkoutComplete: 'checkout_complete',
   domainCheckRun: 'domain_check_run',
   domainWatchSignup: 'domain_watch_signup',
+  bounceDecodeRun: 'bounce_decode_run',
+  coldEmailCalcRun: 'cold_email_calc_run',
 } as const;
 
 export type AnalyticsEvent = (typeof EVENTS)[keyof typeof EVENTS];
