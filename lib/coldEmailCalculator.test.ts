@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_INPUT,
   calculate,
+  campaignPerInboxOnDay,
   cheapestPlan,
   normalizeInput,
   sizeInfrastructure,
+  warmupRamp,
 } from './coldEmailCalculator';
 
 const at = (emailsPerMonth: number) => ({ ...DEFAULT_INPUT, emailsPerMonth });
@@ -92,5 +94,38 @@ describe('calculate()', () => {
     const instantly = option(750_000, 'instantly');
     expect(instantly?.monthly).toBeNull();
     expect(instantly?.note).toContain('Enterprise');
+  });
+});
+
+describe('warmupRamp()', () => {
+  it('sends no campaign email during the 14 warmup days', () => {
+    expect(campaignPerInboxOnDay(1, 30)).toBe(0);
+    expect(campaignPerInboxOnDay(14, 30)).toBe(0);
+    expect(campaignPerInboxOnDay(15, 30)).toBe(5);
+  });
+
+  it('grows 20% a day from 5 and never passes the daily limit', () => {
+    // Day 15 = 5, day 21 = ceil(5 × 1.2^6) = 15, day 25 = ceil(5 × 1.2^10) = 31 → capped at 30.
+    expect(campaignPerInboxOnDay(21, 30)).toBe(15);
+    expect(campaignPerInboxOnDay(24, 30)).toBe(26);
+    expect(campaignPerInboxOnDay(25, 30)).toBe(30);
+    expect(campaignPerInboxOnDay(60, 30)).toBe(30);
+  });
+
+  it('reaches 30 a day on day 25, in week 4', () => {
+    const ramp = warmupRamp(DEFAULT_INPUT);
+    expect(ramp.warmupDays).toBe(14);
+    expect(ramp.dailyLimit).toBe(30);
+    expect(ramp.fullVolumeDay).toBe(25);
+    expect(ramp.weeks).toEqual([
+      { week: 3, fromPerInbox: 5, toPerInbox: 15 },
+      { week: 4, fromPerInbox: 18, toPerInbox: 30 },
+    ]);
+  });
+
+  it('is full volume on day 15 when the daily limit is at or below the starting rate', () => {
+    const ramp = warmupRamp({ ...DEFAULT_INPUT, perInboxPerDay: 5 });
+    expect(ramp.fullVolumeDay).toBe(15);
+    expect(ramp.weeks).toEqual([{ week: 3, fromPerInbox: 5, toPerInbox: 5 }]);
   });
 });

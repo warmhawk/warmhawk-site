@@ -8,6 +8,7 @@ import {
   errorProviderLabels,
   getSmtpError,
   smtpErrors,
+  warmhawkGuardrails,
   type SmtpErrorEntry,
 } from '@/lib/smtpErrors';
 import { AnswerBlock } from '@/components/AnswerBlock';
@@ -145,8 +146,28 @@ export default async function SmtpErrorPage({ params }: { params: Params }) {
           ))}
         </ol>
 
+        {entry.experience && (
+          <div className="card bg-cream-elevated p-7 max-w-2xl mt-10">
+            <p className="label text-rust mb-2">Real experience</p>
+            <h2 className="font-display text-xl font-semibold mb-3">{entry.experience.title}</h2>
+            <div className="space-y-3 text-[15px] leading-relaxed text-ink-muted">
+              {entry.experience.paragraphs.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+          </div>
+        )}
+
         <h2 className="font-display text-2xl font-semibold mb-4 mt-10">If you send cold email</h2>
         <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl">{entry.coldEmail}</p>
+
+        <h2 className="font-display text-2xl font-semibold mb-4 mt-10">How WarmHawk handles it</h2>
+        <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl">
+          {warmhawkGuardrails[entry.category]}{' '}
+          <Link href="/" className="text-rust font-semibold">
+            How WarmHawk works &rarr;
+          </Link>
+        </p>
 
         {entry.checks.length > 0 && (
           <div className="card bg-cream-elevated p-7 max-w-2xl mt-10">

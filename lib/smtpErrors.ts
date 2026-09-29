@@ -58,6 +58,8 @@ export interface SmtpErrorEntry {
   checks: CheckerKey[];
   sources: ErrorSource[];
   related: string[];
+  /** A first-hand account of WarmHawk hitting this code itself, rendered as "Real experience". */
+  experience?: { title: string; paragraphs: string[] };
 }
 
 export const errorCategoryLabels: Record<ErrorCategory, string> = {
@@ -67,6 +69,30 @@ export const errorCategoryLabels: Record<ErrorCategory, string> = {
   recipient: 'Recipient address and mailbox problems',
   account: 'Your account, tenant or relay setup',
   transport: 'TLS and delivery transport',
+};
+
+/**
+ * "How WarmHawk handles it", one paragraph per category, shown on every code page in it. Each
+ * sentence describes behavior that exists in warmhawk-core-engine today (checked 2026-09-29):
+ * the bounce circuit breaker (lib/mailSender.ts + constants.ts: 5% over at least 20 sends), the
+ * warmup policy (lib/warmup/policy.ts: graduate at day 14 and a 90% 7-day inbox rate, demote
+ * below 70%, then 5 campaign sends a day growing 20%), the worker's 8-minute cadence floor
+ * (computeNextSlotSeconds.ts), soft-failure retries (30 minutes doubling, suppressed after 4),
+ * the hourly blocklist poll and the "needs reconnect" flag. Re-check them before editing.
+ */
+export const warmhawkGuardrails: Record<ErrorCategory, string> = {
+  authentication:
+    'WarmHawk checks SPF, DKIM and DMARC for each sending domain against live DNS and keeps "could not check" separate from "failed", so a flaky resolver never looks like a broken record. New mailboxes warm up by sending to partner inboxes and recording where each email landed, so an authentication problem shows up in the warmup results before the mailbox graduates to campaigns.',
+  reputation:
+    'WarmHawk pauses a mailbox on its own once its hard-bounce rate passes 5% over at least 20 sends, and pauses a campaign at that campaign’s own bounce threshold, so a bad list stops before it drags the domain down. Every sending domain is re-checked against DNS blocklists hourly, and a mailbox only reaches campaign volume after at least 14 days of warmup with a 90% inbox rate. A mailbox whose inbox rate falls below 70% goes back to warmup.',
+  'rate-limit':
+    'WarmHawk never sends more than a mailbox’s own daily cap, spaces sends from one mailbox at least 8 minutes apart with random jitter, and starts a newly warmed mailbox at 5 campaign emails a day, growing 20% a day. A temporary failure is retried with backoff (30 minutes, then doubling) and the lead is suppressed after 4 attempts, so a throttled mailbox is never hammered.',
+  recipient:
+    'A hard bounce marks that lead as bounced and stops its sequence, and every bounce counts toward the mailbox’s bounce-rate breaker: at 5% over at least 20 sends, WarmHawk pauses the mailbox before a stale list can damage the domain.',
+  account:
+    'WarmHawk sends through your own Google Workspace or Microsoft 365 mailboxes. When the provider stops accepting a mailbox’s sign-in (approval removed, password reset, no Exchange Online license), WarmHawk marks that mailbox as needing a reconnect and says why, instead of showing it as connected while every send fails.',
+  transport:
+    'A Google Workspace or Microsoft 365 mailbox connected to WarmHawk sends through the provider’s own servers, which already use TLS. A temporary failure is retried with backoff (30 minutes, then doubling, capped at 48 hours) and the lead is suppressed after 4 attempts instead of being retried forever.',
 };
 
 export const errorProviderLabels: Record<ErrorProvider, string> = {
@@ -116,6 +142,10 @@ const OUTLOOK_515: ErrorSource = {
   label: 'Microsoft Support: Fix NDR error 550 5.7.515 in Outlook.com',
   url: 'https://support.microsoft.com/en-us/outlook/fix-ndr-error-550-5-7-515-in-outlook-com',
 };
+const MS_5_7_700: ErrorSource = {
+  label: 'Microsoft Learn: Fix error codes 5.7.700 through 5.7.750',
+  url: 'https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/non-delivery-reports-in-exchange-online/fix-error-code-5-7-700-through-5-7-750',
+};
 const RFC_3463: ErrorSource = {
   label: 'RFC 3463: Enhanced Mail System Status Codes',
   url: 'https://www.rfc-editor.org/rfc/rfc3463',
@@ -146,6 +176,11 @@ export const smtpErrors: SmtpErrorEntry[] = [
         provider: 'gmail',
         reply: '421 4.7.26',
         text: 'This email has been rate limited because it is unauthenticated. Gmail requires all senders to authenticate with either SPF or DKIM.',
+      },
+      {
+        provider: 'gmail',
+        reply: '451 4.7.26',
+        text: "Unauthenticated email from domain-name is not accepted due to domain's DMARC policy, but temporary DNS failures prevent authentication. Please contact the administrator of domain-name domain if this was a legitimate email.",
       },
       {
         provider: 'microsoft',
@@ -748,14 +783,22 @@ export const smtpErrors: SmtpErrorEntry[] = [
     fixes: [
       'Check every mailbox in the tenant for compromise; reset credentials and enable MFA.',
       'Stop all bulk and outreach sending from the tenant.',
-      'Open a support request with Microsoft through the admin center; the ban is lifted on their side.',
+      'Open a support request with Microsoft through the admin center and ask for an IP address exception; the block is lifted on their side.',
       'When sending resumes, start low and ramp slowly.',
     ],
     coldEmail:
       'Buying a fresh Microsoft 365 tenant and loading dozens of mailboxes into a cold email tool on day one is a common path to 5.7.708. The ban is tenant-wide, so every mailbox in that tenant stops at once.',
     checks: ['blacklist', 'domain'],
-    sources: [MS_NDR],
+    sources: [MS_NDR, MS_5_7_700],
     related: ['5-7-705', '5-7-750', '4-7-500', '5-7-233'],
+    experience: {
+      title: 'We hit 5.7.708 ourselves',
+      paragraphs: [
+        'In September 2026 our own warmup started bouncing. A mailbox on a brand-new Microsoft 365 tenant, on a paid Exchange Online license and not a trial, was warming up with a Google Workspace mailbox. Some of its sends came back with 550 5.7.708 Access denied, traffic not accepted from this IP. Others, sent the same day to the same Google-hosted recipients, landed in the inbox.',
+        'Nothing on our side was wrong: SPF passed, DKIM was signed and DMARC was published. Microsoft’s message trace showed the failed sends had left through different Microsoft outbound servers than the delivered ones, which matches Microsoft’s own explanation that 5.7.708 comes from low-reputation IP addresses and mostly hits new customers. No DNS change fixes that. The only route is a support ticket asking for an IP address exception, which we opened.',
+        'It also exposed a gap in WarmHawk. The bounce notice lands in the sender’s mailbox, but warmup only looked in the recipient’s inbox and spam folders, so it logged those emails as missing. Warmup now reads the sender’s mailbox for the bounce notice, so a 5.7.708 shows up as bounced, with Microsoft’s reason, within about two hours of the send.',
+      ],
+    },
   },
   {
     slug: '5-7-705',
@@ -1654,7 +1697,163 @@ export const smtpErrors: SmtpErrorEntry[] = [
       'When many recipients at different domains expire at once, the cause is usually your reputation, not their servers. Look for 4.7.x deferrals in the earlier delivery attempts.',
     checks: ['mx'],
     sources: [MS_NDR, RFC_3463],
-    related: ['4-7-0', '4-7-500'],
+    related: ['4-7-0', '4-7-500', '4-4-2'],
+  },
+  {
+    slug: '4-3-0',
+    code: '4.3.0',
+    aliases: [],
+    headline: 'Mail server temporarily rejected the message',
+    category: 'transport',
+    permanence: 'temporary',
+    summary:
+      '4.3.0 is a temporary mail-system error. Gmail uses 451 4.3.0 when it has temporarily rejected a message, or when one SMTP transaction tried to deliver to more than one destination domain, and 421 4.3.0 for a temporary system problem. The sending server retries, so a single 4.3.0 usually clears on its own.',
+    variants: [
+      {
+        provider: 'gmail',
+        reply: '451 4.3.0',
+        text: 'Email server has temporarily rejected this message.',
+      },
+      {
+        provider: 'gmail',
+        reply: '451 4.3.0',
+        text: 'Multiple destination domains per transaction is unsupported. Please try again.',
+      },
+      {
+        provider: 'gmail',
+        reply: '421 4.3.0',
+        text: 'Temporary System Problem. Try again later.',
+      },
+      {
+        provider: 'rfc',
+        reply: '4.3.0',
+        text: 'Other or undefined mail system status',
+      },
+    ],
+    causes: [
+      'A short outage or overload on the receiving side.',
+      'A sending script or relay that puts recipients at several different domains into one SMTP transaction.',
+      'A burst of traffic from your server at that moment.',
+    ],
+    fixes: [
+      'Let the sending server retry; most 4.3.0 deferrals clear within minutes.',
+      'If the multiple-destination-domains message appears, send one SMTP transaction per recipient domain, as RFC 5321 expects.',
+      'If the deferrals keep ending in bounces, look for 4.7.x reputation codes in the same bounce: those are the real cause.',
+    ],
+    coldEmail:
+      'Rare from Google Workspace or Microsoft 365 mailboxes, which split transactions correctly. A run of 4.3.0 deferrals from a custom sending script usually means it batches recipients across domains.',
+    checks: [],
+    sources: [GMAIL, RFC_3463],
+    related: ['4-4-5', '4-4-2', '4-7-0'],
+  },
+  {
+    slug: '4-4-2',
+    code: '4.4.2',
+    aliases: [],
+    headline: 'Connection timed out',
+    category: 'transport',
+    permanence: 'temporary',
+    summary:
+      '451 4.4.2 means the connection between the sending and receiving servers timed out or dropped before the message was fully delivered. Gmail closes idle or slow connections with this code. It is temporary: the sending server retries on a new connection, and it only becomes a bounce if every retry fails.',
+    variants: [
+      {
+        provider: 'gmail',
+        reply: '451 4.4.2',
+        text: 'Timeout - closing connection.',
+      },
+      {
+        provider: 'rfc',
+        reply: '4.4.2',
+        text: 'Bad connection',
+      },
+    ],
+    causes: [
+      'A slow or unstable network path between the two servers.',
+      'A sending server that pauses too long between SMTP commands, for example while scanning a large message.',
+      'A large attachment on a slow uplink.',
+    ],
+    fixes: [
+      'Let the server retry; an occasional timeout is normal on the internet.',
+      'If a self-hosted server sees them constantly, check its network, DNS resolution speed and outbound bandwidth.',
+      'Keep cold emails small: no attachments and few images.',
+    ],
+    coldEmail:
+      'Not a reputation signal. Occasional 4.4.2 retries on outreach are harmless; a steady stream from your own server points at its network, not at your domain.',
+    checks: [],
+    sources: [GMAIL, RFC_3463],
+    related: ['4-4-5', '4-4-7', '4-3-0'],
+  },
+  {
+    slug: '4-4-5',
+    code: '4.4.5',
+    aliases: [],
+    headline: 'Server busy, try again later',
+    category: 'transport',
+    permanence: 'temporary',
+    summary:
+      '421 4.4.5 means the receiving server is too busy to accept mail right now. Gmail returns it as “Server busy, try again later”, and the RFC meaning is mail system congestion. It is temporary and usually not about your reputation: the sending server waits and retries, and the message normally goes through later.',
+    variants: [
+      {
+        provider: 'gmail',
+        reply: '421 4.4.5',
+        text: 'Server busy, try again later.',
+      },
+      {
+        provider: 'rfc',
+        reply: '4.4.5',
+        text: 'Mail system congestion',
+      },
+    ],
+    causes: [
+      'Load or maintenance on the receiving side.',
+      'Many simultaneous connections from your server to the same provider.',
+    ],
+    fixes: [
+      'Let the sending server retry.',
+      'On a self-hosted server, lower the number of simultaneous connections to the same provider.',
+    ],
+    coldEmail:
+      'If 4.4.5 shows up only when a campaign starts, you are opening too many connections at once. Spreading sends through the day instead of in bursts avoids it.',
+    checks: [],
+    sources: [GMAIL, RFC_3463],
+    related: ['4-4-2', '4-3-0', '4-2-1'],
+  },
+  {
+    slug: '4-5-0',
+    code: '4.5.0',
+    aliases: [],
+    headline: 'SMTP protocol violation',
+    category: 'transport',
+    permanence: 'temporary',
+    summary:
+      '451 4.5.0 means the receiving server saw an SMTP protocol violation: commands sent out of order, malformed, or not allowed by RFC 5321. Gmail treats it as temporary. It almost always comes from a custom script, an old appliance or a misconfigured relay, not from Google Workspace or Microsoft 365 mailboxes.',
+    variants: [
+      {
+        provider: 'gmail',
+        reply: '451 4.5.0',
+        text: 'SMTP protocol violation.',
+      },
+      {
+        provider: 'rfc',
+        reply: '4.5.0',
+        text: 'Other or undefined protocol status',
+      },
+    ],
+    causes: [
+      'A hand-written SMTP client that skips or reorders commands, or sends bad line endings.',
+      'A proxy, firewall or antivirus product that rewrites the SMTP conversation.',
+      'SMTP pipelining used incorrectly.',
+    ],
+    fixes: [
+      'Send through a standard mail library or your mailbox provider instead of raw SMTP.',
+      'Capture the SMTP conversation and compare it with RFC 5321.',
+      'Check for a firewall or antivirus product inspecting outbound traffic on ports 25 and 587.',
+    ],
+    coldEmail:
+      'You will not see this from a connected Google Workspace or Microsoft 365 mailbox. If a homegrown sender produces it, fix the sender before scaling volume.',
+    checks: [],
+    sources: [GMAIL, RFC_3463],
+    related: ['4-3-0', '4-4-2', '5-7-29'],
   },
 ];
 
