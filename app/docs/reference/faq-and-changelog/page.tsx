@@ -31,7 +31,7 @@ const faqItems = [
   {
     question: 'Where’s the product changelog?',
     answer:
-      'Below on this page. Each of the three packages maintains its own CHANGELOG.md versioned alongside its code, and this page summarizes all three. warmhawk-core-engine is open source, so its file links through; the licensed dashboard and this site are proprietary, so the summaries here are the changelog for those two.',
+      'Below on this page. Each of the three packages maintains its own CHANGELOG.md versioned alongside its code, and this page summarizes all three. warmhawk-core-engine is source-available (BSL 1.1), so its file links through; the licensed dashboard and this site are proprietary, so the summaries here are the changelog for those two.',
   },
   {
     question: 'Are there outbound webhooks I can register for events?',
@@ -117,8 +117,8 @@ export default function FaqAndChangelogPage() {
         <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-8">
           This site doesn&rsquo;t own the product changelog. Each package ships and maintains its
           own <code className="font-mono text-sm">CHANGELOG.md</code>, versioned alongside its code,
-          summarized here. <strong>warmhawk-core-engine</strong> is open source (BSL 1.1) and its
-          file links through; the licensed dashboard and this site are proprietary, so their
+          summarized here. <strong>warmhawk-core-engine</strong> is source-available (BSL 1.1) and
+          its file links through; the licensed dashboard and this site are proprietary, so their
           summaries below <em>are</em> the changelog. None of the three has cut a tagged release
           yet, so there are no version numbers to show; what follows is each repo&rsquo;s current{' '}
           <code className="font-mono text-sm">[Unreleased]</code> section.
