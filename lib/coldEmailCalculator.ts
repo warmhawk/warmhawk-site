@@ -133,6 +133,58 @@ export function cheapestPlan(
   return best;
 }
 
+/**
+ * Warmup ramp, mirroring warmhawk-core-engine's defaults (apps/api/src/lib/warmup/policy.ts and
+ * the worker's campaignCap.ts, checked 2026-09-29): a mailbox warms up for at least 14 days, then
+ * campaign sends start at 5 a day and grow 20% a day until they reach its daily limit. The engine
+ * also needs a 90% inbox rate to graduate, so day 15 is the earliest campaigns can start.
+ */
+export const WARMUP_MIN_DAYS = 14;
+export const RAMP_START_PER_DAY = 5;
+export const RAMP_GROWTH = 1.2;
+
+export interface RampWeek {
+  week: number;
+  /** Campaign emails per mailbox on the first and last campaign day of the week. */
+  fromPerInbox: number;
+  toPerInbox: number;
+}
+
+export interface WarmupRamp {
+  warmupDays: number;
+  /** The per-mailbox daily limit the ramp climbs to (the calculator's emails per mailbox per day). */
+  dailyLimit: number;
+  /** First day (1-based, counted from the start of warmup) every mailbox sends its daily limit. */
+  fullVolumeDay: number;
+  /** Campaign weeks only; weeks 1–2 are warmup. */
+  weeks: RampWeek[];
+}
+
+/** Campaign emails one mailbox may send on `day` of its life (0 during warmup). */
+export function campaignPerInboxOnDay(day: number, dailyLimit: number): number {
+  if (day <= WARMUP_MIN_DAYS) return 0;
+  const rampDay = day - WARMUP_MIN_DAYS - 1;
+  return Math.min(dailyLimit, Math.ceil(RAMP_START_PER_DAY * RAMP_GROWTH ** rampDay));
+}
+
+export function warmupRamp(raw: CalculatorInput): WarmupRamp {
+  const limit = normalizeInput(raw).perInboxPerDay;
+  let fullVolumeDay = WARMUP_MIN_DAYS + 1;
+  while (campaignPerInboxOnDay(fullVolumeDay, limit) < limit) fullVolumeDay += 1;
+
+  const weeks: RampWeek[] = [];
+  const firstWeek = Math.ceil((WARMUP_MIN_DAYS + 1) / 7);
+  for (let week = firstWeek; week <= Math.ceil(fullVolumeDay / 7); week += 1) {
+    const firstDay = Math.max(week * 7 - 6, WARMUP_MIN_DAYS + 1);
+    weeks.push({
+      week,
+      fromPerInbox: campaignPerInboxOnDay(firstDay, limit),
+      toPerInbox: campaignPerInboxOnDay(week * 7, limit),
+    });
+  }
+  return { warmupDays: WARMUP_MIN_DAYS, dailyLimit: limit, fullVolumeDay, weeks };
+}
+
 export function calculate(raw: CalculatorInput): CalculatorResult {
   const input = normalizeInput(raw);
   const infrastructure = sizeInfrastructure(input);

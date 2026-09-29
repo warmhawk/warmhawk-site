@@ -27,6 +27,11 @@ const faqItems = [
       'Most deliverability guides settle on about 30 cold emails per mailbox per day once the mailbox is warmed, with new mailboxes starting far lower. Google and Microsoft allow much more for normal mail, but cold volume near those limits gets filtered long before it gets blocked. The calculator defaults to 30; change it under Assumptions.',
   },
   {
+    question: 'How long before new mailboxes can send at full volume?',
+    answer:
+      'About three and a half weeks. With at least 14 days of warmup, then 5 campaign emails a day growing 20% a day, a mailbox reaches 30 a day on day 25. Buy and connect mailboxes a month before you need their volume; the calculator’s warmup ramp shows the weekly numbers for yours.',
+  },
+  {
     question: 'How many mailboxes should I put on one domain?',
     answer:
       'Two or three. More mailboxes per domain means fewer domains to buy, but a spam complaint or blocklisting hits the domain, not the mailbox, so every mailbox on it suffers together. Keeping it to three per domain limits the damage when one domain goes bad.',
@@ -96,6 +101,11 @@ export default function ColdEmailCalculatorPage() {
           <li>
             <strong className="text-ink">Domains</strong> = mailboxes &divide; mailboxes per domain,
             rounded up.
+          </li>
+          <li>
+            <strong className="text-ink">Warmup ramp</strong> = at least 14 days of warmup, then 5
+            campaign emails per mailbox a day, growing 20% a day up to the daily limit. These are
+            WarmHawk&rsquo;s defaults.
           </li>
           <li>
             <strong className="text-ink">Software</strong> = the cheapest public plan whose monthly

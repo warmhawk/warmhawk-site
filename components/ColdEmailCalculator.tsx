@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   DEFAULT_INPUT,
+  RAMP_START_PER_DAY,
   calculate,
+  warmupRamp,
   type CalculatorInput,
   type OptionCost,
 } from '@/lib/coldEmailCalculator';
@@ -43,6 +45,7 @@ const money = (value: number) =>
 export function ColdEmailCalculator() {
   const [input, setInput] = useState<CalculatorInput>(DEFAULT_INPUT);
   const result = useMemo(() => calculate(input), [input]);
+  const ramp = useMemo(() => warmupRamp(input), [input]);
   const firstRender = useRef(true);
 
   useEffect(() => {
@@ -204,6 +207,54 @@ export function ColdEmailCalculator() {
           </Link>
           . Annual billing lowers every SaaS price by 17–20%.
         </p>
+
+        <div className="card bg-cream-elevated p-5 mt-6">
+          <h3 className="font-display text-lg font-semibold mb-1">Warmup ramp</h3>
+          <p className="text-[13.5px] text-ink-muted mb-4">
+            New mailboxes can’t send {ramp.dailyLimit} a day from day one. With {ramp.warmupDays}{' '}
+            days of warmup, then {RAMP_START_PER_DAY} campaign emails a day growing 20% a day, they
+            reach full volume on <strong className="text-ink">day {ramp.fullVolumeDay}</strong>.
+          </p>
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="text-left border-b border-border-dark">
+                <th className="py-2 pr-3 font-semibold">Week</th>
+                <th className="py-2 pr-3 font-semibold text-right">Per mailbox / day</th>
+                {infrastructure.inboxes > 0 && (
+                  <th className="py-2 font-semibold text-right">
+                    All {infrastructure.inboxes.toLocaleString('en-US')} mailboxes
+                  </th>
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-border">
+                <td className="py-2 pr-3">1–2</td>
+                <td className="py-2 pr-3 text-right text-ink-muted" colSpan={2}>
+                  Warmup only, no campaigns
+                </td>
+              </tr>
+              {ramp.weeks.map((week) => (
+                <tr key={week.week} className="border-b border-border">
+                  <td className="py-2 pr-3">{week.week}</td>
+                  <td className="py-2 pr-3 text-right font-mono">
+                    {week.fromPerInbox === week.toPerInbox
+                      ? week.toPerInbox
+                      : `${week.fromPerInbox}–${week.toPerInbox}`}
+                  </td>
+                  {infrastructure.inboxes > 0 && (
+                    <td className="py-2 text-right font-mono">
+                      {(week.fromPerInbox * infrastructure.inboxes).toLocaleString('en-US')}
+                      {week.fromPerInbox === week.toPerInbox
+                        ? ''
+                        : `–${(week.toPerInbox * infrastructure.inboxes).toLocaleString('en-US')}`}
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import ErrorsHubPage from './page';
 import SmtpErrorPage, { generateMetadata, generateStaticParams } from './[slug]/page';
-import { smtpErrors } from '@/lib/smtpErrors';
+import { smtpErrors, warmhawkGuardrails } from '@/lib/smtpErrors';
 
 describe('ErrorsHubPage (app/errors/page.tsx)', () => {
   afterEach(() => {
@@ -50,6 +50,35 @@ describe('SmtpErrorPage (app/errors/[slug]/page.tsx)', () => {
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: '5-7-26' }) });
     expect((metadata.title as { absolute: string }).absolute).toContain('550 5.7.26');
     expect(String(metadata.description).length).toBeLessThanOrEqual(160);
+  });
+
+  it('tells every page how WarmHawk handles its category', async () => {
+    for (const entry of smtpErrors) {
+      render(await SmtpErrorPage({ params: Promise.resolve({ slug: entry.slug }) }));
+      expect(screen.getByRole('heading', { name: 'How WarmHawk handles it' })).toBeInTheDocument();
+      expect(
+        screen.getByText(warmhawkGuardrails[entry.category], { exact: false }),
+      ).toBeInTheDocument();
+      cleanup();
+    }
+  });
+
+  it('shows the real 5.7.708 experience only on its own page', async () => {
+    render(await SmtpErrorPage({ params: Promise.resolve({ slug: '5-7-708' }) }));
+    expect(screen.getByRole('heading', { name: 'We hit 5.7.708 ourselves' })).toBeInTheDocument();
+    cleanup();
+    render(await SmtpErrorPage({ params: Promise.resolve({ slug: '5-7-26' }) }));
+    expect(screen.queryByText('Real experience')).toBeNull();
+  });
+
+  it('never calls WarmHawk open source', async () => {
+    for (const entry of smtpErrors) {
+      const { container } = render(
+        await SmtpErrorPage({ params: Promise.resolve({ slug: entry.slug }) }),
+      );
+      expect(container.textContent, entry.slug).not.toMatch(/open[- ]source/i);
+      cleanup();
+    }
   });
 
   it('renders every entry without throwing', async () => {
