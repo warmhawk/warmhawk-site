@@ -74,9 +74,25 @@ describe('robots()', () => {
     const result = robots();
     const rule = Array.isArray(result.rules) ? result.rules[0] : result.rules;
     expect(rule?.userAgent).toBe('*');
-    expect(rule?.disallow).toContain('/vs/instantly');
+    expect(rule?.disallow).toContain('/vs/instantly$');
     expect(rule?.disallow).toContain('/api/');
     expect(result.sitemap).toMatch(/\/sitemap\.xml$/);
+  });
+
+  it('blocks only /vs/instantly itself, not the live pages that share its prefix', () => {
+    const result = robots();
+    const rules = Array.isArray(result.rules) ? result.rules : [result.rules];
+    for (const rule of rules) {
+      const disallow = [rule?.disallow ?? []].flat();
+      // A robots.txt path without `$` is a prefix match.
+      const blocks = (path: string) =>
+        disallow.some((entry) =>
+          entry.endsWith('$') ? path === entry.slice(0, -1) : path.startsWith(entry),
+        );
+      expect(blocks('/vs/instantly')).toBe(true);
+      expect(blocks('/vs/instantly-alternatives')).toBe(false);
+      expect(blocks('/vs/instantly-vs-smartlead-vs-lemlist')).toBe(false);
+    }
   });
 
   it('repeats the wildcard rule for every named AI/answer-engine crawler, not just "*"', () => {
@@ -91,7 +107,7 @@ describe('robots()', () => {
       const rule = rules.find((r) => r?.userAgent === userAgent);
       expect(rule, `expected a robots rule for ${userAgent}`).toBeDefined();
       expect(rule?.allow).toBe('/');
-      expect(rule?.disallow).toContain('/vs/instantly');
+      expect(rule?.disallow).toContain('/vs/instantly$');
       expect(rule?.disallow).toContain('/api/');
     }
   });
@@ -101,7 +117,7 @@ describe('robots()', () => {
     vi.stubEnv('SEED_PLACEMENT_LIVE_IN_PRODUCTION', 'true');
     const result = robots();
     const rule = Array.isArray(result.rules) ? result.rules[0] : result.rules;
-    expect(rule?.disallow).not.toContain('/vs/instantly');
+    expect(rule?.disallow).not.toContain('/vs/instantly$');
     expect(rule?.disallow).toContain('/api/');
   });
 });

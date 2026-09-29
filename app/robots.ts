@@ -14,6 +14,9 @@ function isFlagEnabled(value: string | undefined): boolean {
 // at module-import time.
 export const dynamic = 'force-dynamic';
 
+// `$` anchors the rule to /vs/instantly itself: robots.txt paths are prefixes, so a bare
+// '/vs/instantly' would also block the live /vs/instantly-alternatives and
+// /vs/instantly-vs-smartlead-vs-lemlist pages.
 // Matches app/vs/instantly/page.tsx's own two-flag gate exactly. Disallowed here only until both
 // are true — once live it carries its own generateMetadata() index:true instead (belt-and-
 // suspenders while gated, not a second independent noindex once published).
@@ -21,7 +24,7 @@ function getDisallow(): string[] {
   const vsInstantlyLive =
     isFlagEnabled(process.env.ENABLE_VS_INSTANTLY) &&
     isFlagEnabled(process.env.SEED_PLACEMENT_LIVE_IN_PRODUCTION);
-  return [...(vsInstantlyLive ? [] : ['/vs/instantly']), '/api/', '/install'];
+  return [...(vsInstantlyLive ? [] : ['/vs/instantly$']), '/api/', '/install'];
 }
 
 // Named allow rules for AI/answer-engine crawlers (AEO/GEO baseline) — the
