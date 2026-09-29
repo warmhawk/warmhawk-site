@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next';
 import { siteConfig } from '@/lib/siteConfig';
 import { docsFlatOrder } from '@/lib/docsNav';
 import { blogPosts } from '@/lib/blogPosts';
+import { smtpErrors } from '@/lib/smtpErrors';
 
 function isFlagEnabled(value: string | undefined): boolean {
   return value === 'true' || value === '1';
@@ -27,6 +28,7 @@ export const dynamic = 'force-dynamic';
 export default function sitemap(): MetadataRoute.Sitemap {
   const docRoutes = ['/docs', ...docsFlatOrder.map((link) => link.href)];
   const blogRoutes = ['/blog', ...blogPosts.map((post) => `/blog/${post.slug}`)];
+  const errorRoutes = ['/errors', ...smtpErrors.map((entry) => `/errors/${entry.slug}`)];
   const vsInstantlyLive =
     isFlagEnabled(process.env.ENABLE_VS_INSTANTLY) &&
     isFlagEnabled(process.env.SEED_PLACEMENT_LIVE_IN_PRODUCTION);
@@ -41,6 +43,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/vs/inframail',
     '/vs/instantly-vs-smartlead-vs-lemlist',
     '/vs/instantly-alternatives',
+    '/vs/warmbly',
+    '/alternatives/self-hosted-cold-email',
     '/compare/pricing',
     '/tools/domain-check',
     '/tools/mx-checker',
@@ -48,6 +52,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/tools/dkim-checker',
     '/tools/dmarc-checker',
     '/tools/blacklist-checker',
+    '/tools/cold-email-calculator',
+    ...errorRoutes,
     ...docRoutes,
     ...blogRoutes,
     '/legal/terms',
