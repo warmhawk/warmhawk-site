@@ -1,8 +1,9 @@
 import Link from 'next/link';
 
 /**
- * "Also check: MX · SPF · DKIM · DMARC · Blacklist · Full report" — connects link equity and
- * crawl paths across all 6 domain-check pages (see notes/1-plan/domain-check-seo-landing-pages.md,
+ * "Free tools: MX · SPF · DKIM · DMARC · Blacklist · Full report · Bounce codes · Calculator" —
+ * connects link equity and crawl paths across every free tool page (the 6 domain-check pages,
+ * the /errors bounce decoder and the cold-email calculator) (see notes/1-plan/domain-check-seo-landing-pages.md,
  * Section 6 "Cross-linking"). One shared list rather than six hand-copied ones, so adding a
  * seventh page later means editing this file once.
  */
@@ -13,12 +14,14 @@ const TOOL_LINKS: ReadonlyArray<{ href: string; label: string }> = [
   { href: '/tools/dmarc-checker', label: 'DMARC' },
   { href: '/tools/blacklist-checker', label: 'Blacklist' },
   { href: '/tools/domain-check', label: 'Full report' },
+  { href: '/errors', label: 'Bounce codes' },
+  { href: '/tools/cold-email-calculator', label: 'Calculator' },
 ];
 
 export function ToolCrossLinks({ current }: { current: string }) {
   return (
     <div className="wrap flex flex-wrap items-center gap-2 pb-10 text-sm">
-      <span className="text-ink-muted mr-1">Also check:</span>
+      <span className="text-ink-muted mr-1">Free tools:</span>
       {TOOL_LINKS.map((link) =>
         link.href === current ? (
           <span
