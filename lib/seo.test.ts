@@ -67,12 +67,13 @@ describe('faqSchema', () => {
 });
 
 describe('organizationSchema', () => {
-  it('includes the site URL and both the GitHub and Twitter profile links', () => {
+  it('includes the site URL and only the profiles WarmHawk actually owns', () => {
     const schema = organizationSchema();
     expect(schema['@type']).toBe('Organization');
     expect(schema.url).toBe(siteConfig.url);
     expect(schema.sameAs).toContain('https://github.com/warmhawk');
-    expect(schema.sameAs).toContain(`https://twitter.com/${siteConfig.twitter.replace(/^@/, '')}`);
+    // There is no WarmHawk X account (x.com/warmhawk does not exist), so none is claimed.
+    expect(schema.sameAs).toEqual(['https://github.com/warmhawk']);
   });
 });
 
