@@ -71,6 +71,7 @@ export const vsPages = [
   { slug: 'woodpecker', label: 'vs Woodpecker' },
   { slug: 'custom-n8n', label: 'vs Custom n8n' },
   { slug: 'inframail', label: 'vs Inframail' },
+  { slug: 'warmbly', label: 'vs Warmbly' },
 ];
 
 // Column labels/contents match the artifact's SITE_FOOTER (Product / Compare
@@ -96,8 +97,10 @@ export const footerLinks = {
     { label: 'vs Woodpecker', href: '/vs/woodpecker' },
     { label: 'vs Custom n8n', href: '/vs/custom-n8n' },
     { label: 'vs Inframail', href: '/vs/inframail' },
+    { label: 'vs Warmbly', href: '/vs/warmbly' },
     { label: 'Instantly vs Smartlead vs Lemlist', href: '/vs/instantly-vs-smartlead-vs-lemlist' },
     { label: 'Instantly Alternatives', href: '/vs/instantly-alternatives' },
+    { label: 'Self-hosted cold email tools', href: '/alternatives/self-hosted-cold-email' },
   ],
   tools: [
     { label: 'MX record checker', href: '/tools/mx-checker' },
@@ -106,6 +109,8 @@ export const footerLinks = {
     { label: 'DMARC checker', href: '/tools/dmarc-checker' },
     { label: 'Email blacklist checker', href: '/tools/blacklist-checker' },
     { label: 'Full domain health check', href: '/tools/domain-check' },
+    { label: 'Bounce error codes', href: '/errors' },
+    { label: 'Cold email calculator', href: '/tools/cold-email-calculator' },
   ],
   company: [
     { label: 'Blog', href: '/blog' },

@@ -62,6 +62,9 @@ export function buildLlmsTxt(): string {
   lines.push(
     `- [Pricing comparison](${siteConfig.url}/compare/pricing): Full tier/feature matrix, billing mechanics, and cost-at-scale framing.`,
   );
+  lines.push(
+    `- [Self-hosted cold email tools](${siteConfig.url}/alternatives/self-hosted-cold-email): Roundup of the cold-email and warmup engines you can run on your own server, with each one's license.`,
+  );
   lines.push('');
 
   lines.push('## Tools');
@@ -87,6 +90,12 @@ export function buildLlmsTxt(): string {
   );
   lines.push(
     `- [Email Blacklist Checker](${siteConfig.url}/tools/blacklist-checker): Free Spamhaus domain blocklist lookup for a sending domain and its declared SPF senders.`,
+  );
+  lines.push(
+    `- [Bounce message decoder](${siteConfig.url}/errors): Paste a bounce to decode its SMTP code, with one page per Gmail and Microsoft 365 code (such as 5.7.26, 5.7.708 and 5.7.509) quoted from the providers' own documentation.`,
+  );
+  lines.push(
+    `- [Cold email calculator](${siteConfig.url}/tools/cold-email-calculator): Turns monthly cold-email volume into mailboxes and domains needed, and compares the monthly cost on Instantly, Smartlead, Lemlist and WarmHawk.`,
   );
   lines.push('');
 

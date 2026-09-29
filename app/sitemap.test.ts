@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import sitemap from './sitemap';
 import robots from './robots';
+import { smtpErrors } from '@/lib/smtpErrors';
 
 /**
  * Confirms the sitemap/robots gating logic (Technical SEO baseline):
@@ -33,6 +34,17 @@ describe('sitemap()', () => {
     expect(urls.some((url) => url.endsWith('/vs/woodpecker'))).toBe(true);
     expect(urls.some((url) => url.endsWith('/vs/custom-n8n'))).toBe(true);
     expect(urls.some((url) => url.endsWith('/vs/inframail'))).toBe(true);
+    expect(urls.some((url) => url.endsWith('/vs/warmbly'))).toBe(true);
+    expect(urls.some((url) => url.endsWith('/alternatives/self-hosted-cold-email'))).toBe(true);
+  });
+
+  it('includes the calculator, the bounce hub and one page per bounce code', () => {
+    const urls = sitemap().map((route) => route.url);
+    expect(urls.some((url) => url.endsWith('/tools/cold-email-calculator'))).toBe(true);
+    expect(urls.some((url) => url.endsWith('/errors'))).toBe(true);
+    for (const entry of smtpErrors) {
+      expect(urls.some((url) => url.endsWith(`/errors/${entry.slug}`))).toBe(true);
+    }
   });
 
   it('gives the homepage the highest priority and weekly change frequency', () => {

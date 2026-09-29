@@ -12,6 +12,51 @@ export interface BlogPost {
 // three places. Newest first; the index and sitemap both render in this order.
 export const blogPosts: BlogPost[] = [
   {
+    slug: 'dmarc-none-vs-quarantine-vs-reject',
+    title: 'DMARC p=none vs quarantine vs reject: which policy should you actually run?',
+    description:
+      'What each DMARC policy really tells a receiver to do with mail that fails alignment, what pct= and rua/ruf reports are for, a safe none-to-reject rollout path, and the Google/Yahoo bulk-sender floor that already requires p=none from anyone sending real volume.',
+    excerpt:
+      'p=none only watches. p=quarantine routes failures to spam. p=reject blocks them outright — and jumping straight there without reading your own rua reports first is how legitimate mail gets silently dropped.',
+    date: '2026-09-29',
+  },
+  {
+    slug: 'how-many-domains-for-cold-email',
+    title: 'How many domains do you need for cold email? The actual math',
+    description:
+      'The per-inbox daily send cap, why 2-3 inboxes per domain is the practical ceiling, a volume-to-domain-count table, secondary-domain naming conventions, and why the warmup lead time — not the domain count — is usually what gets underestimated.',
+    excerpt:
+      'Domain count is a function of one number: how many cold emails you want to send per day, divided by what a single inbox can safely carry before it starts burning reputation.',
+    date: '2026-09-29',
+  },
+  {
+    slug: 'google-workspace-vs-microsoft-365-cold-email',
+    title: 'Google Workspace vs Microsoft 365 for cold email (2026)',
+    description:
+      "Per-mailbox pricing, daily sending limits, OAuth vs SMTP AUTH timelines, and the Microsoft 5.7.708 'tenant not trusted' block that hits new Microsoft 365 tenants — a practitioner comparison of both platforms for cold outbound, verified against each vendor's own pricing and documentation as of September 2026.",
+    excerpt:
+      'The two platforms converged on nearly identical per-mailbox pricing in 2026 — the real difference for cold email is a Microsoft-specific new-tenant block that has no self-service fix.',
+    date: '2026-09-29',
+  },
+  {
+    slug: 'instantly-pricing',
+    title: 'Instantly pricing in 2026: what you actually pay, plan by plan',
+    description:
+      "An honest breakdown of Instantly's outreach plans, its separate lead-database/CRM credit plans, what a realistic solo sender or agency ends up paying once add-ons stack, and when a flat-fee self-hosted alternative is cheaper — and when Instantly is still the right call.",
+    excerpt:
+      "Instantly's cheapest plan is $47/month with unlimited mailboxes and warmup built in — the number that actually varies is how fast a growing team's leads and volume push it into a $194-555/month bundle.",
+    date: '2026-09-29',
+  },
+  {
+    slug: 'self-hosted-email-warmup',
+    title: 'Self-hosted email warmup: how it actually works',
+    description:
+      'How warmup works when you run it yourself — your own mailboxes exchanging warmup mail plus a real-send ramp layered on top — why shared warmup pools are an increasingly fragile bet, what to actually measure (rolling 7-day inbox rate, graduate at 90%+), and a practical ramp schedule.',
+    excerpt:
+      "Self-hosted warmup trades a vendor's shared network of strangers' mailboxes for infrastructure you control end to end — the ramp still takes weeks, but the reputation risk you're exposed to is only ever your own.",
+    date: '2026-09-29',
+  },
+  {
     slug: 'what-is-email-warmup',
     title: 'Email Warmup: The Complete Guide (2026)',
     description:
