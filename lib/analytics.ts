@@ -42,6 +42,10 @@ export const ANALYTICS_ENABLED = GA4_ENABLED || POSTHOG_ENABLED;
 // decoder is used — the matched codes only, never the pasted bounce text.
 // cold_email_calc_run fires once per calculator session on the first
 // change to its inputs — the monthly volume only.
+//
+// pricing_view and checkout_start also carry via_tool ("tool-spf-checker",
+// "tool-errors", ...) when a free tool ran earlier in the same page session,
+// so "do the tools produce buyers" is one breakdown, not a path analysis.
 export const EVENTS = {
   landingView: 'landing_view',
   pricingView: 'pricing_view',
@@ -126,6 +130,28 @@ export function setPosthogReady(promise: Promise<void>): void {
   posthogReady = promise;
 }
 
+// --- tool -> signup attribution --------------------------------------------
+// Held in a module variable, not storage: it survives client-side navigation
+// (the nav's "Get started", in-tool links) but not a full reload — the same
+// lifetime as PostHog's cookieless memory persistence, so it adds no storage
+// before consent. The last tool used wins.
+const TOOL_EVENTS: ReadonlySet<AnalyticsEvent> = new Set([
+  EVENTS.domainCheckRun,
+  EVENTS.bounceDecodeRun,
+  EVENTS.coldEmailCalcRun,
+]);
+const TOOL_ATTRIBUTED_EVENTS: ReadonlySet<AnalyticsEvent> = new Set([
+  EVENTS.pricingView,
+  EVENTS.checkoutStart,
+]);
+let lastToolUsed: string | undefined;
+
+/** "/tools/spf-checker" -> "tool-spf-checker"; every /errors page -> "tool-errors". */
+export function toolRef(pathname: string): string {
+  const [, section, slug] = pathname.split('/');
+  return section === 'errors' ? 'tool-errors' : `tool-${slug || section || 'home'}`;
+}
+
 /**
  * Send one funnel event to every configured destination.
  *
@@ -135,6 +161,10 @@ export function setPosthogReady(promise: Promise<void>): void {
  */
 export function track(event: AnalyticsEvent, props: EventProps = {}): void {
   if (typeof window === 'undefined' || !ANALYTICS_ENABLED || isAutomatedClient()) return;
+
+  if (TOOL_EVENTS.has(event)) lastToolUsed = toolRef(window.location.pathname);
+  if (lastToolUsed && TOOL_ATTRIBUTED_EVENTS.has(event))
+    props = { ...props, via_tool: lastToolUsed };
 
   try {
     window.gtag?.('event', event, props);
@@ -206,7 +236,16 @@ export function trackCheckoutComplete(sessionId: string): void {
 // answerable without joining two tools. Captured once on first load — a
 // client-side route change drops the query string, and the landing referrer
 // is the one that matters.
-const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'] as const;
+// ref= is what the GitHub README and directory listings use (?ref=github);
+// GA4 doesn't read it on its own, so it rides along with the utm_* keys.
+const ATTRIBUTION_PARAMS = [
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+  'ref',
+] as const;
 
 export function landingAttribution(): EventProps {
   if (typeof window === 'undefined') return {};
@@ -216,7 +255,7 @@ export function landingAttribution(): EventProps {
     referrer: document.referrer || '(direct)',
     landing_path: window.location.pathname,
   };
-  for (const key of UTM_KEYS) {
+  for (const key of ATTRIBUTION_PARAMS) {
     const value = params.get(key);
     if (value) attribution[key] = value;
   }
