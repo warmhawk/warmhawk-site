@@ -48,7 +48,6 @@ export function pageSeo({ title, description, path, noIndex }: PageSeoInput): Me
       card: 'summary_large_image',
       title: fullTitle,
       description,
-      site: siteConfig.twitter,
       images: [`${siteConfig.url}/og-image.png`],
     },
   };
@@ -83,10 +82,7 @@ export function organizationSchema() {
     name: siteConfig.name,
     url: siteConfig.url,
     description: siteConfig.description,
-    sameAs: [
-      'https://github.com/warmhawk',
-      `https://twitter.com/${siteConfig.twitter.replace(/^@/, '')}`,
-    ],
+    sameAs: ['https://github.com/warmhawk'],
   };
 }
 
