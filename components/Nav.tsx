@@ -59,7 +59,7 @@ export function Nav() {
           {coreEngineRepoPublic && (
             <a
               href={coreEngineRepoUrl}
-              className="whitespace-nowrap hover:text-rust transition-colors"
+              className="hidden xl:inline whitespace-nowrap hover:text-rust transition-colors"
             >
               GitHub ⭐
             </a>
