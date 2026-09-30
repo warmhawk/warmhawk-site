@@ -60,7 +60,10 @@ const vsInstantlyLive = isFlagEnabled(process.env.ENABLE_VS_INSTANTLY);
 // `warmhawk-core-engine` is the open-core half: BSL 1.1, public at go-live, so its links are
 // flag-gated and light up the moment CORE_ENGINE_REPO_PUBLIC is set. The other two are
 // proprietary and stay private permanently — never link them, under any flag.
-export const coreEngineRepoPublic = isFlagEnabled(process.env.CORE_ENGINE_REPO_PUBLIC);
+//
+// Public since go-live (checked 2026-09-29 via the GitHub API). The CORE_ENGINE_REPO_PUBLIC env flag
+// this used to read was never passed to the Docker build, so every prerendered page hid the links.
+export const coreEngineRepoPublic = true;
 export const coreEngineRepoUrl = 'https://github.com/warmhawk/warmhawk-core-engine';
 
 export const vsPages = [
@@ -115,14 +118,10 @@ export const footerLinks = {
     { label: 'Blog', href: '/blog' },
     { label: 'Docs & quickstart', href: '/docs' },
     { label: 'Security', href: '/security' },
-    // Points at core-engine's GitHub Discussions once that repo is public — it is private today,
-    // so this link 404'd for every visitor. Gated on the same kind of explicit flag as
-    // ENABLE_VS_INSTANTLY above rather than hardcoded either way: the moment the repo goes public
-    // at go-live, setting CORE_ENGINE_REPO_PUBLIC=true restores it with no code change, and until
-    // then visitors get the FAQ/changelog page instead of a 404.
-    coreEngineRepoPublic
-      ? { label: 'Roadmap', href: `${coreEngineRepoUrl}/discussions` }
-      : { label: 'Changelog & FAQ', href: '/docs/reference/faq-and-changelog' },
+    // Links the repo itself, not its Discussions tab: Discussions are turned off on core-engine,
+    // so the old "Roadmap → /discussions" link would 404.
+    ...(coreEngineRepoPublic ? [{ label: '⭐ Star on GitHub', href: coreEngineRepoUrl }] : []),
+    { label: 'Changelog & FAQ', href: '/docs/reference/faq-and-changelog' },
     { label: 'Support', href: 'mailto:support@warmhawk.com' },
   ],
   legal: [
