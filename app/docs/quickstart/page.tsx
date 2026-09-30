@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { pageSeo, howToSchema } from '@/lib/seo';
 import { AnswerBlock } from '@/components/AnswerBlock';
 import { CodeBlock } from '@/components/CodeBlock';
+import { coreEngineRepoPublic, coreEngineRepoUrl } from '@/lib/siteConfig';
 
 export const metadata: Metadata = pageSeo({
   title: 'Quickstart & installation',
@@ -312,6 +313,16 @@ export default function QuickstartPage() {
           for the complete, field-by-field documentation of every route.
         </p>
       </div>
+
+      {coreEngineRepoPublic && (
+        <p className="max-w-2xl mt-8 text-[15px] leading-relaxed text-ink-muted">
+          Engine running? A{' '}
+          <a href={coreEngineRepoUrl} className="text-rust font-semibold">
+            star on GitHub
+          </a>{' '}
+          helps other self-hosters find it.
+        </p>
+      )}
     </div>
   );
 }
