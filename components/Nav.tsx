@@ -56,14 +56,6 @@ export function Nav() {
           <Link href="/dashboard" className="hover:text-rust transition-colors">
             Dashboard
           </Link>
-          {coreEngineRepoPublic && (
-            <a
-              href={coreEngineRepoUrl}
-              className="hidden xl:inline whitespace-nowrap hover:text-rust transition-colors"
-            >
-              GitHub ⭐
-            </a>
-          )}
         </div>
         <div className="flex items-center gap-3">
           <Link href="/docs/quickstart" className="hidden sm:inline-flex btn btn-ghost btn-sm">
