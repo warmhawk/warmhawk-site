@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { mainNav } from '@/lib/siteConfig';
+import { coreEngineRepoPublic, coreEngineRepoUrl, mainNav } from '@/lib/siteConfig';
 import { tiers } from '@/lib/tierConfig';
 import { BrandMark } from '@/components/BrandMark';
 
@@ -56,6 +56,14 @@ export function Nav() {
           <Link href="/dashboard" className="hover:text-rust transition-colors">
             Dashboard
           </Link>
+          {coreEngineRepoPublic && (
+            <a
+              href={coreEngineRepoUrl}
+              className="whitespace-nowrap hover:text-rust transition-colors"
+            >
+              GitHub ⭐
+            </a>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <Link href="/docs/quickstart" className="hidden sm:inline-flex btn btn-ghost btn-sm">
@@ -103,6 +111,14 @@ export function Nav() {
               >
                 Dashboard
               </Link>
+              {coreEngineRepoPublic && (
+                <a
+                  href={coreEngineRepoUrl}
+                  className="rounded-lg px-2.5 py-2.5 hover:bg-cream-elevated hover:text-ink transition-colors"
+                >
+                  GitHub ⭐
+                </a>
+              )}
               <Link
                 href="/docs/quickstart"
                 className="sm:hidden rounded-lg px-2.5 py-2.5 hover:bg-cream-elevated hover:text-ink transition-colors"
