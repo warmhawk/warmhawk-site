@@ -14,7 +14,11 @@ export const metadata: Metadata = pageSeo({
 const guardrails: { title: string; body: string }[] = [
   {
     title: 'CAN-SPAM auto-injection',
-    body: 'A send is refused before it reaches the pipeline if the instance has no configured physical mailing address, or the campaign has no unsubscribeUrlTemplate — both are unconditional, structural checks in the one shared send path, not per-entry-point duplicated logic a caller could route around.',
+    body: 'A send is refused before it reaches the pipeline if the instance has no configured physical mailing address, or there is no unsubscribe link to put in the footer — both are unconditional, structural checks in the one shared send path, not per-entry-point duplicated logic a caller could route around.',
+  },
+  {
+    title: 'Built-in unsubscribe page',
+    body: 'A campaign with no unsubscribeUrlTemplate of its own links every email to a page WarmHawk serves on your install’s domain, at /unsubscribe/ plus a signed token that names the lead without putting the address in the URL. Opening the page changes nothing, because mail scanners follow links; pressing the button suppresses the address in every campaign. A suppressed address is also refused at send time, so a lead who unsubscribes with an email already queued does not get it.',
   },
   {
     title: 'RFC 8058 one-click unsubscribe',
