@@ -33,7 +33,7 @@ const quickstartSteps = [
   },
   {
     name: 'Create a campaign',
-    text: 'POST /v1/campaigns with a template, an optional aiPromptTemplate for BYOK AI personalization, and an unsubscribeUrlTemplate.',
+    text: 'POST /v1/campaigns with a template, an optional aiPromptTemplate for BYOK AI personalization, and an optional unsubscribeUrlTemplate if you want your own unsubscribe page instead of the built-in one.',
   },
   {
     name: 'Import a lead',
@@ -187,9 +187,11 @@ export default function QuickstartPage() {
         any <code className="font-mono">customFields</code> key (flat, so a custom field named{' '}
         <code className="font-mono">recentNews</code> is{' '}
         <code className="font-mono">{'{{recentNews}}'}</code>, never{' '}
-        <code className="font-mono">{'{{customFields.recentNews}}'}</code>). A campaign also needs
-        an <code className="font-mono">unsubscribeUrlTemplate</code> before it can launch (CAN-SPAM)
-        &mdash; set it now to avoid a 422 later:
+        <code className="font-mono">{'{{customFields.recentNews}}'}</code>). Every email has to
+        carry an unsubscribe link (CAN-SPAM). Leave{' '}
+        <code className="font-mono">unsubscribeUrlTemplate</code> out and each email links to the
+        unsubscribe page WarmHawk serves on your install&rsquo;s domain; set it, as below, to send
+        people to a page of your own:
       </p>
       <CodeBlock label="POST /v1/campaigns">
         {`curl -X POST https://api.yourcompany.com/v1/campaigns \\
