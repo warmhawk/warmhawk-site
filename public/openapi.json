@@ -428,7 +428,7 @@
                   },
                   "unsubscribeUrlTemplate": {
                     "type": "string",
-                    "description": "Required before the campaign can launch."
+                    "description": "Optional. Your own unsubscribe page; {{email}} is replaced with the recipient's address. Left out, every email links to the built-in unsubscribe page on the install's domain."
                   }
                 }
               }
@@ -473,7 +473,7 @@
         "responses": {
           "200": { "description": "status set to ACTIVE" },
           "422": {
-            "description": "unsubscribeUrlTemplate is missing, or the campaign is pausedForBounceRate"
+            "description": "The campaign is pausedForBounceRate, or it has no unsubscribeUrlTemplate on an install with no domain to serve the built-in unsubscribe page"
           }
         }
       }

@@ -58,7 +58,7 @@ const campaignRoutes = [
   },
   {
     route: 'POST /v1/campaigns/:id/launch',
-    desc: '422 if unsubscribeUrlTemplate is missing, or the campaign is pausedForBounceRate. Otherwise sets status: ACTIVE.',
+    desc: '422 if the campaign is pausedForBounceRate, or it has no unsubscribeUrlTemplate on an install with no domain to serve the built-in unsubscribe page. Otherwise sets status: ACTIVE.',
   },
   { route: 'POST /v1/campaigns/:id/pause', desc: 'Sets status: PAUSED.' },
   {
@@ -83,8 +83,9 @@ export default function ApiReferenceLeadsCampaignsPage() {
         Three lead-ingest paths (single create, CSV import, unauthenticated webhook) share one
         validation function and an open customFields object; DELETE /v1/leads/erase handles GDPR
         erasure. Campaigns are created with a template (spintax-capable fallback body) and an
-        aiPromptTemplate (mustache-placeholder AI instructions), and launch is gated on
-        unsubscribeUrlTemplate and the bounce circuit breaker.
+        aiPromptTemplate (mustache-placeholder AI instructions). unsubscribeUrlTemplate is optional:
+        without it every email links to the built-in unsubscribe page. Launch is gated on a working
+        unsubscribe link and the bounce circuit breaker.
       </AnswerBlock>
 
       <h2 className="font-display text-2xl font-semibold mb-4">Leads</h2>

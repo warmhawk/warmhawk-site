@@ -31,7 +31,7 @@ const faqItems = [
   {
     question: 'Why does launching a campaign sometimes return a 422?',
     answer:
-      'Two structural gates: launch is refused if unsubscribeUrlTemplate is empty (CAN-SPAM requires a working opt-out mechanism on every commercial send), or if the campaign is currently pausedForBounceRate from the bounce circuit breaker tripping.',
+      'Two structural gates: launch is refused if the campaign has no working unsubscribe link (CAN-SPAM requires one on every commercial send), or if the campaign is currently pausedForBounceRate from the bounce circuit breaker tripping. A campaign with no unsubscribeUrlTemplate of its own uses the unsubscribe page WarmHawk serves on your install’s domain, so the first gate only refuses an install that has no domain set.',
   },
 ];
 
@@ -144,8 +144,9 @@ export default function CampaignsAiContentQualityPage() {
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-4">
         Refuses with <code className="font-mono">422</code> if{' '}
-        <code className="font-mono">unsubscribeUrlTemplate</code> is empty, or if the campaign is
-        currently <code className="font-mono">pausedForBounceRate</code> (see{' '}
+        <code className="font-mono">unsubscribeUrlTemplate</code> is empty on an install with no
+        domain to serve the built-in unsubscribe page, or if the campaign is currently{' '}
+        <code className="font-mono">pausedForBounceRate</code> (see{' '}
         <Link
           href="/docs/guides/sending-safely-and-domain-health"
           className="text-rust font-semibold"
