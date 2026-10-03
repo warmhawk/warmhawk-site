@@ -9,9 +9,10 @@ import { AnswerBlock } from '@/components/AnswerBlock';
 import { StatCite } from '@/components/StatCite';
 
 export const metadata: Metadata = pageSeo({
-  title: 'WarmHawk Pricing — Cold Email Software Pricing Comparison',
+  title: 'WarmHawk Pricing: $199/mo Flat vs Per-Seat Cold Email Tools',
+  omitBrandSuffix: true,
   description:
-    'WarmHawk pricing broken down: Tier 0 free and source-available, Tier 1 Self-Hosted Pro at $199/mo flat, Tier 2 Enterprise DFY at a $999 one-time setup fee plus the same $199/mo software fee. Full feature matrix, billing mechanics, and honest cost-at-scale comparison against per-seat cold email tools.',
+    'WarmHawk pricing: Tier 0 free and source-available, Tier 1 Self-Hosted Pro at $199/mo flat, Tier 2 Enterprise DFY at $999 one-time setup plus $199/mo.',
   path: '/compare/pricing',
 });
 

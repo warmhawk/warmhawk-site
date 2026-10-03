@@ -8,7 +8,7 @@ import { FaqSection } from '@/components/FaqSchema';
 export const metadata: Metadata = pageSeo({
   title: 'Campaigns, AI & content quality',
   description:
-    'How WarmHawk campaigns work: template vs aiPromptTemplate, native spintax variation, BYOK Gemini/Claude personalization, the content-quality score computed on every save, and the launch/pause lifecycle.',
+    'How WarmHawk campaigns work: template vs aiPromptTemplate, native spintax, BYOK Gemini/Claude personalization, the per-save content-quality score and launch/pause.',
   path: '/docs/guides/campaigns-ai-and-content-quality',
 });
 

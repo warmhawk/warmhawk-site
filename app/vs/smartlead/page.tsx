@@ -31,9 +31,10 @@ const compareRows: CompareRow[] = [
 ];
 
 export const metadata: Metadata = pageSeo({
-  title: 'WarmHawk vs Smartlead — self-hosted infrastructure vs stacked SaaS add-ons',
+  title: 'WarmHawk vs Smartlead: Self-Hosted vs Stacked SaaS Add-Ons',
+  omitBrandSuffix: true,
   description:
-    'WarmHawk vs Smartlead compared: flat $199/month self-hosted infrastructure with free monitoring and founder-staffed support, versus Smartlead’s multi-tenant platform, silent mid-send failures, and add-ons that stack the bill 3-5x.',
+    'WarmHawk vs Smartlead: flat $199/month self-hosted infrastructure with free monitoring versus a multi-tenant platform whose add-ons stack the bill 3-5x.',
   path: '/vs/smartlead',
 });
 

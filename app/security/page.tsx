@@ -6,7 +6,7 @@ import { siteConfig } from '@/lib/siteConfig';
 export const metadata: Metadata = pageSeo({
   title: 'Security & Coordinated Disclosure Policy',
   description:
-    "WarmHawk's coordinated disclosure policy: what's in scope, how to report a vulnerability, our response-time commitment, and safe-harbor terms for good-faith security researchers.",
+    "WarmHawk's coordinated disclosure policy: what is in scope, how to report a vulnerability, our response-time commitment, and safe harbor for good-faith researchers.",
   path: '/security',
 });
 

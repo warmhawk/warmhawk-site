@@ -7,7 +7,7 @@ import { tiers } from '@/lib/tierConfig';
 export const metadata: Metadata = pageSeo({
   title: 'Introduction',
   description:
-    'What WarmHawk is: self-hosted cold-email infrastructure that runs on your own server, the three tiers (open-core, Self-Hosted Pro, Enterprise DFY), and where to go next in the docs.',
+    'What WarmHawk is: self-hosted cold-email infrastructure on your own server, the three tiers (open-core, Self-Hosted Pro, Enterprise DFY), and where to go next.',
   path: '/docs/introduction',
 });
 

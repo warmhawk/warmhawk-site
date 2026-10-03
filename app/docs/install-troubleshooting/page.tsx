@@ -8,7 +8,7 @@ import { FaqSection } from '@/components/FaqSchema';
 export const metadata: Metadata = pageSeo({
   title: 'install.sh troubleshooting',
   description:
-    'Fixes for the most common WarmHawk install.sh failures: missing Docker/Compose, ports 80/443 already bound, DNS not propagated yet, and how to safely re-run the installer.',
+    'Fixes for common WarmHawk install.sh failures: missing Docker/Compose, ports 80/443 already bound, DNS not propagated yet, and how to safely re-run the installer.',
   path: '/docs/install-troubleshooting',
 });
 

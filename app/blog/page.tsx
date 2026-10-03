@@ -5,9 +5,10 @@ import { AnswerBlock } from '@/components/AnswerBlock';
 import { blogPosts } from '@/lib/blogPosts';
 
 export const metadata: Metadata = pageSeo({
-  title: 'Blog',
+  title: 'WarmHawk Blog: Cold Email Deliverability and DNS Guides',
+  omitBrandSuffix: true,
   description:
-    'Deliverability and email-authentication explainers from WarmHawk: SPF, DKIM, DMARC, blocklists, and the mechanics behind sending mail that actually lands in the inbox.',
+    'Deliverability and email-authentication explainers from WarmHawk: SPF, DKIM, DMARC, blocklists and the mechanics behind sending mail that lands in the inbox.',
   path: '/blog',
 });
 

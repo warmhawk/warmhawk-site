@@ -31,9 +31,10 @@ const compareRows: CompareRow[] = [
 ];
 
 export const metadata: Metadata = pageSeo({
-  title: 'Instantly Alternatives (2026) — Compared, Including WarmHawk',
+  title: 'Instantly Alternatives (2026): Compared with WarmHawk',
+  omitBrandSuffix: true,
   description:
-    'Looking for an Instantly alternative? A short, honest look at Smartlead, Lemlist, Woodpecker, Apollo, and a self-hosted DIY setup — plus the full case for WarmHawk, a flat-fee self-hosted alternative built around the same complaints Instantly users report.',
+    'Looking for an Instantly alternative? Compare Smartlead, Lemlist, Woodpecker, Apollo and a self-hosted DIY setup, plus the case for flat-fee, self-hosted WarmHawk.',
   path: '/vs/instantly-alternatives',
 });
 

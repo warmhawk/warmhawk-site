@@ -8,7 +8,7 @@ import { FaqSection } from '@/components/FaqSchema';
 export const metadata: Metadata = pageSeo({
   title: 'Leads & enrichment',
   description:
-    'Every way to get leads into WarmHawk — single create, CSV bulk import, unauthenticated webhook ingest — plus GDPR erasure, and the Clay/Apollo recipe for piping enrichment output into customFields and AI prompts.',
+    'Every way to get leads into WarmHawk: single create, CSV bulk import, unauthenticated webhook ingest, GDPR erasure, and the Clay/Apollo enrichment recipe.',
   path: '/docs/guides/leads-and-enrichment',
 });
 

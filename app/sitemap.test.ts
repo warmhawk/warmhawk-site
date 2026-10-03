@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import sitemap from './sitemap';
 import robots from './robots';
 import { smtpErrors } from '@/lib/smtpErrors';
+import { blogPosts } from '@/lib/blogPosts';
 
 /**
  * Confirms the sitemap/robots gating logic (Technical SEO baseline):
@@ -119,5 +120,21 @@ describe('robots()', () => {
     const rule = Array.isArray(result.rules) ? result.rules[0] : result.rules;
     expect(rule?.disallow).not.toContain('/vs/instantly$');
     expect(rule?.disallow).toContain('/api/');
+  });
+});
+
+describe('sitemap() lastModified', () => {
+  it('uses fixed ISO dates, not the build time', () => {
+    const routes = sitemap();
+    for (const route of routes) {
+      expect(route.lastModified).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+    expect(new Set(routes.map((route) => route.lastModified)).size).toBeGreaterThan(3);
+  });
+
+  it('dates blog posts by their own published date', () => {
+    const post = blogPosts[0]!;
+    const entry = sitemap().find((route) => route.url.endsWith(`/blog/${post.slug}`));
+    expect(entry?.lastModified).toBe(post.date);
   });
 });

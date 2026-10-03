@@ -59,9 +59,10 @@ const compareRows: CompareRow[] = [
 ];
 
 export const metadata: Metadata = pageSeo({
-  title: 'WarmHawk vs Warmbly — BSL Single-Tenant vs Apache-2.0 Open Source',
+  title: 'WarmHawk vs Warmbly: BSL Single-Tenant vs Apache-2.0',
+  omitBrandSuffix: true,
   description:
-    'WarmHawk vs Warmbly compared: license (BSL 1.1 vs OSI Apache-2.0), warmup approach, AI personalization, guardrails, and pricing — an honest look, including where Warmbly is genuinely ahead.',
+    'WarmHawk vs Warmbly compared: license (BSL 1.1 vs OSI Apache-2.0), warmup, AI personalization, guardrails and pricing, including where Warmbly is genuinely ahead.',
   path: '/vs/warmbly',
 });
 

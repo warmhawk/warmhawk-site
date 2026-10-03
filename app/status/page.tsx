@@ -6,9 +6,10 @@ import { CheckBadge } from '@/components/CheckBadge';
 import { getStatusChecks } from '@/lib/statusProvider';
 
 export const metadata: Metadata = pageSeo({
-  title: 'Status',
+  title: 'WarmHawk Status: What Runs Centrally vs Self-Hosted',
+  omitBrandSuffix: true,
   description:
-    'What WarmHawk operates centrally (the marketing site, Stripe license issuance and the WarmHawk Connect mailbox sign-in relay) versus what runs on your own self-hosted instance, monitored by your own bundled Uptime Kuma and OTEL export.',
+    'What WarmHawk runs centrally (marketing site, Stripe license issuance, Connect sign-in relay) versus what runs on your own self-hosted instance.',
   path: '/status',
 });
 

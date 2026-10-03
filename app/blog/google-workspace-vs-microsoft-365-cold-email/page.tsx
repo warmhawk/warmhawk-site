@@ -9,7 +9,7 @@ import { blogPosts } from '@/lib/blogPosts';
 const post = blogPosts.find((p) => p.slug === 'google-workspace-vs-microsoft-365-cold-email')!;
 
 export const metadata: Metadata = pageSeo({
-  title: post.title,
+  title: post.metaTitle ?? post.title,
   description: post.description,
   path: `/blog/${post.slug}`,
 });

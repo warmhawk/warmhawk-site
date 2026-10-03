@@ -8,7 +8,7 @@ import { FaqSection } from '@/components/FaqSchema';
 export const metadata: Metadata = pageSeo({
   title: 'Connecting mailboxes',
   description:
-    'How to register a sending domain and connect a mailbox in WarmHawk — plain SMTP/IMAP credentials or the Google Workspace / Microsoft 365 OAuth flow — plus dailyCap and mailbox management.',
+    'Register a sending domain and connect a mailbox in WarmHawk with SMTP/IMAP credentials or Google Workspace / Microsoft 365 OAuth, plus dailyCap and management.',
   path: '/docs/guides/connecting-mailboxes',
 });
 

@@ -6,7 +6,7 @@ import { siteConfig } from '@/lib/siteConfig';
 export const metadata: Metadata = pageSeo({
   title: 'Data Processing Agreement',
   description:
-    'How WarmHawk processes personal data as a processor for the billing/checkout flow only — short by design, because customer lead and campaign data never leaves the customer’s own self-hosted server.',
+    'How WarmHawk processes personal data as a processor for the billing and checkout flow only; lead and campaign data never leaves your own self-hosted server.',
   path: '/legal/dpa',
 });
 

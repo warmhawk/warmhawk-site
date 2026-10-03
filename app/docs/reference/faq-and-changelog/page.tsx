@@ -8,7 +8,7 @@ import { coreEngineRepoPublic, coreEngineRepoUrl } from '@/lib/siteConfig';
 export const metadata: Metadata = pageSeo({
   title: 'FAQ & changelog',
   description:
-    'Frequently asked questions about WarmHawk’s docs and API, plus what’s actually shipped so far in each repo — pulled straight from each package’s own CHANGELOG.md, no invented version numbers.',
+    "Frequently asked questions about WarmHawk's docs and API, plus what has shipped in each repo, pulled from each package's own CHANGELOG.md with no invented versions.",
   path: '/docs/reference/faq-and-changelog',
 });
 
