@@ -24,11 +24,17 @@ const queueRoutes = [
 
 const domainRoutes = [
   { route: 'GET /v1/domains', desc: 'List every sending domain on the account.' },
-  { route: 'POST /v1/domains', desc: 'Create. Body: { domainName, redirectUrl? }.' },
-  { route: 'PATCH /v1/domains/:id', desc: 'Update redirectUrl.' },
+  {
+    route: 'POST /v1/domains',
+    desc: 'Create. Body: { domainName, redirectUrl?, dkimSelector? }. dkimSelector is the part before ._domainkey; 422 if it is not a valid DNS label.',
+  },
+  {
+    route: 'PATCH /v1/domains/:id',
+    desc: 'Update redirectUrl and/or dkimSelector. Only fields present change; dkimSelector null or "" clears it.',
+  },
   {
     route: 'POST /v1/domains/:domain/check',
-    desc: 'Keyed by domain NAME, not id. Unified SPF/DKIM/DMARC + blocklist check. Optional ?selector= for a non-default DKIM selector.',
+    desc: 'Keyed by domain NAME, not id. Unified SPF/DKIM/DMARC + blocklist check. DKIM uses ?selector= if given, else the saved dkimSelector, else tries common provider selectors (a miss is PENDING). Also runs hourly on its own.',
   },
   {
     route: 'GET /v1/domains/:id/placement-sample',

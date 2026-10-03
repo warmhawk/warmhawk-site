@@ -152,13 +152,20 @@ export default function ConnectingMailboxesPage() {
     "imapPort": 993,
     "authUsername": "you@yourcompany.com",
     "authPassword": "YOUR_SMTP_PASSWORD",
+    "senderName": "Sam Patel",
     "dailyCap": 25
   }'`}
       </CodeBlock>
-      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-4">
         The response (201) returns the created <code className="font-mono">Mailbox</code> row with{' '}
         <code className="font-mono">authPassword</code> stripped out — it&rsquo;s encrypted at rest
         and never round-tripped back to any caller, ever.
+      </p>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
+        <code className="font-mono">senderName</code> is the From name leads see and what{' '}
+        <code className="font-mono">{'{{senderName}}'}</code> fills in campaigns. Up to 80
+        characters. The API still accepts a mailbox without one, but its mail then goes out from the
+        bare address, so the dashboard asks for it.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4">
@@ -195,16 +202,22 @@ export default function ConnectingMailboxesPage() {
         <code className="font-mono">?oauth_error=</code> query param if consent was denied or the
         token exchange failed).
       </p>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl -mt-6 mb-10">
+        On connect, WarmHawk copies the name the provider already shows for the mailbox &mdash;
+        Gmail&rsquo;s send-as name, or the Microsoft 365 account&rsquo;s display name over WarmHawk
+        Connect &mdash; into <code className="font-mono">senderName</code>, unless one is already
+        set. If the provider has none, the dashboard asks for it after the redirect.
+      </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4">Managing a mailbox afterward</h2>
       <CodeBlock label="GET /v1/mailboxes — list every connected mailbox">
         {`curl https://app.yourcompany.com/v1/mailboxes -H "Authorization: Bearer YOUR_API_KEY"`}
       </CodeBlock>
-      <CodeBlock label="PATCH /v1/mailboxes/:id — adjust status or dailyCap">
+      <CodeBlock label="PATCH /v1/mailboxes/:id — adjust status, dailyCap or senderName">
         {`curl -X PATCH https://app.yourcompany.com/v1/mailboxes/mbx_a1b2c3 \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '{ "dailyCap": 40 }'`}
+  -d '{ "dailyCap": 40, "senderName": "Sam Patel" }'`}
       </CodeBlock>
       <CodeBlock label="DELETE /v1/mailboxes/:id — disconnect it">
         {`curl -X DELETE https://app.yourcompany.com/v1/mailboxes/mbx_a1b2c3 \\
