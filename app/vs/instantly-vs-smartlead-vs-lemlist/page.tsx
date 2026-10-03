@@ -69,9 +69,10 @@ const lemlistRows: CompareRow[] = [
 ];
 
 export const metadata: Metadata = pageSeo({
-  title: 'Instantly vs Smartlead vs Lemlist — and Where WarmHawk Fits',
+  title: 'Instantly vs Smartlead vs Lemlist: Where WarmHawk Fits',
+  omitBrandSuffix: true,
   description:
-    'A side-by-side look at Instantly, Smartlead, and Lemlist on pricing, warmup, support, and infrastructure — plus where a flat, self-hosted, single-tenant account like WarmHawk fits against all three.',
+    'Instantly, Smartlead and Lemlist compared on pricing, warmup, support and infrastructure, plus where a flat, self-hosted, single-tenant account like WarmHawk fits.',
   path: '/vs/instantly-vs-smartlead-vs-lemlist',
 });
 

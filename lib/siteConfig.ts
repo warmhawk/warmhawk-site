@@ -12,7 +12,7 @@ export const siteConfig = {
   // its own sitemap/robots/canonical/OG tags.
   url: process.env.NEXT_PUBLIC_SITE_URL || 'https://warmhawk.com',
   description:
-    'WarmHawk — enterprise cold email infrastructure running completely on your own server. Unlimited mailboxes, zero per-seat fees, real deliverability data, AI personalization with your choice of Gemini or Claude, and a queueing engine that never pushes your domains past what’s actually safe. Live in under 10 minutes, one command.',
+    'WarmHawk: self-hosted cold email infrastructure on your own server. Unlimited mailboxes, no per-seat fees, Gemini or Claude AI personalization. One-command install.',
   supportEmail: 'support@warmhawk.com',
   securityEmail: 'security@warmhawk.com',
   helloEmail: 'hello@warmhawk.com',

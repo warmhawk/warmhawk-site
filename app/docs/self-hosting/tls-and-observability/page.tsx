@@ -8,7 +8,7 @@ import { FaqSection } from '@/components/FaqSchema';
 export const metadata: Metadata = pageSeo({
   title: 'TLS & observability',
   description:
-    'How certbot issuance and renewal work (and fail safe, not crash), BYO-cert, plus what ships for observability by default — bundled Uptime Kuma and native OTEL export, both on your own instance.',
+    'How certbot issuance and renewal work (and fail safe, not crash), BYO-cert, and the default observability: bundled Uptime Kuma and native OTEL export.',
   path: '/docs/self-hosting/tls-and-observability',
 });
 

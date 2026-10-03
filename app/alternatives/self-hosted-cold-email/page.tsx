@@ -98,9 +98,9 @@ const toolRows: ToolRow[] = [
 ];
 
 export const metadata: Metadata = pageSeo({
-  title: 'Self-Hosted Cold Email Software: 7 Alternatives Compared (2026)',
+  title: 'Self-Hosted Cold Email Software: 7 Options (2026)',
   description:
-    'An honest, sourced comparison of self-hosted cold email software: Warmbly, Quickly, Mautic, listmonk, Postal, BillionMail, and Sendy, plus where WarmHawk fits — license, GitHub stars, warmup, mailbox rotation, and reply handling for each.',
+    'A sourced comparison of Warmbly, Quickly, Mautic, listmonk, Postal, BillionMail and Sendy for self-hosted cold email, plus where WarmHawk fits.',
   path: '/alternatives/self-hosted-cold-email',
 });
 

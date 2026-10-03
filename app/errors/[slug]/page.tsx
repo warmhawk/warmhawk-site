@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { breadcrumbSchema, pageSeo } from '@/lib/seo';
+import { siteConfig } from '@/lib/siteConfig';
 import {
   ERRORS_VERIFIED_ON,
   checkerLinks,
@@ -41,8 +42,11 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     entry.summary.length > 158
       ? `${entry.summary.slice(0, 155).replace(/\s+\S*$/, '')}…`
       : entry.summary;
+  const title = `${titleCode(entry)} Error: ${entry.seoHeadline ?? entry.headline}`;
   return pageSeo({
-    title: `${titleCode(entry)} Error: ${entry.headline}`,
+    title,
+    // Drop the " | WarmHawk" suffix when it would push the rendered title past 65 characters.
+    omitBrandSuffix: `${title} | ${siteConfig.name}`.length > 65,
     description,
     path: `/errors/${entry.slug}`,
   });

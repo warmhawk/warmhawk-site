@@ -8,10 +8,10 @@ import { ToolCrossLinks } from '@/components/ToolCrossLinks';
 
 const TOOL_NAME = 'Free Bulk SPF, DKIM & DMARC Checker';
 const TOOL_DESCRIPTION =
-  'Check up to 15 sending domains at once — MX, SPF, DKIM, DMARC and blocklist status, 5 checks each — plus a plain-language guide to the RFC 8058 List-Unsubscribe requirement. No account required.';
+  'Check up to 15 sending domains at once for MX, SPF, DKIM, DMARC and blocklist status, plus a guide to the RFC 8058 List-Unsubscribe requirement. No account needed.';
 
 export const metadata: Metadata = pageSeo({
-  title: `${TOOL_NAME} + List-Unsubscribe Guide`,
+  title: `${TOOL_NAME} (15 Domains)`,
   description: TOOL_DESCRIPTION,
   path: '/tools/domain-check',
 });

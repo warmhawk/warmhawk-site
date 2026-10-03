@@ -31,9 +31,10 @@ const compareRows: CompareRow[] = [
 ];
 
 export const metadata: Metadata = pageSeo({
-  title: 'WarmHawk vs Lemlist — Flat Pricing vs Per-Seat Cold Email Software',
+  title: 'WarmHawk vs Lemlist: Flat Pricing vs Per-Seat Cold Email',
+  omitBrandSuffix: true,
   description:
-    'Compare WarmHawk and Lemlist on pricing, feature focus, deliverability, and send safety. See why agencies move off per-seat SaaS onto one flat, self-hosted account fee.',
+    'Compare WarmHawk and Lemlist on pricing, deliverability and send safety, and see why agencies move from per-seat SaaS to one flat, self-hosted account fee.',
   path: '/vs/lemlist',
 });
 

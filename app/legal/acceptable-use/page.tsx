@@ -6,7 +6,7 @@ import { siteConfig } from '@/lib/siteConfig';
 export const metadata: Metadata = pageSeo({
   title: 'Acceptable Use Policy',
   description:
-    'What is prohibited when sending mail through a self-hosted WarmHawk instance: consent-less lists, phishing or fraud, sender-identity impersonation, and illegal content — plus CAN-SPAM, suppression-list, and BYOK AI expectations.',
+    'What is prohibited when sending through a self-hosted WarmHawk instance: consent-less lists, phishing, impersonation and illegal content, plus CAN-SPAM expectations.',
   path: '/legal/acceptable-use',
 });
 

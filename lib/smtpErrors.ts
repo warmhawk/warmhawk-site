@@ -46,6 +46,8 @@ export interface SmtpErrorEntry {
   ranges?: ReadonlyArray<readonly [string, string]>;
   /** Short plain-English name, used in titles and the hub list. */
   headline: string;
+  /** Shorter headline for the <title> when `headline` (also the H1) is too long for it. */
+  seoHeadline?: string;
   category: ErrorCategory;
   permanence: 'permanent' | 'temporary' | 'both';
   /** 40–60 word direct answer (rendered in an AnswerBlock). */
@@ -506,6 +508,7 @@ export const smtpErrors: SmtpErrorEntry[] = [
     code: '5.7.515',
     aliases: [],
     headline: 'High-volume sender fails Outlook.com authentication requirements',
+    seoHeadline: 'High-volume sender fails Outlook.com auth',
     category: 'authentication',
     permanence: 'permanent',
     summary:
@@ -1466,6 +1469,7 @@ export const smtpErrors: SmtpErrorEntry[] = [
     code: '5.7.12',
     aliases: ['5.7.133', '5.7.134', '5.7.136'],
     headline: 'Recipient only accepts mail from inside its organization',
+    seoHeadline: 'Recipient accepts only internal mail',
     category: 'recipient',
     permanence: 'permanent',
     summary:

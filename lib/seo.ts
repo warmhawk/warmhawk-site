@@ -7,6 +7,8 @@ interface PageSeoInput {
   description: string;
   path: string; // e.g. "/vs/instantly"
   noIndex?: boolean;
+  /** Drop the " | WarmHawk" suffix — for titles that already carry the brand or would overflow. */
+  omitBrandSuffix?: boolean;
 }
 
 /**
@@ -15,9 +17,15 @@ interface PageSeoInput {
  * Pages, Technical SEO baseline) is uniform site-wide rather than
  * hand-repeated per page.
  */
-export function pageSeo({ title, description, path, noIndex }: PageSeoInput): Metadata {
+export function pageSeo({
+  title,
+  description,
+  path,
+  noIndex,
+  omitBrandSuffix,
+}: PageSeoInput): Metadata {
   const url = `${siteConfig.url}${path}`;
-  const fullTitle = path === '/' ? title : `${title} | ${siteConfig.name}`;
+  const fullTitle = path === '/' || omitBrandSuffix ? title : `${title} | ${siteConfig.name}`;
 
   return {
     // `{ absolute }` opts out of the root layout's `title.template` (`%s | WarmHawk`) — fullTitle

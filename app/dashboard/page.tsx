@@ -7,7 +7,7 @@ import { tiers } from '@/lib/tierConfig';
 export const metadata: Metadata = pageSeo({
   title: 'Operator Dashboard',
   description:
-    'What the Tier 1/2 WarmHawk operator dashboard actually looks like: live queue inspector, domain health, team management, and 2FA — real screenshots, not mockups. No API or code required to run it day to day.',
+    'What the Tier 1/2 WarmHawk operator dashboard looks like: live queue inspector, domain health, team management and 2FA, in real screenshots, not mockups.',
   path: '/dashboard',
 });
 

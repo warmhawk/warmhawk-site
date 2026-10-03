@@ -12,7 +12,7 @@ import { ToolCrossLinks } from '@/components/ToolCrossLinks';
 
 const TOOL_NAME = 'Cold Email Calculator: Domains, Mailboxes & Cost';
 const TOOL_DESCRIPTION =
-  'Enter how many cold emails you send a month and see how many domains and mailboxes you need, and what it costs on Instantly, Smartlead, Lemlist and self-hosted WarmHawk.';
+  'Enter your monthly cold email volume to see how many domains and mailboxes you need, and what it costs on Instantly, Smartlead, Lemlist and self-hosted WarmHawk.';
 
 export const metadata: Metadata = pageSeo({
   title: TOOL_NAME,

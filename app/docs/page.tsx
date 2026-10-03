@@ -13,9 +13,10 @@ import {
 } from '@/lib/docsNav';
 
 export const metadata: Metadata = pageSeo({
-  title: 'Docs',
+  title: 'WarmHawk Docs: Self-Hosted Cold Email Setup Guide',
+  omitBrandSuffix: true,
   description:
-    'WarmHawk documentation: get started, guides for mailboxes/leads/campaigns/sending/replies, self-hosting (architecture, backups, TLS/observability), the full API reference, and guardrails, FAQ & changelog.',
+    'WarmHawk documentation: quickstart, guides for mailboxes, leads, campaigns and replies, self-hosting, the API reference, and guardrails, FAQ and changelog.',
   path: '/docs',
 });
 

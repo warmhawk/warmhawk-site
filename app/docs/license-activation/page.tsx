@@ -8,7 +8,7 @@ import { FaqSection } from '@/components/FaqSchema';
 export const metadata: Metadata = pageSeo({
   title: 'License activation troubleshooting',
   description:
-    'How WarmHawk license activation is supposed to work, what "license invalid" and "license expired" errors mean, how LicenseGate&rsquo;s daily re-validation and self-refresh work at renewal, and what to do if a payment succeeded but the dashboard disagrees.',
+    'How WarmHawk license activation works, what “license invalid” and “license expired” mean, and what to do if payment succeeded but the dashboard disagrees.',
   path: '/docs/license-activation',
 });
 

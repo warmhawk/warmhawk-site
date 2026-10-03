@@ -8,7 +8,7 @@ import { FaqSection } from '@/components/FaqSchema';
 export const metadata: Metadata = pageSeo({
   title: 'warmhawk update failures',
   description:
-    'What warmhawk update actually does, how to check a failed migration without panic-restarting, how to roll back to the previous image tag after a bad update, and where to check the CHANGELOG first.',
+    'What warmhawk update does, how to check a failed migration without panic-restarting, how to roll back to the previous image tag, and what the CHANGELOG says.',
   path: '/docs/update-failures',
 });
 

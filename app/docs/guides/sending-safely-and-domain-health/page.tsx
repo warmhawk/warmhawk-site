@@ -8,7 +8,7 @@ import { FaqSection } from '@/components/FaqSchema';
 export const metadata: Metadata = pageSeo({
   title: 'Sending safely & domain health',
   description:
-    'How WarmHawk throttles sends (cadence floor + jitter), the bounce/complaint circuit breaker that auto-pauses a bad list, the queue status/pause API, and domain SPF/DKIM/DMARC + seed-inbox placement sampling.',
+    'How WarmHawk throttles sends (cadence floor plus jitter), the bounce/complaint circuit breaker, the queue pause API, and domain SPF/DKIM/DMARC placement sampling.',
   path: '/docs/guides/sending-safely-and-domain-health',
 });
 

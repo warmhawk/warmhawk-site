@@ -7,7 +7,7 @@ import { CodeBlock } from '@/components/CodeBlock';
 export const metadata: Metadata = pageSeo({
   title: 'API reference: Queue, domains & webhooks',
   description:
-    'Full field-by-field reference for the send queue, domain SPF/DKIM/DMARC + placement-sample routes on WarmHawk’s real /v1 API. Outbound webhooks are planned — not built yet.',
+    "Field-by-field reference for WarmHawk's /v1 send queue, domain SPF/DKIM/DMARC and placement-sample routes. Outbound webhooks are planned, not built yet.",
   path: '/docs/api-reference/queue-domains-and-webhooks',
 });
 
