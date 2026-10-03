@@ -197,7 +197,7 @@ test.describe('Human journey: real checkout', () => {
     const lineItems = session.line_items?.data ?? [];
     expect(lineItems, 'Tier 2 session must have exactly 2 line items').toHaveLength(2);
 
-    const oneTimeItem = lineItems.find((li) => li.amount_total === 199_900 && !li.price?.recurring);
+    const oneTimeItem = lineItems.find((li) => li.amount_total === 99_900 && !li.price?.recurring);
     const recurringItem = lineItems.find((li) => li.amount_total === 19_900 && li.price?.recurring);
     expect(oneTimeItem, 'a $999 one-time setup-fee line item must be present').toBeTruthy();
     expect(
