@@ -7,7 +7,7 @@ import { CodeBlock } from '@/components/CodeBlock';
 export const metadata: Metadata = pageSeo({
   title: 'API reference: Queue, domains & webhooks',
   description:
-    'Full field-by-field reference for the send queue, domain SPF/DKIM/DMARC + placement-sample routes on WarmHawk’s real /v1 API. Outbound webhooks are planned — not built yet.',
+    "Field-by-field reference for WarmHawk's /v1 send queue, domain SPF/DKIM/DMARC and placement-sample routes. Outbound webhooks are planned, not built yet.",
   path: '/docs/api-reference/queue-domains-and-webhooks',
 });
 
@@ -24,11 +24,17 @@ const queueRoutes = [
 
 const domainRoutes = [
   { route: 'GET /v1/domains', desc: 'List every sending domain on the account.' },
-  { route: 'POST /v1/domains', desc: 'Create. Body: { domainName, redirectUrl? }.' },
-  { route: 'PATCH /v1/domains/:id', desc: 'Update redirectUrl.' },
+  {
+    route: 'POST /v1/domains',
+    desc: 'Create. Body: { domainName, redirectUrl?, dkimSelector? }. dkimSelector is the part before ._domainkey; 422 if it is not a valid DNS label.',
+  },
+  {
+    route: 'PATCH /v1/domains/:id',
+    desc: 'Update redirectUrl and/or dkimSelector. Only fields present change; dkimSelector null or "" clears it.',
+  },
   {
     route: 'POST /v1/domains/:domain/check',
-    desc: 'Keyed by domain NAME, not id. Unified SPF/DKIM/DMARC + blocklist check. Optional ?selector= for a non-default DKIM selector.',
+    desc: 'Keyed by domain NAME, not id. Unified SPF/DKIM/DMARC + blocklist check. DKIM uses ?selector= if given, else the saved dkimSelector, else tries common provider selectors (a miss is PENDING). Also runs hourly on its own.',
   },
   {
     route: 'GET /v1/domains/:id/placement-sample',

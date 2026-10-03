@@ -8,7 +8,7 @@ import { coreEngineRepoPublic, coreEngineRepoUrl } from '@/lib/siteConfig';
 export const metadata: Metadata = pageSeo({
   title: 'Quickstart & installation',
   description:
-    'Install WarmHawk and send a real test campaign in a handful of curl calls: authenticate, add a domain, connect a mailbox, create a campaign, import a lead, launch, and check the queue — against the real /v1 API.',
+    'Install WarmHawk and send a test campaign in a few curl calls: authenticate, add a domain and mailbox, create a campaign, import a lead, launch, check the queue.',
   path: '/docs/quickstart',
 });
 

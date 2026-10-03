@@ -8,7 +8,7 @@ import { FaqSection } from '@/components/FaqSchema';
 export const metadata: Metadata = pageSeo({
   title: 'Sending safely & domain health',
   description:
-    'How WarmHawk throttles sends (cadence floor + jitter), the bounce/complaint circuit breaker that auto-pauses a bad list, the queue status/pause API, and domain SPF/DKIM/DMARC + seed-inbox placement sampling.',
+    'How WarmHawk throttles sends (cadence floor plus jitter), the bounce/complaint circuit breaker, the queue pause API, and domain SPF/DKIM/DMARC placement sampling.',
   path: '/docs/guides/sending-safely-and-domain-health',
 });
 
@@ -117,11 +117,24 @@ export default function SendingSafelyDomainHealthPage() {
   -H "Authorization: Bearer YOUR_API_KEY"`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
-        Runs live DNS-TXT resolution for SPF/DKIM/DMARC plus continuous DNSBL monitoring (Spamhaus
-        ZEN/DBL, Barracuda, SORBS) in one round trip and persists the result on the{' '}
-        <code className="font-mono">Domain</code> row. An optional{' '}
-        <code className="font-mono">?selector=</code> query param targets a non-default DKIM
-        selector.
+        Runs live DNS-TXT resolution for SPF/DKIM/DMARC plus a Spamhaus DBL domain-blocklist lookup
+        in one round trip and persists the result on the <code className="font-mono">Domain</code>{' '}
+        row. The same full check also runs on its own every hour for every domain, so a DKIM key
+        that disappears turns the badge red without anyone pressing Re-check. Blocklist lookups go
+        straight to Spamhaus&rsquo;s own nameservers, since Spamhaus refuses public resolvers like
+        1.1.1.1 and 8.8.8.8.
+      </p>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
+        <strong>DKIM selectors.</strong> DNS has no way to list a domain&rsquo;s DKIM keys, so
+        WarmHawk tries the default selector of every common provider (Google Workspace, Microsoft
+        365, Cloudflare, SendGrid, Mailgun, Zoho, Fastmail, Proton, Brevo, Resend, HubSpot and
+        more). If none is found the badge reads Pending, not Fail. Providers that mint a selector
+        per customer &mdash; Amazon SES, Postmark, ZeptoMail &mdash; need it saved on the domain:
+        set <code className="font-mono">dkimSelector</code> (the part before{' '}
+        <code className="font-mono">._domainkey</code>) in the dashboard or via{' '}
+        <code className="font-mono">PATCH /v1/domains/:id</code>. Once saved, a missing or revoked
+        key there is a Fail. A one-off <code className="font-mono">?selector=</code> on the check
+        route overrides it for that call.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4">Seed-inbox placement sampling</h2>

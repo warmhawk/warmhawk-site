@@ -8,7 +8,7 @@ import { FaqSection } from '@/components/FaqSchema';
 export const metadata: Metadata = pageSeo({
   title: 'Backups & Redis durability',
   description:
-    'How WarmHawk’s nightly Postgres backups and restore procedure work, plus why Redis is configured for AOF durability — because the dispatch queue holding your leads is data loss risk, not just a cache.',
+    "How WarmHawk's nightly Postgres backups and restore work, and why Redis runs with AOF durability: the dispatch queue holding your leads is data, not just a cache.",
   path: '/docs/self-hosting/backups-and-redis-durability',
 });
 

@@ -14,7 +14,7 @@ import { ToolCrossLinks } from '@/components/ToolCrossLinks';
 
 const TITLE = 'Email Bounce Codes Decoded: SMTP Error Lookup';
 const DESCRIPTION =
-  'Paste any bounce message to decode its SMTP error code, then read the fix. Covers Gmail and Microsoft 365 codes like 5.7.26, 5.7.708, 5.7.509 and 4.7.28, quoted from official docs.';
+  'Paste a bounce message to decode its SMTP error code and read the fix. Covers Gmail and Microsoft 365 codes like 5.7.26, 5.7.708 and 5.7.509, from official docs.';
 
 export const metadata: Metadata = pageSeo({
   title: TITLE,

@@ -8,7 +8,7 @@ import { FaqSection } from '@/components/FaqSchema';
 export const metadata: Metadata = pageSeo({
   title: 'Architecture',
   description:
-    'What actually runs in a WarmHawk instance — every docker compose service, the internal-only network boundary, and how to read logs, tune resource limits, and avoid the ports: concatenation gotcha.',
+    'What runs in a WarmHawk instance: every docker compose service, the internal-only network boundary, and how to read logs and tune resource limits.',
   path: '/docs/self-hosting/architecture',
 });
 

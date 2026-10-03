@@ -49,9 +49,10 @@ const compareRows: CompareRow[] = [
 ];
 
 export const metadata: Metadata = pageSeo({
-  title: 'WarmHawk vs Inframail — Self-Hosted Infrastructure vs a Hosted Inbox Provider',
+  title: 'WarmHawk vs Inframail: Self-Hosted vs Hosted Inboxes',
+  omitBrandSuffix: true,
   description:
-    'Compare WarmHawk and Inframail on infrastructure ownership, not just inbox counts. See why a dedicated sending IP on a shared control panel is a different thing from a self-hosted, unsuspendable server.',
+    'Compare WarmHawk and Inframail on infrastructure ownership: a dedicated sending IP on a shared control panel versus a self-hosted, unsuspendable server.',
   path: '/vs/inframail',
 });
 

@@ -32,9 +32,10 @@ const compareRows: CompareRow[] = [
 ];
 
 export const metadata: Metadata = pageSeo({
-  title: 'WarmHawk vs a Custom n8n Cold Email Workflow — Dedicated BullMQ vs DIY',
+  title: 'WarmHawk vs Custom n8n Cold Email Workflow: BullMQ vs DIY',
+  omitBrandSuffix: true,
   description:
-    'A technical comparison of WarmHawk’s dedicated BullMQ queueing engine against a hand-rolled n8n cold-email workflow: rotation, jitter, crash recovery, and bounded queue growth.',
+    "WarmHawk's dedicated BullMQ queue versus a hand-rolled n8n cold-email workflow, compared on rotation, jitter, crash recovery and bounded queue growth.",
   path: '/vs/custom-n8n',
 });
 

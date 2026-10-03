@@ -8,9 +8,9 @@ import { CompareTable } from '@/components/CompareTable';
 import { StatCite } from '@/components/StatCite';
 
 export const metadata: Metadata = pageSeo({
-  title: 'WarmHawk — Self-hosted cold email infrastructure, one server per account',
+  title: 'WarmHawk: Self-Hosted Cold Email Infrastructure Platform',
   description:
-    'Enterprise cold email infrastructure running completely on your own server. Unlimited mailboxes, zero per-seat fees, real deliverability data, AI personalization with Gemini or Claude. Live in under 10 minutes, one command.',
+    'Self-hosted cold email infrastructure on your own server: unlimited mailboxes, zero per-seat fees, and Gemini or Claude AI personalization. Live in under 10 minutes.',
   path: '/',
 });
 

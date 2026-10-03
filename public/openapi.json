@@ -161,6 +161,11 @@
                     "type": "string",
                     "format": "password",
                     "description": "Encrypted at rest, never returned in any response."
+                  },
+                  "senderName": {
+                    "type": "string",
+                    "maxLength": 80,
+                    "description": "The From name leads see, and {{senderName}} in campaigns. OAuth mailboxes get it from the provider on connect when they have one."
                   }
                 }
               }
@@ -178,13 +183,22 @@
       ],
       "patch": {
         "tags": ["Mailboxes"],
-        "summary": "Update a mailbox's status or dailyCap",
+        "summary": "Update a mailbox's status, dailyCap or senderName",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": { "status": { "type": "string" }, "dailyCap": { "type": "integer" } }
+                "properties": {
+                  "status": { "type": "string" },
+                  "dailyCap": { "type": "integer" },
+                  "senderName": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 80,
+                    "description": "null or blank clears it."
+                  }
+                }
               }
             }
           }
@@ -569,7 +583,12 @@
                 "required": ["domainName"],
                 "properties": {
                   "domainName": { "type": "string" },
-                  "redirectUrl": { "type": "string" }
+                  "redirectUrl": { "type": "string" },
+                  "dkimSelector": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "DKIM selector this domain signs with (the part before ._domainkey). Only needed when your provider mints a per-customer selector (Amazon SES, Postmark, ZeptoMail). 422 if not a valid DNS label."
+                  }
                 }
               }
             }
@@ -581,14 +600,24 @@
     "/domains/{id}": {
       "patch": {
         "tags": ["Domains"],
-        "summary": "Update a domain's redirectUrl",
+        "summary": "Update a domain's redirectUrl and/or DKIM selector",
         "parameters": [
           { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
         ],
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "type": "object", "properties": { "redirectUrl": { "type": "string" } } }
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "redirectUrl": { "type": "string" },
+                  "dkimSelector": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Only fields present change. null or \"\" clears the saved selector."
+                  }
+                }
+              }
             }
           }
         },
@@ -613,7 +642,7 @@
             "in": "query",
             "required": false,
             "schema": { "type": "string" },
-            "description": "Non-default DKIM selector, if not using the standard one."
+            "description": "One-off DKIM selector for this call. Overrides the domain's saved dkimSelector; without either, common provider selectors are tried and a miss is PENDING."
           }
         ],
         "responses": { "200": { "description": "Check result" } }

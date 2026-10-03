@@ -8,7 +8,7 @@ import { FaqSection } from '@/components/FaqSchema';
 export const metadata: Metadata = pageSeo({
   title: 'Stripe checkout & webhooks',
   description:
-    'What WarmHawk&rsquo;s Stripe webhook actually does, what to do if you paid but never received your install command, and how to update payment method or cancel self-serve via the Stripe Customer Portal.',
+    "What WarmHawk's Stripe webhook does, what to do if you paid but got no install command, and how to update payment method or cancel via the Stripe Customer Portal.",
   path: '/docs/stripe-webhooks',
 });
 

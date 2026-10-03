@@ -36,9 +36,10 @@ const compareRows: CompareRow[] = [
 ];
 
 export const metadata: Metadata = pageSeo({
-  title: 'WarmHawk vs Woodpecker — Weighted Rotation, BYOK AI vs Sequential Sending',
+  title: 'WarmHawk vs Woodpecker: Rotation and BYOK AI Compared',
+  omitBrandSuffix: true,
   description:
-    'Compare WarmHawk and Woodpecker on mailbox rotation logic and AI personalization. See why weighted, capacity-aware rotation and BYOK Gemini/Claude beat sequential sending.',
+    'Compare WarmHawk and Woodpecker on mailbox rotation and AI personalization: weighted, capacity-aware rotation and BYOK Gemini/Claude versus sequential sending.',
   path: '/vs/woodpecker',
 });
 
