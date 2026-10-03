@@ -92,7 +92,7 @@ Content-Type: application/json
               },
               {
                 route: 'PATCH /v1/mailboxes/:id',
-                desc: 'Update status or dailyCap. 404 if the id doesn’t exist.',
+                desc: 'Update status, dailyCap or senderName. 404 if the id doesn’t exist.',
               },
               {
                 route: 'DELETE /v1/mailboxes/:id',
@@ -132,7 +132,8 @@ Content-Type: application/json
   "imapHost": "imap.yourdomain.com",
   "imapPort": 993,
   "authUsername": "you@yourcompany.com",
-  "authPassword": "YOUR_SMTP_PASSWORD"   // encrypted at rest, never returned
+  "authPassword": "YOUR_SMTP_PASSWORD",  // encrypted at rest, never returned
+  "senderName": "Sam Patel"              // optional — the From name; up to 80 characters
 }`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
