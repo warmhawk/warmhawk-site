@@ -122,14 +122,14 @@ export const tiers: TierDefinition[] = [
   {
     id: 'enterprise-dfy',
     name: 'Enterprise DFY',
-    price: '$1,999',
+    price: '$999',
     priceDetail: 'one-time setup + $199/mo software fee',
-    ctaLabel: 'Get started — $1,999 + $199/mo',
+    ctaLabel: 'Get started — $999 + $199/mo',
     ctaHref: '/checkout?tier=2',
     tierLabel: 'Tier 2 — Enterprise DFY',
     priceName: 'Done-For-You',
-    priceAmount: '$1,999',
-    priceNote: '$1,999 one-time setup, then $199/month for the software',
+    priceAmount: '$999',
+    priceNote: '$999 one-time setup, then $199/month for the software',
     // Deliberately does NOT list "Audit log" here: every renderer of this array (CheckoutTabs,
     // PricingTable) puts an unconditional ✓ next to each entry — a checkout/pricing-card checklist
     // means "you get this today," so a planned-but-unbuilt feature doesn't belong in it regardless

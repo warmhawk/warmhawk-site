@@ -143,7 +143,7 @@ test.describe('Human journey: real checkout', () => {
 
   // P11a (found 2026-09-08 auditing recent commits — see Journey M): Tier 2 (Enterprise DFY)
   // became a fully self-serve Stripe Checkout purchase on 2026-09-03/04 ($199/mo, same recurring
-  // price as Tier 1, plus a one-time $1,999 setup fee on the first invoice), replacing the old
+  // price as Tier 1, plus a one-time $999 setup fee on the first invoice), replacing the old
   // contact-sales-only flow — this repo's own `Tier2CheckoutButton.tsx` doc comment confirms an
   // earlier draft of that button wrongly said "no recurring charge" and was caught before shipping,
   // which is exactly the kind of pricing-copy regression a real checkout round trip like this one
@@ -154,7 +154,7 @@ test.describe('Human journey: real checkout', () => {
   //
   // Journey M step 1 (added 2026-09-08): extended past "checkout completes" to confirm, against
   // the real Stripe test-mode API, both line items actually appear on the session ($199/mo
-  // recurring + $1,999 one-time setup fee) and that the async `invoice.paid` webhook really does
+  // recurring + $999 one-time setup fee) and that the async `invoice.paid` webhook really does
   // issue a license carrying `tier: 'tier_2'` in its signed payload — the exact round trip flagged
   // as "not yet fully live-tested" in [[warmhawk-prod-license-key-malformed-pem-outage]] after that
   // outage's fix. Reads the token back off the subscription's `warmhawk_license_token_1/2`
@@ -174,7 +174,7 @@ test.describe('Human journey: real checkout', () => {
 
     // See components/Tier2CheckoutButton.tsx: POSTs { tier: 'tier_2' } to /api/checkout/session
     // and redirects the browser to the returned Stripe Checkout URL, same as Tier 1's button.
-    await page.getByRole('button', { name: 'Get started — $1,999 + $199/mo' }).click();
+    await page.getByRole('button', { name: 'Get started — $999 + $199/mo' }).click();
     await page.waitForURL(/^https:\/\/checkout\.stripe\.com\//, { timeout: 30_000 });
 
     await completeStripeCheckoutViaBrowser(page);
@@ -199,7 +199,7 @@ test.describe('Human journey: real checkout', () => {
 
     const oneTimeItem = lineItems.find((li) => li.amount_total === 199_900 && !li.price?.recurring);
     const recurringItem = lineItems.find((li) => li.amount_total === 19_900 && li.price?.recurring);
-    expect(oneTimeItem, 'a $1,999 one-time setup-fee line item must be present').toBeTruthy();
+    expect(oneTimeItem, 'a $999 one-time setup-fee line item must be present').toBeTruthy();
     expect(
       recurringItem,
       'a $199/mo recurring software-fee line item must be present',
