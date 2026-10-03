@@ -29,7 +29,7 @@ export function CompareTable({ themLabel, rows }: { themLabel: string; rows: Com
         </colgroup>
         <thead>
           <tr>
-            <th scope="col" className="bg-cream-elevated border-b border-border p-5" />
+            <th scope="col" className="bg-cream-elevated border-b border-border p-5 text-left" />
             <th
               scope="col"
               className="bg-cream-elevated border-b border-border p-5 text-left font-display font-semibold text-base"

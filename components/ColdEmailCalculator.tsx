@@ -151,11 +151,9 @@ export function ColdEmailCalculator() {
             <thead>
               <tr className="text-left border-b border-border-dark">
                 <th className="py-2 pr-3 font-semibold">Tool &amp; plan</th>
-                <th className="hidden sm:table-cell py-2 pr-3 font-semibold text-right">
-                  Software
-                </th>
-                <th className="py-2 pr-3 font-semibold text-right">Total / mo</th>
-                <th className="hidden sm:table-cell py-2 font-semibold text-right">12 months</th>
+                <th className="hidden sm:table-cell py-2 pr-3 font-semibold text-left">Software</th>
+                <th className="py-2 pr-3 font-semibold text-left">Total / mo</th>
+                <th className="hidden sm:table-cell py-2 font-semibold text-left">12 months</th>
               </tr>
             </thead>
             <tbody>
@@ -176,13 +174,13 @@ export function ColdEmailCalculator() {
                     )}
                     {item.note && <p className="mt-1 text-[12.5px] text-ink-muted">{item.note}</p>}
                   </td>
-                  <td className="hidden sm:table-cell py-3 pr-3 text-right font-mono">
+                  <td className="hidden sm:table-cell py-3 pr-3 text-left font-mono">
                     {item.software === null ? '—' : money(item.software)}
                   </td>
-                  <td className="py-3 pr-3 text-right font-mono font-semibold">
+                  <td className="py-3 pr-3 text-left font-mono font-semibold">
                     {item.monthly === null ? '—' : money(item.monthly)}
                   </td>
-                  <td className="hidden sm:table-cell py-3 text-right font-mono">
+                  <td className="hidden sm:table-cell py-3 text-left font-mono">
                     {item.yearly === null ? '—' : money(item.yearly)}
                   </td>
                 </tr>
@@ -219,9 +217,9 @@ export function ColdEmailCalculator() {
             <thead>
               <tr className="text-left border-b border-border-dark">
                 <th className="py-2 pr-3 font-semibold">Week</th>
-                <th className="py-2 pr-3 font-semibold text-right">Per mailbox / day</th>
+                <th className="py-2 pr-3 font-semibold text-left">Per mailbox / day</th>
                 {infrastructure.inboxes > 0 && (
-                  <th className="py-2 font-semibold text-right">
+                  <th className="py-2 font-semibold text-left">
                     All {infrastructure.inboxes.toLocaleString('en-US')} mailboxes
                   </th>
                 )}
@@ -230,20 +228,20 @@ export function ColdEmailCalculator() {
             <tbody>
               <tr className="border-b border-border">
                 <td className="py-2 pr-3">1–2</td>
-                <td className="py-2 pr-3 text-right text-ink-muted" colSpan={2}>
+                <td className="py-2 pr-3 text-left text-ink-muted" colSpan={2}>
                   Warmup only, no campaigns
                 </td>
               </tr>
               {ramp.weeks.map((week) => (
                 <tr key={week.week} className="border-b border-border">
                   <td className="py-2 pr-3">{week.week}</td>
-                  <td className="py-2 pr-3 text-right font-mono">
+                  <td className="py-2 pr-3 text-left font-mono">
                     {week.fromPerInbox === week.toPerInbox
                       ? week.toPerInbox
                       : `${week.fromPerInbox}–${week.toPerInbox}`}
                   </td>
                   {infrastructure.inboxes > 0 && (
-                    <td className="py-2 text-right font-mono">
+                    <td className="py-2 text-left font-mono">
                       {(week.fromPerInbox * infrastructure.inboxes).toLocaleString('en-US')}
                       {week.fromPerInbox === week.toPerInbox
                         ? ''

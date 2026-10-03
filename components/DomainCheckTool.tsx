@@ -816,7 +816,7 @@ export function DomainCheckTool({ leadCheck }: DomainCheckToolProps = {}) {
                     <th
                       scope="col"
                       colSpan={COLUMNS.length}
-                      className="text-center font-mono text-[9.5px] tracking-[0.15em] uppercase text-rust bg-cream px-3 py-1.5 font-semibold"
+                      className="text-left font-mono text-[9.5px] tracking-[0.15em] uppercase text-rust bg-cream px-4 py-1.5 font-semibold"
                     >
                       The same {CHECK_IDS.length} checks, every domain
                     </th>
@@ -836,8 +836,8 @@ export function DomainCheckTool({ leadCheck }: DomainCheckToolProps = {}) {
                         title={column.explain}
                         className={
                           column.id === leadCheck
-                            ? 'text-center font-mono text-[11.5px] tracking-[0.08em] uppercase text-rust px-4 py-2 bg-cream border-b border-border font-semibold'
-                            : 'text-center font-mono text-[11.5px] tracking-[0.08em] uppercase text-ink-muted px-4 py-2 bg-cream border-b border-border'
+                            ? 'text-left font-mono text-[11.5px] tracking-[0.08em] uppercase text-rust px-4 py-2 bg-cream border-b border-border font-semibold'
+                            : 'text-left font-mono text-[11.5px] tracking-[0.08em] uppercase text-ink-muted px-4 py-2 bg-cream border-b border-border'
                         }
                       >
                         {column.title}
@@ -935,7 +935,7 @@ export function DomainCheckTool({ leadCheck }: DomainCheckToolProps = {}) {
                           {COLUMNS.map((column) => {
                             const check = byId.get(column.id);
                             return (
-                              <td key={column.id} className="py-3 pr-4 align-top text-center">
+                              <td key={column.id} className="py-3 px-4 align-top text-left">
                                 {check ? (
                                   <StatusPip status={check.status} title={sentenceFor(check)} />
                                 ) : (
@@ -947,7 +947,7 @@ export function DomainCheckTool({ leadCheck }: DomainCheckToolProps = {}) {
                               </td>
                             );
                           })}
-                          <td className="py-3 pr-3 align-top text-right">
+                          <td className="py-3 pr-3 align-top text-left">
                             {/* Decorative only — the row itself carries role="button" and the
                                 accessible name below, via aria-labelledby rather than a fresh
                                 aria-label string: the domain is DNS-sourced and attacker-
