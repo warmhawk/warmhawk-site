@@ -238,7 +238,7 @@ const ANNUAL_PERIOD_SECONDS = 366 * 24 * 60 * 60; // ~1 year grace beyond a 365-
 /** One current billing-period expiry (unix epoch seconds), computed from `now`, matching whichever
  *  interval the Checkout Session was created with (see `app/api/checkout/session`). Renewal
  *  (`invoice.paid` on the next cycle) re-issues a license with a fresh `expiresAt` rather than
- *  extending the old one in place. Tier 2 (Enterprise DFY) bills monthly too — its one-time $1,999
+ *  extending the old one in place. Tier 2 (Enterprise DFY) bills monthly too — its one-time $999
  *  setup fee rides alongside the same recurring software price Tier 1 pays, so it uses this same
  *  `'monthly'` interval, not a separate non-expiring case. */
 export function computeExpiry(now: Date, interval: 'monthly' | 'annual'): number {

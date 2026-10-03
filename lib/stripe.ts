@@ -32,7 +32,7 @@ export function getStripeClient(): Stripe {
 export const STRIPE_PRICE_IDS = {
   selfHostedProMonthly: process.env.STRIPE_PRICE_SELF_HOSTED_PRO_MONTHLY ?? '',
   selfHostedProAnnual: process.env.STRIPE_PRICE_SELF_HOSTED_PRO_ANNUAL ?? '',
-  /** Tier 2 (Enterprise DFY)'s one-time $1,999 setup fee ONLY — a real ONE-TIME (not recurring)
+  /** Tier 2 (Enterprise DFY)'s one-time $999 setup fee ONLY — a real ONE-TIME (not recurring)
    *  Stripe Price. Sold self-serve through `app/api/checkout/session` as a second line item
    *  alongside `selfHostedProMonthly` in the SAME `mode: 'subscription'` Checkout Session: Tier 2
    *  pays this one-time fee at checkout, then the identical $199/mo software fee Tier 1 customers

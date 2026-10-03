@@ -11,7 +11,7 @@ import { StatCite } from '@/components/StatCite';
 export const metadata: Metadata = pageSeo({
   title: 'WarmHawk Pricing — Cold Email Software Pricing Comparison',
   description:
-    'WarmHawk pricing broken down: Tier 0 free and source-available, Tier 1 Self-Hosted Pro at $199/mo flat, Tier 2 Enterprise DFY at a $1,999 one-time setup fee plus the same $199/mo software fee. Full feature matrix, billing mechanics, and honest cost-at-scale comparison against per-seat cold email tools.',
+    'WarmHawk pricing broken down: Tier 0 free and source-available, Tier 1 Self-Hosted Pro at $199/mo flat, Tier 2 Enterprise DFY at a $999 one-time setup fee plus the same $199/mo software fee. Full feature matrix, billing mechanics, and honest cost-at-scale comparison against per-seat cold email tools.',
   path: '/compare/pricing',
 });
 
@@ -187,7 +187,7 @@ const matrixRows: {
     feature: '30-day money-back guarantee',
     tier0: 'N/A',
     tier1: 'Yes',
-    tier2: 'Yes — on the $199/mo fee; the $1,999 setup fee is separate and non-refundable',
+    tier2: 'Yes — on the $199/mo fee; the $999 setup fee is separate and non-refundable',
   },
 ];
 
@@ -255,7 +255,7 @@ export default function PricingComparisonPage() {
             WarmHawk has three tiers, and the split is deliberate: Tier 0 is a free,
             fully-functional sending engine you run yourself. Tier 1 (Self-Hosted Pro) is $199/mo
             flat for the operator dashboard and a founder-staffed support SLA on top of that same
-            engine. Tier 2 (Enterprise DFY) is a $1,999 one-time setup fee for WarmHawk&rsquo;s
+            engine. Tier 2 (Enterprise DFY) is a $999 one-time setup fee for WarmHawk&rsquo;s
             founder to run the deployment for you, instead of you running install.sh yourself, plus
             the same $199/mo software fee Tier 1 pays. Billing runs entirely through Stripe —
             Checkout to start, the Stripe Customer Portal to manage cards, invoices, upgrades, and
@@ -265,7 +265,7 @@ export default function PricingComparisonPage() {
             WarmHawk has three tiers: Tier 0 is free and open, giving you the full sending engine
             via API with no dashboard or SLA. Tier 1 is $199/mo flat for the operator dashboard,
             live monitoring, and a founder support SLA — unlimited users and domains, no per-seat
-            pricing. Tier 2 is a $1,999 one-time setup fee for WarmHawk&rsquo;s founder to run the
+            pricing. Tier 2 is a $999 one-time setup fee for WarmHawk&rsquo;s founder to run the
             deployment for you, plus that same $199/mo software fee, self-serve checkout and no
             sales call.
           </AnswerBlock>
@@ -316,7 +316,7 @@ export default function PricingComparisonPage() {
                     Tier 1 — $199/mo
                   </th>
                   <th className="label text-left p-5 text-ink-muted font-semibold border-l border-border">
-                    Tier 2 — $1,999 one-time + $199/mo
+                    Tier 2 — $999 one-time + $199/mo
                   </th>
                 </tr>
               </thead>
@@ -367,7 +367,7 @@ export default function PricingComparisonPage() {
             Tier 0 is free because WarmHawk operates nothing on your behalf at that tier — no
             dashboard, no SLA, no managed infrastructure, just code you run. Tier 1&rsquo;s $199/mo
             buys the dashboard layer, a founder-staffed support SLA, and zero-per-seat pricing at
-            any team size. Tier 2&rsquo;s $1,999 one-time fee buys WarmHawk&rsquo;s founder hours:
+            any team size. Tier 2&rsquo;s $999 one-time fee buys WarmHawk&rsquo;s founder hours:
             running the deployment for you, once, instead of you running install.sh yourself.
           </AnswerBlock>
 
@@ -405,18 +405,17 @@ export default function PricingComparisonPage() {
           </p>
 
           <h3 className="font-display text-xl font-semibold mt-10 mb-3">
-            Tier 2 — $1,999 one-time setup + $199/mo
+            Tier 2 — $999 one-time setup + $199/mo
           </h3>
           <p className="text-base leading-relaxed text-ink-muted mb-4">
-            The $1,999 fee is founder-hours, once: doing the deployment itself instead of walking
-            you through install.sh. On top of that, Tier 2 pays the same $199/mo software fee every
-            Tier 1 customer pays — once it&rsquo;s deployed and handed over, you run it day to day,
-            with a direct founder-line, same-business-day support SLA (Tier 1&rsquo;s is 1 business
-            day via support@warmhawk.com). What Tier 2 does <em>not</em> buy is a different product:
-            the observability stack (bundled Uptime Kuma plus native OTEL export) is identical on
-            Tier 1 and Tier 2. The $1,999 fee is priced for WarmHawk&rsquo;s setup hours, not for
-            extra features the dashboard is missing or for someone else operating your server
-            long-term.
+            The $999 fee is founder-hours, once: doing the deployment itself instead of walking you
+            through install.sh. On top of that, Tier 2 pays the same $199/mo software fee every Tier
+            1 customer pays — once it&rsquo;s deployed and handed over, you run it day to day, with
+            a direct founder-line, same-business-day support SLA (Tier 1&rsquo;s is 1 business day
+            via support@warmhawk.com). What Tier 2 does <em>not</em> buy is a different product: the
+            observability stack (bundled Uptime Kuma plus native OTEL export) is identical on Tier 1
+            and Tier 2. The $999 fee is priced for WarmHawk&rsquo;s setup hours, not for extra
+            features the dashboard is missing or for someone else operating your server long-term.
           </p>
         </div>
       </div>

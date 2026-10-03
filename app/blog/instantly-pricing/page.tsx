@@ -28,7 +28,7 @@ const faqItems = [
   {
     question: 'Is there a true one-time-payment cold email tool with no recurring fee?',
     answer:
-      "Not really, anywhere in this category, and it's worth being honest about that rather than promising otherwise. Even WarmHawk's Tier 2, which has a genuine one-time $1,999 setup fee, still carries the same $199/month software fee every Tier 1 customer pays — infrastructure, support, and ongoing deliverability tooling have real ongoing cost, so no serious vendor (WarmHawk included) sells a lifetime license with zero recurring fee.",
+      "Not really, anywhere in this category, and it's worth being honest about that rather than promising otherwise. Even WarmHawk's Tier 2, which has a genuine one-time $999 setup fee, still carries the same $199/month software fee every Tier 1 customer pays — infrastructure, support, and ongoing deliverability tooling have real ongoing cost, so no serious vendor (WarmHawk included) sells a lifetime license with zero recurring fee.",
   },
   {
     question:

@@ -25,7 +25,7 @@ export const homeFaqItems: FaqItem[] = [
   {
     question: 'What’s the difference between Tier 1 and Tier 2?',
     answer:
-      'Tier 1 is self-hosted by you — you run the one-command install, for $199/mo. Tier 2 has WarmHawk’s founder run the deployment for you instead, as a one-time $1,999 setup fee, plus that same $199/mo software fee. Once it’s handed over, you run it day to day, with a direct founder-line, same-business-day support SLA — Tier 1’s is 1 business day via support@warmhawk.com.',
+      'Tier 1 is self-hosted by you — you run the one-command install, for $199/mo. Tier 2 has WarmHawk’s founder run the deployment for you instead, as a one-time $999 setup fee, plus that same $199/mo software fee. Once it’s handed over, you run it day to day, with a direct founder-line, same-business-day support SLA — Tier 1’s is 1 business day via support@warmhawk.com.',
   },
   {
     question: 'If it’s single-tenant, is each of my clients isolated too?',
@@ -35,7 +35,7 @@ export const homeFaqItems: FaqItem[] = [
   {
     question: 'What if I don’t want to manage a server myself?',
     answer:
-      'Tier 2 is a $1,999 one-time setup service plus the same $199/mo software fee Tier 1 pays — WarmHawk’s founder runs the deployment for you instead of walking you through install.sh, then hands you the keys. It’s done-for-you at setup, not run-for-you ongoing: from there you operate it yourself, with a direct founder-line, same-business-day support SLA on top.',
+      'Tier 2 is a $999 one-time setup service plus the same $199/mo software fee Tier 1 pays — WarmHawk’s founder runs the deployment for you instead of walking you through install.sh, then hands you the keys. It’s done-for-you at setup, not run-for-you ongoing: from there you operate it yourself, with a direct founder-line, same-business-day support SLA on top.',
   },
   {
     question: 'Is there a guarantee?',
@@ -62,12 +62,12 @@ export const pricingFaqItems: FaqItem[] = [
   {
     question: 'What does the 30-day guarantee actually cover?',
     answer:
-      "The $199/mo software fee — Tier 1's, or Tier 2's identical one. Cancel within 30 days of your first charge and WarmHawk refunds that fee in full, no questions asked. Tier 2's $1,999 setup fee is a separate, one-time payment for founder-delivered work, not a subscription, so this guarantee doesn't cover it the same way — email support@warmhawk.com if setup didn't go as expected.",
+      "The $199/mo software fee — Tier 1's, or Tier 2's identical one. Cancel within 30 days of your first charge and WarmHawk refunds that fee in full, no questions asked. Tier 2's $999 setup fee is a separate, one-time payment for founder-delivered work, not a subscription, so this guarantee doesn't cover it the same way — email support@warmhawk.com if setup didn't go as expected.",
   },
   {
     question: 'Do you offer invoicing instead of a credit card?',
     answer:
-      'Tier 1 and Tier 2 both run through Stripe Checkout, card-based by default — Tier 2’s checkout combines the $1,999 one-time setup fee with the same $199/mo software subscription Tier 1 uses, in one self-serve session, not a quoted invoice. If you need a custom build beyond Tier 2’s standard setup, that’s scoped directly with the founder and can be invoiced separately.',
+      'Tier 1 and Tier 2 both run through Stripe Checkout, card-based by default — Tier 2’s checkout combines the $999 one-time setup fee with the same $199/mo software subscription Tier 1 uses, in one self-serve session, not a quoted invoice. If you need a custom build beyond Tier 2’s standard setup, that’s scoped directly with the founder and can be invoiced separately.',
   },
   {
     question: "Does 'unlimited users' mean I can host separate clients with isolated data?",

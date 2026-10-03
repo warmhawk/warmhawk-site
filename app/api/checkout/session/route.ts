@@ -28,6 +28,9 @@ import { siteConfig } from '@/lib/siteConfig';
  * alone can no longer tell the tiers apart). Existing callers that only send `{ interval }` (Tier
  * 1's CheckoutButtons) are unaffected: `tier` defaults to `'tier_1'`.
  *
+ * 2026-10-02: the setup fee dropped from $1,999 to $999 (same shape, new one-time Stripe Price in
+ * both test and live mode — `STRIPE_PRICE_TIER_2` now points at the $999 Price).
+ *
  * Body: { tier?: "tier_1" | "tier_2", interval?: "monthly" | "annual" } — `interval` is read only
  * for `tier_1`; Tier 2 is monthly-only (no annual Tier 2 price exists).
  */

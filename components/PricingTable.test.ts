@@ -36,7 +36,7 @@ describe('PricingTable', () => {
   it('prices Tier 2 as a one-time setup fee, never a monthly retainer', () => {
     render(createElement(PricingTable));
 
-    expect(screen.getByText('$1,999')).toBeInTheDocument();
+    expect(screen.getByText('$999')).toBeInTheDocument();
     expect(screen.queryByText(/\$300\/mo/)).toBeNull();
     expect(document.body.textContent ?? '').not.toMatch(/retainer/i);
   });

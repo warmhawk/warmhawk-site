@@ -105,7 +105,7 @@ describe('POST /api/checkout/session', () => {
   });
 });
 
-describe('POST /api/checkout/session — tier: "tier_2" ($1,999 one-time setup fee + $199/mo software fee)', () => {
+describe('POST /api/checkout/session — tier: "tier_2" ($999 one-time setup fee + $199/mo software fee)', () => {
   beforeEach(() => {
     createSessionMock.mockReset();
   });
