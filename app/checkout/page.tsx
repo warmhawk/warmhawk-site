@@ -5,13 +5,13 @@ import { CheckoutTabs } from '@/components/CheckoutTabs';
 export const metadata: Metadata = pageSeo({
   title: 'Checkout',
   description:
-    'Start Tier 1 (Self-Hosted Pro, $199/mo) or Tier 2 (Enterprise DFY, $1,999 one-time setup fee plus the same $199/mo software fee) via Stripe Checkout — both self-serve, no scoping call required.',
+    'Start Tier 1 (Self-Hosted Pro, $199/mo) or Tier 2 (Enterprise DFY, $999 one-time setup fee plus the same $199/mo software fee) via Stripe Checkout — both self-serve, no scoping call required.',
   path: '/checkout',
 });
 
 // Both tiers are real Stripe Checkout integrations (see CheckoutButtons.tsx,
 // Tier2CheckoutButton.tsx, and app/api/checkout/session/route.ts): Tier 1 is a $199/mo
-// subscription, Tier 2 the same $199/mo subscription plus a one-time $1,999 setup fee on the first
+// subscription, Tier 2 the same $199/mo subscription plus a one-time $999 setup fee on the first
 // invoice. ContactSalesForm alongside Tier 2 is an optional setup-intake form only — it never gates
 // or replaces the Stripe purchase. See components/CheckoutTabs.tsx for the tab structure.
 

@@ -11,7 +11,7 @@ import { track, EVENTS } from '@/lib/analytics';
  * 2026-09-03/04: replaces the "Talk to us" scoping-call gate — Tier 2 is now a real self-serve
  * purchase. ContactSalesForm still exists alongside this, but as an optional async intake
  * questionnaire, not a prerequisite for buying. The button and disclosure copy below must name
- * BOTH charges Stripe is about to create (the $1,999 one-time setup fee AND the ongoing $199/mo
+ * BOTH charges Stripe is about to create (the $999 one-time setup fee AND the ongoing $199/mo
  * software fee) — an earlier version of this button said "no recurring charge," which was false
  * and got caught before it shipped.
  */
@@ -50,11 +50,11 @@ export function Tier2CheckoutButton() {
         disabled={loading}
         className="btn btn-primary btn-block disabled:opacity-60"
       >
-        {loading ? 'Starting checkout…' : 'Get started — $1,999 + $199/mo'}
+        {loading ? 'Starting checkout…' : 'Get started — $999 + $199/mo'}
       </button>
       {error && <p className="text-fail text-sm mt-3 text-center">{error}</p>}
       <p className="text-xs text-ink-muted text-center mt-4">
-        $1,999 one-time setup fee, then $199/month for the software — secured by Stripe, cancel
+        $999 one-time setup fee, then $199/month for the software — secured by Stripe, cancel
         anytime.
       </p>
     </div>

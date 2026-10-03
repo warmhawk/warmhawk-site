@@ -68,8 +68,8 @@ export default function StripeWebhooksPage() {
           containing your install command with that license embedded. Fires for your very first
           invoice and every renewal after that, so this is the only event WarmHawk needs to keep
           your license current. For Tier 2 (Enterprise DFY), the very first invoice also carries the
-          one-time $1,999 setup fee alongside the first month&rsquo;s $199 software fee &mdash;
-          every invoice after that looks identical to a Tier 1 one.
+          one-time $999 setup fee alongside the first month&rsquo;s $199 software fee &mdash; every
+          invoice after that looks identical to a Tier 1 one.
         </li>
         <li>
           <strong className="text-ink">invoice.payment_failed</strong> &mdash; does not revoke

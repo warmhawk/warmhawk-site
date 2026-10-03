@@ -18,7 +18,7 @@ type TierKey = 'tier1' | 'tier2';
  * to checkout's two tiers rather than a fully generic abstraction, since it's the only caller.
  *
  * Tier 1 renders CheckoutButtons (Stripe Checkout Session redirect, subscription mode). Tier 2
- * renders Tier2CheckoutButton (Stripe Checkout Session redirect, one-time $1,999 payment mode) as
+ * renders Tier2CheckoutButton (Stripe Checkout Session redirect, one-time $999 payment mode) as
  * the primary CTA, with ContactSalesForm below it as an optional, non-blocking setup-intake form
  * (POSTs to /api/contact-sales — never a charge, never required before buying).
  */

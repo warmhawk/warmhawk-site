@@ -53,6 +53,6 @@ describe('HomePage (app/page.tsx)', () => {
     const question = screen.getByText('What if I don’t want to manage a server myself?');
     const answer = question.closest('details')?.querySelector('p');
     expect(answer?.textContent).toMatch(/done-for-you at setup, not run-for-you ongoing/i);
-    expect(answer?.textContent).toContain('$1,999');
+    expect(answer?.textContent).toContain('$999');
   });
 });

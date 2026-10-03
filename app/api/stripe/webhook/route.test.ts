@@ -203,7 +203,7 @@ describe('POST /api/stripe/webhook', () => {
     );
   });
 
-  it('issues a Tier 2 license on its FIRST invoice — the one that also carries the one-time $1,999 setup fee', async () => {
+  it('issues a Tier 2 license on its FIRST invoice — the one that also carries the one-time $999 setup fee', async () => {
     constructEventMock.mockReturnValue(
       invoicePaidEvent({
         customer: 'cus_test_tier2',
