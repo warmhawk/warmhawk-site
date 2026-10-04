@@ -8,7 +8,7 @@ import { coreEngineRepoPublic, coreEngineRepoUrl } from '@/lib/siteConfig';
 export const metadata: Metadata = pageSeo({
   title: 'FAQ & changelog',
   description:
-    "Frequently asked questions about WarmHawk's docs and API, plus what has shipped in each repo, pulled from each package's own CHANGELOG.md with no invented versions.",
+    "Frequently asked questions about WarmHawk's docs and API, plus what has shipped in each repo, with each package's real release versions.",
   path: '/docs/reference/faq-and-changelog',
 });
 
@@ -31,7 +31,7 @@ const faqItems = [
   {
     question: 'Where’s the product changelog?',
     answer:
-      'Below on this page. Each of the three packages maintains its own CHANGELOG.md versioned alongside its code, and this page summarizes all three. warmhawk-core-engine is source-available (BSL 1.1), so its file links through; the licensed dashboard and this site are proprietary, so the summaries here are the changelog for those two.',
+      'Below on this page. warmhawk-core-engine and the licensed dashboard ship tagged, semver releases, and this page summarizes the latest of each. warmhawk-core-engine is source-available (BSL 1.1), so its CHANGELOG.md links through; the dashboard and this site are proprietary, so the summaries here are the changelog for those two.',
   },
   {
     question: 'Are there outbound webhooks I can register for events?',
@@ -49,6 +49,9 @@ interface ChangelogEntry {
    * are the changelog for those two; there is no file to go read.
    */
   repoUrl?: string;
+  /** The latest tagged release, or how the repo ships when it has no tags. */
+  release: string;
+  tagged: boolean;
   summary: string;
   highlights: string[];
 }
@@ -59,20 +62,29 @@ const changelog: ChangelogEntry[] = [
     // The open-core half (BSL 1.1, public at go-live) — the one repo whose CHANGELOG.md a reader
     // can open, and only once CORE_ENGINE_REPO_PUBLIC says so.
     repoUrl: coreEngineRepoPublic ? `${coreEngineRepoUrl}/blob/main/CHANGELOG.md` : undefined,
+    release: 'v1.9.0 · Oct 3, 2026',
+    tagged: true,
     summary:
-      'The sending/queueing API, worker, and install.sh — pre-1.0, everything below is still Unreleased in this repo’s own CHANGELOG.',
+      'The sending/queueing API, worker, and install.sh. Tagged semver releases since v1.0.0; warmhawk update moves an install to the newest one.',
     highlights: [
-      'Seed-Inbox Placement Test: SeedAccount/SeedPlacementResult models, GET/POST/PATCH/DELETE /seed-accounts, GET /domains/:id/placement-sample.',
-      'Real n8n dispatch/reply-poll workflows calling this repo’s own internal API exclusively; POST /internal/mail/send enforces CAN-SPAM, RFC 8058, the EU AI disclosure marker, and the placement-test BCC hook.',
-      'Foundation build: Fastify API + BullMQ worker, Prisma schema, cadence/jitter math, Redis AOF durability + crash-recovery reconciliation, CSV import, BYOK AI personalization, reply management, every structural guardrail, Google/Microsoft OAuth, containerization with bundled nginx/certbot/Uptime Kuma/OTEL.',
+      'v1.9.0: a mailing address per sending domain, each campaign picks the mailboxes it sends from, and follow-up sequences (up to three, same mailbox, same thread). Launch returns every problem at once; GET /v1/campaigns/:id/launch-check runs the same check without launching. PATCH /v1/campaigns/:id now refuses status, and PUT /v1/instance-settings returns 410.',
+      'v1.8.0: a built-in unsubscribe page for campaigns with no unsubscribe link of their own.',
+      'v1.5.0: WarmHawk Connect, one-click Google and Microsoft mailbox connect.',
+      'v1.3.0: the warm-up engine, with placement checks and test inboxes.',
+      'v1.0.0: Fastify API + BullMQ worker, cadence/jitter math, Redis AOF durability + crash recovery, CSV import, BYOK AI personalization, reply management, every structural guardrail, and the bundled nginx/certbot/Uptime Kuma/OTEL stack.',
     ],
   },
   {
     repo: 'warmhawk-enterprise-operator',
+    release: 'v1.18.0 · Oct 4, 2026',
+    tagged: true,
     summary:
-      'The licensed Tier 1/2 operator dashboard — also pre-1.0, Unreleased in its own CHANGELOG.',
+      'The licensed Tier 1/2 operator dashboard. Tagged semver releases; its update banner compares your version against the newest one.',
     highlights: [
-      'Initial scaffold: Next.js dashboard, its own Postgres, LicenseGate with tier-based feature gating, team invite/remove, TOTP 2FA, onboarding checklist, leads/campaigns/domain-health/Unified Reply Inbox/live queue inspector pages.',
+      'v1.18.0: agency client filter, search and pagination; tables grow with the page; the Compliance settings page is gone, since mailing addresses now live on each domain.',
+      'v1.17.0: a new campaigns table and 4-step builder (Write, Send from, Leads, Launch check) with follow-ups, an import wizard, a mailing address per domain, a DKIM selector per domain, and a required sender name per mailbox.',
+      'v1.16.0: the unsubscribe link is optional when the engine serves its own unsubscribe page.',
+      'v1.0.0: Next.js dashboard with its own Postgres, tier-based feature gating, team invite/remove, TOTP 2FA, an onboarding checklist, and the leads, campaigns, domain health, Unified Reply Inbox and live queue pages.',
       // Was "Known, tracked gap: transactional email for team invites is stubbed to console log
       // pending a provider decision." — untrue since BYO-SMTP shipped, and a bad thing to leave on
       // a public docs page: it tells a prospective buyer a feature they're paying for is broken.
@@ -81,11 +93,15 @@ const changelog: ChangelogEntry[] = [
   },
   {
     repo: 'warmhawk-site',
-    summary: 'This marketing/docs/checkout site — also pre-1.0, Unreleased.',
+    release: 'Deployed continuously',
+    tagged: false,
+    summary:
+      'This marketing/docs/checkout site. It has no version numbers: each change goes live once it passes review.',
     highlights: [
       'Homepage, all /vs/* comparison pages, /compare/pricing, /tools/domain-check, /status, /security, /legal/*.',
       'Stripe Checkout session, webhook, and Customer Portal routes for Tier 1; sitemap/robots/OG/Twitter/FAQPage schema site-wide.',
       'This docs section, restructured into the current 15-page information architecture; a real Tier 2 contact-sales flow and dedicated /checkout route.',
+      'Docs for the v1.9.0 engine: mailing address per domain, campaign senders and follow-ups, the launch check, and the matching openapi.json.',
     ],
   },
 ];
@@ -104,10 +120,9 @@ export default function FaqAndChangelogPage() {
       </p>
       <AnswerBlock>
         This page answers the most common orientation questions about WarmHawk&rsquo;s docs and API,
-        then summarizes each repo&rsquo;s real CHANGELOG.md. All three repos are pre-1.0 today —
-        every entry below is still under each repo&rsquo;s own &ldquo;Unreleased&rdquo; heading, not
-        a tagged release, and this page doesn&rsquo;t invent version numbers or dates that
-        don&rsquo;t exist yet.
+        then summarizes what each repo has shipped. The engine (v1.9.0) and the dashboard (v1.18.0)
+        ship tagged semver releases; this site deploys continuously without version numbers. Every
+        version and date below is a real release.
       </AnswerBlock>
 
       <FaqSection items={faqItems} title="Questions worth answering up front" />
@@ -119,9 +134,8 @@ export default function FaqAndChangelogPage() {
           own <code className="font-mono text-sm">CHANGELOG.md</code>, versioned alongside its code,
           summarized here. <strong>warmhawk-core-engine</strong> is source-available (BSL 1.1) and
           its file links through; the licensed dashboard and this site are proprietary, so their
-          summaries below <em>are</em> the changelog. None of the three has cut a tagged release
-          yet, so there are no version numbers to show; what follows is each repo&rsquo;s current{' '}
-          <code className="font-mono text-sm">[Unreleased]</code> section.
+          summaries below <em>are</em> the changelog. Each card shows the newest release and its
+          headline changes.
         </p>
         <div className="space-y-6 max-w-3xl">
           {changelog.map((entry) => (
@@ -142,7 +156,9 @@ export default function FaqAndChangelogPage() {
                       Source not public
                     </span>
                   )}
-                  <span className="badge badge-pending">Unreleased</span>
+                  <span className={`badge ${entry.tagged ? 'badge-pass' : 'badge-unconfigured'}`}>
+                    {entry.release}
+                  </span>
                 </div>
               </div>
               <p className="text-[14px] leading-relaxed text-ink-muted mb-4">{entry.summary}</p>
