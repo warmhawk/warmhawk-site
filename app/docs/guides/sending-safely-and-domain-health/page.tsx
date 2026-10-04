@@ -137,6 +137,39 @@ export default function SendingSafelyDomainHealthPage() {
         route overrides it for that call.
       </p>
 
+      <h2 className="font-display text-2xl font-semibold mb-4">Mailing address per domain</h2>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        CAN-SPAM needs a postal address in every campaign email&rsquo;s footer. WarmHawk keeps it on
+        the sending domain, so an agency&rsquo;s client brands each print their own and never share
+        one; there is no install-wide fallback. Adding a domain never needs an address. A campaign
+        can&rsquo;t launch while any domain it sends from has none, and a mailbox whose domain loses
+        its address stops sending until one is added back. Warm-up emails carry no footer and need
+        no address.
+      </p>
+      <CodeBlock label="PATCH /v1/domains/:id — set the address">
+        {`curl -X PATCH https://app.yourcompany.com/v1/domains/dom_a1b2c3 \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "label": "Acme Logistics",
+    "mailingAddressParts": {
+      "businessName": "Acme Logistics LLC",
+      "street": "100 Main St", "suite": "Suite 200",
+      "city": "Denver", "region": "CO", "postalCode": "80202", "country": "USA"
+    }
+  }'`}
+      </CodeBlock>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
+        <code className="font-mono">mailingAddressParts</code> needs at least street, city and
+        country, and WarmHawk builds the printed <code className="font-mono">mailingAddress</code>{' '}
+        from it. You can send <code className="font-mono">mailingAddress</code> as one block of text
+        instead (up to 500 characters). Clearing an address that campaigns send with returns{' '}
+        <code className="font-mono">409 ADDRESS_IN_USE</code> with the campaigns listed; send{' '}
+        <code className="font-mono">confirm: true</code> to clear it anyway.{' '}
+        <code className="font-mono">PUT /v1/instance-settings</code>, the old install-wide address,
+        now answers <code className="font-mono">410 Gone</code>.
+      </p>
+
       <h2 className="font-display text-2xl font-semibold mb-4">Seed-inbox placement sampling</h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         A small, fixed set of email accounts you own are BCC&rsquo;d on real campaign sends;

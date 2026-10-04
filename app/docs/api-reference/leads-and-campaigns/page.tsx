@@ -45,20 +45,27 @@ const leadRoutes = [
 const campaignRoutes = [
   {
     route: 'GET /v1/campaigns',
-    desc: 'List campaigns, including leadsCount/sentCount/repliesCount/domainsCount/lastActivityAt.',
+    desc: 'List campaigns, including mailboxIds, steps, senders (each ticked mailbox and whether its domain has an address), launch { canLaunch, problems }, progress and leadsCount/sentCount/repliesCount/domainsCount/lastActivityAt.',
   },
-  { route: 'GET /v1/campaigns/:id', desc: 'Fetch one campaign. 404 if not found.' },
+  {
+    route: 'GET /v1/campaigns/:id',
+    desc: 'Fetch one campaign, with mailboxIds and steps. 404 if not found.',
+  },
+  {
+    route: 'GET /v1/campaigns/:id/launch-check',
+    desc: 'The launch check without launching. Returns { canLaunch, problems, warnings, passed }.',
+  },
   {
     route: 'POST /v1/campaigns',
-    desc: 'Create. Body: name, aiPromptTemplate, template?, aiProvider?, unsubscribeUrlTemplate?. Returns the row plus contentQuality.',
+    desc: 'Create. Body: name, aiPromptTemplate, template?, subject?, aiProvider?, unsubscribeUrlTemplate?, mailboxIds?, steps?. Returns the row plus contentQuality.',
   },
   {
     route: 'PATCH /v1/campaigns/:id',
-    desc: 'Update any content/status field. Recomputes contentQuality when template changes.',
+    desc: 'Update content fields, bounceRateThreshold, pausedForBounceRate, mailboxIds or steps. mailboxIds and steps each replace the whole list. status is refused (422): use launch or pause. Recomputes contentQuality when template or subject changes.',
   },
   {
     route: 'POST /v1/campaigns/:id/launch',
-    desc: '422 if the campaign is pausedForBounceRate, or it has no unsubscribeUrlTemplate on an install with no domain to serve the built-in unsubscribe page. Otherwise sets status: ACTIVE.',
+    desc: 'Runs the launch check and sets status: ACTIVE. Otherwise 422 with every problem at once: NO_SENDERS, DOMAIN_NO_ADDRESS (one per domain), NO_UNSUBSCRIBE, BOUNCE_PAUSED, EMAIL_EMPTY, STEP_EMPTY. Warnings never block.',
   },
   { route: 'POST /v1/campaigns/:id/pause', desc: 'Sets status: PAUSED.' },
   {
@@ -83,9 +90,11 @@ export default function ApiReferenceLeadsCampaignsPage() {
         Three lead-ingest paths (single create, CSV import, unauthenticated webhook) share one
         validation function and an open customFields object; DELETE /v1/leads/erase handles GDPR
         erasure. Campaigns are created with a template (spintax-capable fallback body) and an
-        aiPromptTemplate (mustache-placeholder AI instructions). unsubscribeUrlTemplate is optional:
-        without it every email links to the built-in unsubscribe page. Launch is gated on a working
-        unsubscribe link and the bounce circuit breaker.
+        aiPromptTemplate (mustache-placeholder AI instructions). Each campaign picks the mailboxes
+        it sends from (mailboxIds) and can carry up to three follow-ups (steps).
+        unsubscribeUrlTemplate is optional: without it every email links to the built-in unsubscribe
+        page. Launch is gated on picked senders, a mailing address on every sending domain, a
+        working unsubscribe link, non-empty copy and the bounce circuit breaker.
       </AnswerBlock>
 
       <h2 className="font-display text-2xl font-semibold mb-4">Leads</h2>
@@ -158,7 +167,23 @@ export default function ApiReferenceLeadsCampaignsPage() {
   "template": "Hi there — {quick question|one question} for you today?",
   "aiPromptTemplate": "Write a 2-sentence opener to {{firstName}} at {{company}}.",
   "aiProvider": "GEMINI",
-  "unsubscribeUrlTemplate": "https://yourcompany.com/unsubscribe?email={{email}}"
+  "unsubscribeUrlTemplate": "https://yourcompany.com/unsubscribe?email={{email}}",
+  "mailboxIds": ["mbx_a1b2c3", "mbx_d4e5f6"],
+  "steps": [
+    { "waitDays": 3, "body": "Just floating this back up — worth a look?", "aiRewrite": false },
+    { "waitDays": 4, "body": "Last note from me on this one.", "aiRewrite": false }
+  ]
+}`}
+      </CodeBlock>
+      <CodeBlock label="POST /v1/campaigns/:id/launch — 422 when it can't launch yet">
+        {`{
+  "error": "acme.com has no mailing address; Follow-up 2 needs backup text",
+  "problems": [
+    { "code": "DOMAIN_NO_ADDRESS", "message": "acme.com has no mailing address",
+      "domainId": "dom_a1b2c3", "domainName": "acme.com", "mailboxCount": 2 },
+    { "code": "STEP_EMPTY", "message": "Follow-up 2 needs backup text", "position": 2 }
+  ],
+  "warnings": []
 }`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-14">

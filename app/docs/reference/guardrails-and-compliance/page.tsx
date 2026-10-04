@@ -14,7 +14,11 @@ export const metadata: Metadata = pageSeo({
 const guardrails: { title: string; body: string }[] = [
   {
     title: 'CAN-SPAM auto-injection',
-    body: 'A send is refused before it reaches the pipeline if the instance has no configured physical mailing address, or there is no unsubscribe link to put in the footer — both are unconditional, structural checks in the one shared send path, not per-entry-point duplicated logic a caller could route around.',
+    body: 'A send is refused before it reaches the pipeline if the sending domain has no physical mailing address, or there is no unsubscribe link to put in the footer — both are unconditional, structural checks in the one shared send path, not per-entry-point duplicated logic a caller could route around.',
+  },
+  {
+    title: 'A mailing address per domain',
+    body: 'The footer address belongs to the domain a mailbox sends from, so an agency’s client brands each print their own address and never share one. There is no install-wide fallback. Adding a domain never needs an address; launching a campaign that sends from it does, and the launch check names every domain still missing one.',
   },
   {
     title: 'Built-in unsubscribe page',
@@ -97,11 +101,11 @@ export default function GuardrailsCompliancePage() {
         (and possibly forgotten) per API entry point, and not something a caller can route around.
       </p>
       <AnswerBlock>
-        WarmHawk enforces CAN-SPAM (address + unsubscribe), RFC 8058 one-click unsubscribe, an EU AI
-        Act disclosure marker, GDPR erasure, CSV-injection defense, a bounce/complaint circuit
-        breaker (auto-pause past 5% with a 20-send minimum sample), login brute-force throttling,
-        continuous blocklist monitoring, and AES-256-GCM credential encryption — all structurally,
-        in the API itself, not as optional dashboard settings.
+        WarmHawk enforces CAN-SPAM (a mailing address per sending domain + unsubscribe), RFC 8058
+        one-click unsubscribe, an EU AI Act disclosure marker, GDPR erasure, CSV-injection defense,
+        a bounce/complaint circuit breaker (auto-pause past 5% with a 20-send minimum sample), login
+        brute-force throttling, continuous blocklist monitoring, and AES-256-GCM credential
+        encryption — all structurally, in the API itself, not as optional dashboard settings.
       </AnswerBlock>
 
       <div className="grid sm:grid-cols-2 gap-5 mb-14">
