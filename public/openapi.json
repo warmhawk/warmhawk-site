@@ -69,12 +69,7 @@
         "description": "Authorization: Bearer <token> obtained from POST /v1/auth/login. Required on every route except POST /v1/auth/login itself, the two /v1/oauth/* routes, and POST /v1/leads/webhook."
       }
     },
-    "schemas": {
-      "Error": {
-        "type": "object",
-        "properties": { "error": { "type": "string" } }
-      }
-    }
+    "schemas": { "Error": { "type": "object", "properties": { "error": { "type": "string" } } } }
   },
   "paths": {
     "/auth/login": {
@@ -414,7 +409,7 @@
       "get": {
         "tags": ["Campaigns"],
         "summary": "List campaigns",
-        "description": "Each row includes leadsCount, sentCount, repliesCount, domainsCount, and lastActivityAt.",
+        "description": "Each row includes mailboxIds, steps, senders (each ticked mailbox, its status and whether its domain has a mailing address), launch { canLaunch, problems }, progress, leadsCount, sentCount, repliesCount, domainsCount and lastActivityAt.",
         "responses": { "200": { "description": "OK" } }
       },
       "post": {
@@ -435,6 +430,11 @@
                     "description": "Mustache-placeholder AI instructions, e.g. \"Write a 2-sentence opener to {{firstName}} at {{company}}.\""
                   },
                   "template": { "type": "string", "description": "Spintax-capable fallback body." },
+                  "subject": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Subject line; spintax and {{fields}} allowed."
+                  },
                   "aiProvider": {
                     "type": "string",
                     "enum": ["GEMINI", "CLAUDE"],
@@ -443,6 +443,36 @@
                   "unsubscribeUrlTemplate": {
                     "type": "string",
                     "description": "Optional. Your own unsubscribe page; {{email}} is replaced with the recipient's address. Left out, every email links to the built-in unsubscribe page on the install's domain."
+                  },
+                  "mailboxIds": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Optional on create. Mailbox ids this campaign sends first emails from. Replaces the whole set. Only these mailboxes are used; new mailboxes are never added on their own."
+                  },
+                  "steps": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "description": "Follow-ups, in order. Replaces the whole list. Each goes from the lead's pinned mailbox as a reply in the same thread, and a reply, bounce, unsubscribe or suppression stops the sequence.",
+                    "items": {
+                      "type": "object",
+                      "required": ["waitDays"],
+                      "properties": {
+                        "waitDays": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 30,
+                          "description": "Days after the previous email."
+                        },
+                        "body": {
+                          "type": "string",
+                          "description": "Sent as-is when AI is off or fails. May be empty in a draft; launch refuses an empty one."
+                        },
+                        "aiRewrite": {
+                          "type": "boolean",
+                          "description": "Rewrite this step with the campaign's AI provider."
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -467,14 +497,153 @@
       "patch": {
         "tags": ["Campaigns"],
         "summary": "Update a campaign",
-        "description": "Recomputes contentQuality when template changes.",
-        "responses": { "200": { "description": "Updated" } }
+        "description": "Only fields present change. Recomputes contentQuality when template or subject changes. status and unknown fields are refused with 422: a campaign goes live only through POST /campaigns/{id}/launch.",
+        "responses": {
+          "200": { "description": "Updated" },
+          "404": { "description": "Campaign not found" },
+          "422": {
+            "description": "status was sent, an unknown field, invalid spintax, a mailbox id that doesn't exist, or an invalid follow-up"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "template": { "type": "string" },
+                  "subject": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Subject line; spintax and {{fields}} allowed."
+                  },
+                  "aiPromptTemplate": { "type": "string" },
+                  "aiProvider": {
+                    "type": "string",
+                    "enum": ["GEMINI", "CLAUDE"],
+                    "nullable": true
+                  },
+                  "unsubscribeUrlTemplate": { "type": "string" },
+                  "bounceRateThreshold": { "type": "number" },
+                  "pausedForBounceRate": {
+                    "type": "boolean",
+                    "description": "Set false to resume after the bounce circuit breaker tripped."
+                  },
+                  "mailboxIds": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Mailbox ids this campaign sends first emails from. Replaces the whole set. Only these mailboxes are used; new mailboxes are never added on their own."
+                  },
+                  "steps": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "description": "Follow-ups, in order. Replaces the whole list. Each goes from the lead's pinned mailbox as a reply in the same thread, and a reply, bounce, unsubscribe or suppression stops the sequence.",
+                    "items": {
+                      "type": "object",
+                      "required": ["waitDays"],
+                      "properties": {
+                        "waitDays": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 30,
+                          "description": "Days after the previous email."
+                        },
+                        "body": {
+                          "type": "string",
+                          "description": "Sent as-is when AI is off or fails. May be empty in a draft; launch refuses an empty one."
+                        },
+                        "aiRewrite": {
+                          "type": "boolean",
+                          "description": "Rewrite this step with the campaign's AI provider."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "delete": {
         "tags": ["Campaigns"],
         "summary": "Archive a campaign",
         "description": "Archives (status: ARCHIVED) — does not hard-delete.",
         "responses": { "200": { "description": "Archived" } }
+      }
+    },
+    "/campaigns/{id}/launch-check": {
+      "get": {
+        "tags": ["Campaigns"],
+        "summary": "Run the launch check without launching",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "canLaunch": { "type": "boolean" },
+                    "problems": {
+                      "type": "array",
+                      "description": "Each blocks launch. DOMAIN_NO_ADDRESS carries domainId, domainName and mailboxCount; STEP_EMPTY carries position.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "NO_SENDERS",
+                              "DOMAIN_NO_ADDRESS",
+                              "NO_UNSUBSCRIBE",
+                              "BOUNCE_PAUSED",
+                              "EMAIL_EMPTY",
+                              "STEP_EMPTY"
+                            ]
+                          },
+                          "message": { "type": "string" }
+                        }
+                      }
+                    },
+                    "warnings": {
+                      "type": "array",
+                      "description": "Never block launch.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "SENDER_NAME_MISSING",
+                              "ALL_WARMING",
+                              "NO_LEADS",
+                              "FIELD_BLANK",
+                              "FIELD_UNKNOWN"
+                            ]
+                          },
+                          "message": { "type": "string" }
+                        }
+                      }
+                    },
+                    "passed": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": ["SENDERS", "ADDRESSES", "UNSUBSCRIBE", "BOUNCE", "COPY"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Campaign not found" }
+        }
       }
     },
     "/campaigns/{id}/launch": {
@@ -485,11 +654,64 @@
           { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
         ],
         "responses": {
-          "200": { "description": "status set to ACTIVE" },
+          "200": { "description": "status set to ACTIVE; the campaign plus warnings[]" },
+          "404": { "description": "Campaign not found" },
           "422": {
-            "description": "The campaign is pausedForBounceRate, or it has no unsubscribeUrlTemplate on an install with no domain to serve the built-in unsubscribe page"
+            "description": "Can't launch yet: { error, problems, warnings }. Problems: NO_SENDERS (no mailbox picked, or all paused), DOMAIN_NO_ADDRESS (one per sending domain without a mailing address), NO_UNSUBSCRIBE (no unsubscribeUrlTemplate on an install with no domain for the built-in page), BOUNCE_PAUSED, EMAIL_EMPTY, STEP_EMPTY.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string" },
+                    "problems": {
+                      "type": "array",
+                      "description": "Each blocks launch. DOMAIN_NO_ADDRESS carries domainId, domainName and mailboxCount; STEP_EMPTY carries position.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "NO_SENDERS",
+                              "DOMAIN_NO_ADDRESS",
+                              "NO_UNSUBSCRIBE",
+                              "BOUNCE_PAUSED",
+                              "EMAIL_EMPTY",
+                              "STEP_EMPTY"
+                            ]
+                          },
+                          "message": { "type": "string" }
+                        }
+                      }
+                    },
+                    "warnings": {
+                      "type": "array",
+                      "description": "Never block launch.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "SENDER_NAME_MISSING",
+                              "ALL_WARMING",
+                              "NO_LEADS",
+                              "FIELD_BLANK",
+                              "FIELD_UNKNOWN"
+                            ]
+                          },
+                          "message": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
-        }
+        },
+        "description": "Runs the launch check and sets status ACTIVE. Every problem comes back at once; warnings never block and are returned on success too."
       }
     },
     "/campaigns/{id}/pause": {
@@ -569,7 +791,8 @@
       "get": {
         "tags": ["Domains"],
         "summary": "List every sending domain on the account",
-        "responses": { "200": { "description": "OK" } }
+        "responses": { "200": { "description": "OK" } },
+        "description": "Each domain includes mailingAddress, mailingAddressParts, label and usedBy { campaigns, sending, paused, drafts }."
       },
       "post": {
         "tags": ["Domains"],
@@ -588,19 +811,46 @@
                     "type": "string",
                     "nullable": true,
                     "description": "DKIM selector this domain signs with (the part before ._domainkey). Only needed when your provider mints a per-customer selector (Amazon SES, Postmark, ZeptoMail). 422 if not a valid DNS label."
+                  },
+                  "label": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 80,
+                    "description": "Client or brand name, shown under the domain."
+                  },
+                  "mailingAddress": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 500,
+                    "description": "The CAN-SPAM postal address printed in the footer of every campaign email sent from this domain, one line per footer line. Blank or null clears it. There is no install-wide fallback."
+                  },
+                  "mailingAddressParts": {
+                    "type": "object",
+                    "nullable": true,
+                    "description": "The address as fields; when given, mailingAddress is built from it. Needs street, city and country.",
+                    "properties": {
+                      "businessName": { "type": "string" },
+                      "street": { "type": "string" },
+                      "suite": { "type": "string" },
+                      "city": { "type": "string" },
+                      "region": { "type": "string" },
+                      "postalCode": { "type": "string" },
+                      "country": { "type": "string" }
+                    }
                   }
                 }
               }
             }
           }
         },
-        "responses": { "201": { "description": "Created" } }
+        "responses": { "201": { "description": "Created" } },
+        "description": "The mailing address is optional here; only launching a campaign that sends from the domain needs it."
       }
     },
     "/domains/{id}": {
       "patch": {
         "tags": ["Domains"],
-        "summary": "Update a domain's redirectUrl and/or DKIM selector",
+        "summary": "Update a domain's redirectUrl, DKIM selector, label or mailing address",
         "parameters": [
           { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
         ],
@@ -615,13 +865,50 @@
                     "type": "string",
                     "nullable": true,
                     "description": "Only fields present change. null or \"\" clears the saved selector."
+                  },
+                  "label": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 80,
+                    "description": "Client or brand name, shown under the domain."
+                  },
+                  "mailingAddress": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 500,
+                    "description": "The CAN-SPAM postal address printed in the footer of every campaign email sent from this domain, one line per footer line. Blank or null clears it. There is no install-wide fallback."
+                  },
+                  "mailingAddressParts": {
+                    "type": "object",
+                    "nullable": true,
+                    "description": "The address as fields; when given, mailingAddress is built from it. Needs street, city and country.",
+                    "properties": {
+                      "businessName": { "type": "string" },
+                      "street": { "type": "string" },
+                      "suite": { "type": "string" },
+                      "city": { "type": "string" },
+                      "region": { "type": "string" },
+                      "postalCode": { "type": "string" },
+                      "country": { "type": "string" }
+                    }
+                  },
+                  "confirm": {
+                    "type": "boolean",
+                    "description": "Required to clear an address that campaigns send with."
                   }
                 }
               }
             }
           }
         },
-        "responses": { "200": { "description": "Updated" } }
+        "responses": {
+          "200": { "description": "Updated, with usedBy" },
+          "404": { "description": "Domain not found" },
+          "409": {
+            "description": "ADDRESS_IN_USE: clearing an address that campaigns send with. The body lists the campaigns; resend with confirm: true."
+          },
+          "422": { "description": "Invalid dkimSelector, label or address" }
+        }
       }
     },
     "/domains/{domain}/check": {

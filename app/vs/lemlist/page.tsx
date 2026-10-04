@@ -255,8 +255,8 @@ export default function LemlistComparisonPage() {
             WarmHawk removes the judgment call. computeNextSlotSeconds.ts calculates the minimum gap
             between sends per mailbox &mdash; never less than eight minutes, always with randomized
             jitter layered on top so outbound traffic doesn&rsquo;t look like a scripted drip
-            &mdash; and enqueuer.ts spreads that load across every mailbox on the account by
-            weighted, capacity-aware rotation. A brand-new domain simply cannot be rushed, by a
+            &mdash; and enqueuer.ts spreads that load across the mailboxes each campaign sends from
+            by weighted, capacity-aware rotation. A brand-new domain simply cannot be rushed, by a
             client, an over-eager AE, or an impatient operator.
           </p>
         </div>
