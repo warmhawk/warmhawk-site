@@ -154,9 +154,10 @@ export default function CustomN8nComparisonPage() {
               computeNextSlotSeconds.ts doesn&rsquo;t just enforce a flat delay &mdash; it
               calculates the next legal slot per mailbox, with an eight-minute floor and randomized
               jitter layered on so a sequence of sends never reads as a mechanical drip. enqueuer.ts
-              then asks, for every job pulled off the queue: which connected mailbox has the least
-              recent send, the most remaining daily capacity, and the best standing to take this one
-              right now? That&rsquo;s the rotation decision, made fresh every time, automatically.
+              then asks, for every lead it schedules: which of the campaign&rsquo;s mailboxes has
+              the least recent send, the most remaining daily capacity, and the best standing to
+              take this one right now? That&rsquo;s the rotation decision, made fresh every time,
+              automatically.
             </p>
           </div>
         </div>

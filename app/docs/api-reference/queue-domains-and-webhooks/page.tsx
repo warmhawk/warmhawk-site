@@ -23,14 +23,17 @@ const queueRoutes = [
 ];
 
 const domainRoutes = [
-  { route: 'GET /v1/domains', desc: 'List every sending domain on the account.' },
+  {
+    route: 'GET /v1/domains',
+    desc: 'List every sending domain on the account, each with mailingAddress, label and usedBy (the campaigns sending from it).',
+  },
   {
     route: 'POST /v1/domains',
-    desc: 'Create. Body: { domainName, redirectUrl?, dkimSelector? }. dkimSelector is the part before ._domainkey; 422 if it is not a valid DNS label.',
+    desc: 'Create. Body: { domainName, redirectUrl?, dkimSelector?, label?, mailingAddress?, mailingAddressParts? }. The address is optional here. dkimSelector is the part before ._domainkey; 422 if it is not a valid DNS label.',
   },
   {
     route: 'PATCH /v1/domains/:id',
-    desc: 'Update redirectUrl and/or dkimSelector. Only fields present change; dkimSelector null or "" clears it.',
+    desc: 'Update redirectUrl, dkimSelector, label or the mailing address. Only fields present change; dkimSelector null or "" clears it. Clearing an address that campaigns send with returns 409 ADDRESS_IN_USE unless confirm: true.',
   },
   {
     route: 'POST /v1/domains/:domain/check',
