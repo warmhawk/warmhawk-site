@@ -62,11 +62,12 @@ const changelog: ChangelogEntry[] = [
     // The open-core half (BSL 1.1, public at go-live) — the one repo whose CHANGELOG.md a reader
     // can open, and only once CORE_ENGINE_REPO_PUBLIC says so.
     repoUrl: coreEngineRepoPublic ? `${coreEngineRepoUrl}/blob/main/CHANGELOG.md` : undefined,
-    release: 'v1.9.0 · Oct 3, 2026',
+    release: 'v1.9.1 · Oct 4, 2026',
     tagged: true,
     summary:
       'The sending/queueing API, worker, and install.sh. Tagged semver releases since v1.0.0; warmhawk update moves an install to the newest one.',
     highlights: [
+      'v1.9.1: deleting a mailbox ends the follow-up sequences of the leads it was sending to, and install and update retry listing the n8n workflows before skipping their import.',
       'v1.9.0: a mailing address per sending domain, each campaign picks the mailboxes it sends from, and follow-up sequences (up to three, same mailbox, same thread). Launch returns every problem at once; GET /v1/campaigns/:id/launch-check runs the same check without launching. PATCH /v1/campaigns/:id now refuses status, and PUT /v1/instance-settings returns 410.',
       'v1.8.0: a built-in unsubscribe page for campaigns with no unsubscribe link of their own.',
       'v1.5.0: WarmHawk Connect, one-click Google and Microsoft mailbox connect.',
@@ -120,7 +121,7 @@ export default function FaqAndChangelogPage() {
       </p>
       <AnswerBlock>
         This page answers the most common orientation questions about WarmHawk&rsquo;s docs and API,
-        then summarizes what each repo has shipped. The engine (v1.9.0) and the dashboard (v1.18.0)
+        then summarizes what each repo has shipped. The engine (v1.9.1) and the dashboard (v1.18.0)
         ship tagged semver releases; this site deploys continuously without version numbers. Every
         version and date below is a real release.
       </AnswerBlock>
