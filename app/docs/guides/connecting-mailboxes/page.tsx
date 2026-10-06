@@ -21,7 +21,7 @@ const faqItems = [
   {
     question: 'What happens to my SMTP/IMAP password after I send it?',
     answer:
-      'It is encrypted server-side (AES-256-GCM) before being persisted, and is never echoed back in any API response — not even to the authenticated caller who just set it.',
+      'WarmHawk signs in to your SMTP and IMAP servers once to check it, then encrypts it server-side (AES-256-GCM) before it is persisted. It is never echoed back in any API response — not even to the authenticated caller who just set it.',
   },
   {
     question: 'Why does my Google Workspace admin have to trust WarmHawk?',
@@ -63,8 +63,9 @@ export default function ConnectingMailboxesPage() {
         <p className="text-[14px] leading-relaxed text-ink">
           <span className="font-semibold text-rust">On Tier 1 or Tier 2?</span> Skip the API steps.
           In your dashboard, open Mailboxes, enter the address, and click{' '}
-          <strong>Connect with Google</strong>. WarmHawk Connect handles the sign-in, so there is no
-          OAuth app to build. The one step your company does once is below.
+          <strong>Connect with Google</strong> or <strong>Connect with Microsoft</strong>. WarmHawk
+          Connect handles the sign-in, so there is no OAuth app to build. The one step your company
+          does once is below.
         </p>
       </div>
 
@@ -99,9 +100,10 @@ export default function ConnectingMailboxesPage() {
           admin. Use the SMTP/IMAP form with an app password instead.
         </li>
         <li>
-          <strong className="text-ink">Microsoft 365?</strong> Connect for Microsoft is coming.
-          Until then, use SMTP/IMAP, or register your own Microsoft app under Settings in your
-          dashboard.
+          <strong className="text-ink">Microsoft 365?</strong> Click Connect with Microsoft. Your
+          Microsoft 365 admin approves WarmHawk once for the whole company. If you aren&rsquo;t the
+          admin, Microsoft shows &ldquo;Need admin approval&rdquo;: copy the approval link from the
+          Mailboxes page and send it to them.
         </li>
         <li>
           <strong className="text-ink">Rather use your own OAuth app?</strong> Register it under
@@ -160,6 +162,20 @@ export default function ConnectingMailboxesPage() {
         The response (201) returns the created <code className="font-mono">Mailbox</code> row with{' '}
         <code className="font-mono">authPassword</code> stripped out — it&rsquo;s encrypted at rest
         and never round-tripped back to any caller, ever.
+      </p>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        Before saving, WarmHawk signs in to the SMTP and IMAP servers once with that password. If
+        either refuses, you get a <code className="font-mono">422</code> with a sentence saying what
+        to fix, and nothing is saved &mdash; Google Workspace and Microsoft 365 usually need an app
+        password here, not the account password. An address that&rsquo;s already connected gets a{' '}
+        <code className="font-mono">409</code>. Every status is listed in the{' '}
+        <Link
+          href="/docs/api-reference/auth-and-mailboxes#sign-in-check"
+          className="text-rust font-semibold"
+        >
+          API reference
+        </Link>
+        .
       </p>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
         <code className="font-mono">senderName</code> is the From name leads see and what{' '}
