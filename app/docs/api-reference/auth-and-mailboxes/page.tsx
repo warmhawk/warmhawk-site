@@ -88,7 +88,7 @@ Content-Type: application/json
               { route: 'GET /v1/mailboxes', desc: 'List every mailbox on the account.' },
               {
                 route: 'POST /v1/mailboxes',
-                desc: 'Create a mailbox. Requires email + domainId. 201 with the created row (credentials stripped).',
+                desc: 'Create a mailbox. Requires email + domainId. With a password, signs in to the SMTP and IMAP servers first. 201 with the created row (credentials stripped); 409 if the address is already connected; 422 if a sign-in is refused.',
               },
               {
                 route: 'PATCH /v1/mailboxes/:id',
@@ -145,6 +145,91 @@ Content-Type: application/json
         </Link>{' '}
         for the full walkthrough with both connection paths end to end.
       </p>
+
+      <h3 id="sign-in-check" className="font-display text-lg font-semibold mb-3">
+        POST /v1/mailboxes — sign-in check
+      </h3>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        When the body has an <code className="font-mono">authPassword</code> and an{' '}
+        <code className="font-mono">smtpHost</code> or <code className="font-mono">imapHost</code>,
+        the engine signs in to each of those servers once, side by side, before anything is saved. A
+        wrong password is answered while you&rsquo;re still holding it, not as a failed send hours
+        later. Each check gives up after 10 seconds without an answer. The username is{' '}
+        <code className="font-mono">authUsername</code>, or <code className="font-mono">email</code>{' '}
+        when it&rsquo;s left out. Hosts under the reserved test TLDs{' '}
+        <code className="font-mono">.test</code>, <code className="font-mono">.example</code> and{' '}
+        <code className="font-mono">.invalid</code> are never dialed.
+      </p>
+      <div className="card overflow-hidden overflow-x-auto mb-6">
+        <table className="w-full text-sm border-collapse min-w-[600px]">
+          <thead>
+            <tr>
+              <th className="label text-left p-4 text-ink-muted font-semibold">Status</th>
+              <th className="label text-left p-4 text-ink-muted font-semibold border-l border-border">
+                When
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              {
+                status: '201',
+                desc: 'Both servers accepted the sign-in (or there was nothing to check). The mailbox is saved.',
+              },
+              {
+                status: '409',
+                desc: 'That address is already connected. Answered before any server is dialed, so retrying a create is safe.',
+              },
+              {
+                status: '422',
+                desc: 'A server refused the sign-in, or couldn’t be reached. Nothing is saved. When both fail, the SMTP refusal is the one reported.',
+              },
+            ].map((row) => (
+              <tr key={row.status}>
+                <td className="p-4 border-t border-border align-top font-mono text-[13px]">
+                  {row.status}
+                </td>
+                <td className="p-4 border-t border-l border-border align-top text-ink-muted">
+                  {row.desc}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <CodeBlock label="Response — 409">{`{ "error": "This mailbox is already connected." }`}</CodeBlock>
+      <CodeBlock label="Response — 422 (SMTP password refused)">
+        {`{
+  "error": "The mail server didn't accept that username and password. Google Workspace and Microsoft 365 usually need an app password here — or use Connect with Google or Connect with Microsoft instead."
+}`}
+      </CodeBlock>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-4">
+        The <code className="font-mono">error</code> is a sentence written for the person who typed
+        the password, so it&rsquo;s safe to show as is. The provider&rsquo;s own reply (for example{' '}
+        <code className="font-mono">535 5.7.8</code>) goes to the engine&rsquo;s log, not the
+        response. Other 422 sentences you can get:
+      </p>
+      <ul className="list-disc pl-6 mb-10 max-w-2xl text-[15px] leading-relaxed text-ink-muted space-y-1.5">
+        <li>
+          <strong className="text-ink">IMAP password refused:</strong> &ldquo;The IMAP server
+          didn&rsquo;t accept that username and password, so WarmHawk couldn&rsquo;t read replies.
+          Check the IMAP host &mdash; it usually takes the same password as SMTP.&rdquo;
+        </li>
+        <li>
+          <strong className="text-ink">Host doesn&rsquo;t exist:</strong> &ldquo;We couldn&rsquo;t
+          find a mail server called smtp.yourdomian.com. Check the SMTP host.&rdquo;
+        </li>
+        <li>
+          <strong className="text-ink">Nothing answers:</strong> &ldquo;We couldn&rsquo;t connect to
+          mail.yourdomain.com on port 2525. Check the SMTP host and port &mdash; most mail servers
+          use 587 or 465.&rdquo; (For IMAP: &ldquo;&hellip;most mail servers use 993.&rdquo;)
+        </li>
+        <li>
+          <strong className="text-ink">Anything else:</strong> &ldquo;The SMTP server at
+          mail.yourdomain.com didn&rsquo;t accept the sign-in. Check the SMTP host, port, username
+          and password.&rdquo;
+        </li>
+      </ul>
 
       <div className="card p-7 max-w-2xl">
         <p className="text-[15px] leading-relaxed text-ink-muted">
