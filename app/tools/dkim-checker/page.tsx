@@ -15,7 +15,7 @@ const TOOL_DESCRIPTION =
   "Check whether a domain's DKIM key is published and valid, free — plus MX, SPF, DMARC and blocklist status in the same lookup. No account required.";
 
 export const metadata: Metadata = pageSeo({
-  title: TOOL_NAME,
+  title: `${TOOL_NAME}: Validate DKIM Records Online`,
   description: TOOL_DESCRIPTION,
   path: '/tools/dkim-checker',
 });

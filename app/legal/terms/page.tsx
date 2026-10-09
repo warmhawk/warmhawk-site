@@ -4,7 +4,7 @@ import { pageSeo } from '@/lib/seo';
 import { siteConfig } from '@/lib/siteConfig';
 
 export const metadata: Metadata = pageSeo({
-  title: 'Terms of Service',
+  title: 'Terms of Service: Self-Hosted Software & Billing',
   description:
     'The terms governing use of WarmHawk’s self-hosted cold email infrastructure software and any optional hosted billing services.',
   path: '/legal/terms',

@@ -15,7 +15,7 @@ const TOOL_DESCRIPTION =
   "Check any domain's MX record free — see where inbound mail is routed, plus SPF, DKIM, DMARC and blocklist status in the same lookup. No account required.";
 
 export const metadata: Metadata = pageSeo({
-  title: TOOL_NAME,
+  title: `${TOOL_NAME}: Look Up Mail Servers`,
   description: TOOL_DESCRIPTION,
   path: '/tools/mx-checker',
 });

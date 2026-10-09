@@ -4,7 +4,7 @@ import { pageSeo } from '@/lib/seo';
 import { siteConfig } from '@/lib/siteConfig';
 
 export const metadata: Metadata = pageSeo({
-  title: 'Acceptable Use Policy',
+  title: "Acceptable Use Policy: What You Can't Send",
   description:
     'What is prohibited when sending through a self-hosted WarmHawk instance: consent-less lists, phishing, impersonation and illegal content, plus CAN-SPAM expectations.',
   path: '/legal/acceptable-use',

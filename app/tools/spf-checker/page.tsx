@@ -15,7 +15,7 @@ const TOOL_DESCRIPTION =
   "Check any domain's SPF record free — see its exact DNS lookup count against RFC 7208's limit of 10, plus MX, DKIM, DMARC and blocklist status. No account required.";
 
 export const metadata: Metadata = pageSeo({
-  title: TOOL_NAME,
+  title: `${TOOL_NAME}: Validate SPF Online`,
   description: TOOL_DESCRIPTION,
   path: '/tools/spf-checker',
 });
