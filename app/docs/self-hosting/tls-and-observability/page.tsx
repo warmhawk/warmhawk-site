@@ -6,7 +6,7 @@ import { CodeBlock } from '@/components/CodeBlock';
 import { FaqSection } from '@/components/FaqSchema';
 
 export const metadata: Metadata = pageSeo({
-  title: 'TLS & observability',
+  title: 'TLS & observability: certbot, Uptime Kuma, OTEL',
   description:
     'How certbot issuance and renewal work (and fail safe, not crash), BYO-cert, and the default observability: bundled Uptime Kuma and native OTEL export.',
   path: '/docs/self-hosting/tls-and-observability',

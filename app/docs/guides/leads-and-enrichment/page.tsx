@@ -6,7 +6,7 @@ import { CodeBlock } from '@/components/CodeBlock';
 import { FaqSection } from '@/components/FaqSchema';
 
 export const metadata: Metadata = pageSeo({
-  title: 'Leads & enrichment',
+  title: 'Leads & enrichment: CSV import, webhooks, Clay',
   description:
     'Every way to get leads into WarmHawk: single create, CSV bulk import, unauthenticated webhook ingest, GDPR erasure, and the Clay/Apollo enrichment recipe.',
   path: '/docs/guides/leads-and-enrichment',

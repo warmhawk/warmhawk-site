@@ -6,7 +6,7 @@ import { CodeBlock } from '@/components/CodeBlock';
 import { FaqSection } from '@/components/FaqSchema';
 
 export const metadata: Metadata = pageSeo({
-  title: 'Connecting mailboxes',
+  title: 'Connecting mailboxes: SMTP/IMAP and OAuth setup',
   description:
     'Register a sending domain and connect a mailbox in WarmHawk with SMTP/IMAP credentials or Google Workspace / Microsoft 365 OAuth, plus dailyCap and management.',
   path: '/docs/guides/connecting-mailboxes',

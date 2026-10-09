@@ -5,7 +5,7 @@ import { AnswerBlock } from '@/components/AnswerBlock';
 import { tiers } from '@/lib/tierConfig';
 
 export const metadata: Metadata = pageSeo({
-  title: 'Introduction',
+  title: 'Introduction to self-hosted cold email software',
   description:
     'What WarmHawk is: self-hosted cold-email infrastructure on your own server, the three tiers (open-core, Self-Hosted Pro, Enterprise DFY), and where to go next.',
   path: '/docs/introduction',

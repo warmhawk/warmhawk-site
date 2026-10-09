@@ -6,7 +6,7 @@ import { CodeBlock } from '@/components/CodeBlock';
 import { FaqSection } from '@/components/FaqSchema';
 
 export const metadata: Metadata = pageSeo({
-  title: 'Replies & team',
+  title: 'Replies & team: IMAP reply detection and access',
   description:
     'How WarmHawk polls IMAP for replies, classifies them (INTERESTED, OUT_OF_OFFICE, OPT_OUT) with AI plus a keyword fallback, and how Tier 1/2 team access works.',
   path: '/docs/guides/replies-and-team',
