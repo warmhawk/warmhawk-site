@@ -5,7 +5,7 @@ import { AnswerBlock } from '@/components/AnswerBlock';
 import { FaqSection } from '@/components/FaqSchema';
 
 export const metadata: Metadata = pageSeo({
-  title: 'Guardrails & compliance',
+  title: 'Guardrails & compliance: CAN-SPAM, GDPR, RFC 8058',
   description:
     "The compliance and abuse protections built into WarmHawk's send pipeline: CAN-SPAM, RFC 8058, EU AI Act disclosure, GDPR erasure and CSV-injection defense.",
   path: '/docs/reference/guardrails-and-compliance',

@@ -6,7 +6,7 @@ import { FaqSection } from '@/components/FaqSchema';
 import { coreEngineRepoPublic, coreEngineRepoUrl } from '@/lib/siteConfig';
 
 export const metadata: Metadata = pageSeo({
-  title: 'FAQ & changelog',
+  title: 'FAQ & changelog: docs, API and release versions',
   description:
     "Frequently asked questions about WarmHawk's docs and API, plus what has shipped in each repo, with each package's real release versions.",
   path: '/docs/reference/faq-and-changelog',

@@ -15,7 +15,7 @@ const TOOL_DESCRIPTION =
   "Check any domain's DMARC policy free — none, quarantine, or reject — plus MX, SPF, DKIM and blocklist status. No account required.";
 
 export const metadata: Metadata = pageSeo({
-  title: TOOL_NAME,
+  title: `${TOOL_NAME}: Validate DMARC Records Online`,
   description: TOOL_DESCRIPTION,
   path: '/tools/dmarc-checker',
 });

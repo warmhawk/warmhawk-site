@@ -4,7 +4,7 @@ import { pageSeo } from '@/lib/seo';
 import { siteConfig } from '@/lib/siteConfig';
 
 export const metadata: Metadata = pageSeo({
-  title: 'Privacy Policy',
+  title: 'Privacy Policy: What We Collect (and Never See)',
   description:
     'What WarmHawk collects on the marketing site and billing path, and the lead, mailbox and campaign data it never has access to because the product is self-hosted.',
   path: '/legal/privacy',

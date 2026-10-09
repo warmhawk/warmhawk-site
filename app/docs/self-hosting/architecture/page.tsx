@@ -6,7 +6,7 @@ import { CodeBlock } from '@/components/CodeBlock';
 import { FaqSection } from '@/components/FaqSchema';
 
 export const metadata: Metadata = pageSeo({
-  title: 'Architecture',
+  title: 'Self-hosting architecture: Docker services & logs',
   description:
     'What runs in a WarmHawk instance: every docker compose service, the internal-only network boundary, and how to read logs and tune resource limits.',
   path: '/docs/self-hosting/architecture',
