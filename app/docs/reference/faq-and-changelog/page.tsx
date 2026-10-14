@@ -62,11 +62,20 @@ const changelog: ChangelogEntry[] = [
     // The open-core half (BSL 1.1, public at go-live) — the one repo whose CHANGELOG.md a reader
     // can open, and only once CORE_ENGINE_REPO_PUBLIC says so.
     repoUrl: coreEngineRepoPublic ? `${coreEngineRepoUrl}/blob/main/CHANGELOG.md` : undefined,
-    release: 'v1.9.1 · Oct 4, 2026',
+    release: 'v1.16.0 · Oct 14, 2026',
     tagged: true,
     summary:
       'The sending/queueing API, worker, and install.sh. Tagged semver releases since v1.0.0; warmhawk update moves an install to the newest one.',
     highlights: [
+      'v1.16.0: a send schedule per campaign (days, hours and a time zone, or each lead’s own time zone, plus an optional cap on new leads per day). The daily limit is spread across the open hours, follow-ups go before new leads, and the daily limit is a rolling 24-hour count. GET /v1/campaigns returns sendWindow and nextSendAt. Existing campaigns keep sending at any hour.',
+      'v1.15.0: a campaign with nothing left to send marks itself Completed, and goes back to sending when it gets new leads or follow-ups.',
+      'v1.14.0: campaign progress lists the follow-ups sent per step (followUpsSent) and the ones still coming (upcomingFollowUps).',
+      'v1.13.0: PATCH /v1/leads/:id edits a lead before it is emailed, keeping its place in the send order. v1.13.1: lead and blocked-list search treat % and _ as plain text, and the footer prints the country on the city line.',
+      'v1.12.3: warm-up spreads its sends (no two emails to one inbox within 5 minutes, mailboxes take turns, no subject reused within 3 days) and records Gmail Promotions-tab landings. v1.12.4: a Google token refresh retries once after a network blip.',
+      'v1.12.1–v1.12.2: saving an AI key tests the chosen model; AI Adjusts and AI Writes now differ and keep your links, prices and greeting; new fallback reasons quota_exceeded and content_dropped; a test email’s unsubscribe link unsubscribes nobody.',
+      'v1.12.0: SMTP and IMAP sign-in are checked before a mailbox is saved, and failed requests answer with a plain sentence instead of the raw error.',
+      'v1.11.0: opt-out replies are caught without an AI key; personal mailboxes (Gmail, Yahoo, Outlook.com); the blocked-list API (/v1/suppression); POST /v1/campaigns/:id/duplicate.',
+      'v1.10.0–v1.10.2: merge-field fallbacks ({{firstName|there}}); a blank or unknown merge field now blocks launch; field names ignore capitals and underscores.',
       'v1.9.1: deleting a mailbox ends the follow-up sequences of the leads it was sending to, and install and update retry listing the n8n workflows before skipping their import.',
       'v1.9.0: a mailing address per sending domain, each campaign picks the mailboxes it sends from, and follow-up sequences (up to three, same mailbox, same thread). Launch returns every problem at once; GET /v1/campaigns/:id/launch-check runs the same check without launching. PATCH /v1/campaigns/:id now refuses status, and PUT /v1/instance-settings returns 410.',
       'v1.8.0: a built-in unsubscribe page for campaigns with no unsubscribe link of their own.',
@@ -77,11 +86,16 @@ const changelog: ChangelogEntry[] = [
   },
   {
     repo: 'warmhawk-enterprise-operator',
-    release: 'v1.18.0 · Oct 4, 2026',
+    release: 'v1.28.0 · Oct 14, 2026',
     tagged: true,
     summary:
       'The licensed Tier 1/2 operator dashboard. Tagged semver releases; its update banner compares your version against the newest one.',
     highlights: [
+      'v1.28.0: pick when a campaign sends (days, hours and time zone) under Send from; new campaigns start at Monday to Friday, 9 to 5, in your time zone.',
+      'v1.25.0–v1.27.0: edit a lead before it is emailed; Sent today is measured against today’s limit; a campaign’s follow-ups split into Sequence, Follow-ups sent and Next follow-ups; Completed campaigns show as done.',
+      'v1.23.0–v1.24.0: a step-by-step guide for your own Google or Microsoft OAuth app; the AI modes differ visibly and say when the AI failed; warm-up shows Promotions-tab landings.',
+      'v1.21.0–v1.22.0: a Blocked list page, duplicate campaigns, personal mailboxes, plain-sentence error popups, and an SMTP form that checks the sign-in.',
+      'v1.19.0–v1.20.0: unfilled merge fields show as launch blockers; delete a campaign from its row, side panel or builder.',
       'v1.18.0: agency client filter, search and pagination; tables grow with the page; the Compliance settings page is gone, since mailing addresses now live on each domain.',
       'v1.17.0: a new campaigns table and 4-step builder (Write, Send from, Leads, Launch check) with follow-ups, an import wizard, a mailing address per domain, a DKIM selector per domain, and a required sender name per mailbox.',
       'v1.16.0: the unsubscribe link is optional when the engine serves its own unsubscribe page.',
@@ -101,7 +115,8 @@ const changelog: ChangelogEntry[] = [
     highlights: [
       'Homepage, all /vs/* comparison pages, /compare/pricing, /tools/domain-check, /status, /security, /legal/*.',
       'Stripe Checkout session, webhook, and Customer Portal routes for Tier 1; sitemap/robots/OG/Twitter/FAQPage schema site-wide.',
-      'This docs section, restructured into the current 15-page information architecture; a real Tier 2 contact-sales flow and dedicated /checkout route.',
+      'This docs section, restructured into a 15-page information architecture (16 with the Warm-up guide); a real Tier 2 contact-sales flow and dedicated /checkout route.',
+      'Docs for the v1.16.0 engine: send schedules, merge-field fallbacks, AI modes, preview and test send, duplicate, the blocked list, lead edits and a new Warm-up guide, with the matching openapi.json.',
       'Docs for the v1.9.0 engine: mailing address per domain, campaign senders and follow-ups, the launch check, and the matching openapi.json.',
     ],
   },
@@ -121,7 +136,7 @@ export default function FaqAndChangelogPage() {
       </p>
       <AnswerBlock>
         This page answers the most common orientation questions about WarmHawk&rsquo;s docs and API,
-        then summarizes what each repo has shipped. The engine (v1.9.1) and the dashboard (v1.18.0)
+        then summarizes what each repo has shipped. The engine (v1.16.0) and the dashboard (v1.28.0)
         ship tagged semver releases; this site deploys continuously without version numbers. Every
         version and date below is a real release.
       </AnswerBlock>

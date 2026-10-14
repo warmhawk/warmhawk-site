@@ -38,12 +38,17 @@ export const guides: DocLink[] = [
   {
     href: '/docs/guides/campaigns-ai-and-content-quality',
     title: 'Campaigns, AI & content quality',
-    body: 'Spintax vs BYOK AI personalization, the content-quality score, and the launch/pause lifecycle.',
+    body: 'Spintax, merge-field fallbacks, AI modes, send schedules, preview and test send, and the launch check.',
+  },
+  {
+    href: '/docs/guides/warm-up',
+    title: 'Warm-up',
+    body: 'How a new mailbox earns the inbox: the daily ramp, placement checks, Promotions detection and graduation.',
   },
   {
     href: '/docs/guides/sending-safely-and-domain-health',
     title: 'Sending safely & domain health',
-    body: 'The send queue’s cadence floor and jitter, the bounce circuit breaker, and domain health checks.',
+    body: 'Send hours and the daily limit, the cadence floor and jitter, the bounce circuit breaker, and domain health checks.',
   },
   {
     href: '/docs/guides/replies-and-team',
