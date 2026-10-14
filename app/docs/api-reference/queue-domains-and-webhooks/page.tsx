@@ -7,14 +7,18 @@ import { CodeBlock } from '@/components/CodeBlock';
 export const metadata: Metadata = pageSeo({
   title: 'API reference: Queue, domains & webhooks',
   description:
-    "Field-by-field reference for WarmHawk's /v1 send queue, domain SPF/DKIM/DMARC and placement-sample routes. Outbound webhooks are planned, not built yet.",
+    "Field-by-field reference for WarmHawk's /v1 send queue (status, queued emails, pause), domain SPF/DKIM/DMARC and placement-sample routes. Outbound webhooks are planned, not built yet.",
   path: '/docs/api-reference/queue-domains-and-webhooks',
 });
 
 const queueRoutes = [
   {
     route: 'GET /v1/queue/status',
-    desc: 'Returns { counts, isPaused, jobs, throttling: { cadenceFloorSeconds: 480, jitterSeconds } }.',
+    desc: 'Returns { counts, isPaused, jobs, sentByDay, queuedByDay, expectedByDay, mailboxes, throttling }. counts.waiting, active and delayed count email jobs only, not the nightly system job. jobs is the first 50 pending jobs. sentByDay is sends per UTC day for the last 6 days and today. queuedByDay counts every pending job, not just those 50, by the UTC day it is due (overdue ones count toward today), soonest day first. The queue only holds each mailbox’s next email, so expectedByDay estimates what active campaigns will send on each of the next 7 UTC days, from each mailbox’s cap, each campaign’s send days, max new leads per day, follow-ups due and leads left (recomputed at most once a minute). mailboxes gives each mailbox its campaigns and, for the 2 days either side of today, sent, warmup, queued, expected (0 up to today) and cap. throttling carries cadenceFloorSeconds (480), jitterSeconds, and minGapSeconds / maxGapSeconds, the real gap between two sends from one mailbox.',
+  },
+  {
+    route: 'GET /v1/queue/jobs',
+    desc: 'Every pending send, soonest first, up to 50, with the full match count in total. ?mailboxId= narrows to one mailbox; ?day=YYYY-MM-DD (UTC) to the sends due that day, with overdue ones counting toward today. Each job has its lead, mailbox, campaign, scheduledFor and step (0 = the first email, N = follow-up N).',
   },
   {
     route: 'POST /v1/queue/pause',
@@ -59,11 +63,13 @@ export default function ApiReferenceQueueDomainsWebhooksPage() {
         exist today (none) versus what&rsquo;s planned.
       </p>
       <AnswerBlock>
-        GET /v1/queue/status reports real BullMQ counts, pause state, and throttling
-        (cadenceFloorSeconds: 480, jitterSeconds); POST /v1/queue/pause is a genuine Redis-level
-        pause. Domain routes cover SPF/DKIM/DMARC + blocklist checks (keyed by domain name) and
-        seed-inbox placement sampling (keyed by id). Outbound webhooks — WarmHawk calling your URL
-        on an event — are Planned; no such system exists in core-engine yet.
+        GET /v1/queue/status reports real BullMQ counts, pause state, sends by day, each
+        mailbox&rsquo;s sent, queued and cap counts, and the real gap between sends (10.5 to 17.5
+        minutes from one mailbox); GET /v1/queue/jobs lists every queued email, soonest first; POST
+        /v1/queue/pause is a genuine Redis-level pause. Domain routes cover SPF/DKIM/DMARC +
+        blocklist checks (keyed by domain name) and seed-inbox placement sampling (keyed by id).
+        Outbound webhooks — WarmHawk calling your URL on an event — are Planned; no such system
+        exists in core-engine yet.
       </AnswerBlock>
 
       <h2 className="font-display text-2xl font-semibold mb-4">Queue</h2>
@@ -95,10 +101,58 @@ export default function ApiReferenceQueueDomainsWebhooksPage() {
         {`{
   "counts": { "waiting": 3, "active": 1, "delayed": 12, "completed": 240, "failed": 2 },
   "isPaused": false,
-  "jobs": [ /* up to 50 waiting/active/delayed jobs */ ],
-  "throttling": { "cadenceFloorSeconds": 480, "jitterSeconds": 240 }
+  "jobs": [ /* the first 50 waiting/active/delayed jobs */ ],
+  "sentByDay": [ { "day": "2026-10-14", "count": 38 } /* 7 days, oldest first */ ],
+  "queuedByDay": [ { "day": "2026-10-15", "count": 3 } /* every pending job, by due day */ ],
+  "expectedByDay": [ { "day": "2026-10-15", "count": 40 } /* the next 7 days, estimated */ ],
+  "mailboxes": [
+    {
+      "id": "mbx_a1b2c3",
+      "campaigns": [ { "id": "cmp_x1", "name": "Q4 agencies", "status": "ACTIVE" } ],
+      "days": [ { "day": "2026-10-14", "sent": 12, "warmup": 4, "queued": 9, "expected": 0, "cap": 25 } /* 5 days */ ]
+    }
+  ],
+  "throttling": {
+    "cadenceFloorSeconds": 480,
+    "jitterSeconds": 240,
+    "minGapSeconds": 630,
+    "maxGapSeconds": 1050
+  }
 }`}
       </CodeBlock>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-6">
+        The gap: an 8-minute floor since the mailbox&rsquo;s last send, plus a random 4 to 8
+        minutes, plus or minus 90 seconds. The random part only ever adds, so the shortest real gap
+        is 10.5 minutes, not 8. Warm-up emails don&rsquo;t count toward{' '}
+        <code className="font-mono">cap</code>.
+      </p>
+      <CodeBlock label="GET /v1/queue/jobs?day=2026-10-15 — response shape">
+        {`{
+  "total": 27,
+  "jobs": [
+    {
+      "id": "lead_9f2:mbx_a1b2c3:1791999657597",
+      "state": "delayed",
+      "mailboxEmail": "alex@yourcompany.com",
+      "leadEmail": "sam@prospect.com",
+      "campaignName": "Q4 agencies",
+      "scheduledFor": "2026-10-15T14:05:00.000Z",
+      "attemptsMade": 0,
+      "leadId": "lead_9f2",
+      "campaignId": "cmp_x1",
+      "step": 1
+    }
+  ]
+}`}
+      </CodeBlock>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-6">
+        To read the email a queued job will send, pass its <code className="font-mono">leadId</code>{' '}
+        and <code className="font-mono">step</code> to{' '}
+        <Link href="/docs/api-reference/leads-and-campaigns" className="text-rust font-semibold">
+          POST /v1/campaigns/preview
+        </Link>{' '}
+        with the campaign&rsquo;s id.
+      </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4 mt-10">Domains</h2>
       <div className="card overflow-hidden overflow-x-auto mb-6">

@@ -268,7 +268,14 @@ export default function QuickstartPage() {
   "counts": { "waiting": 0, "active": 0, "delayed": 0, "completed": 1, "failed": 0 },
   "isPaused": false,
   "jobs": [],
-  "throttling": { "cadenceFloorSeconds": 480, "jitterSeconds": 240 }
+  "sentByDay": [ /* last 6 days and today; today's count is 1 */ ],
+  "mailboxes": [ /* your mailbox's sent, queued and cap per day */ ],
+  "throttling": {
+    "cadenceFloorSeconds": 480,
+    "jitterSeconds": 240,
+    "minGapSeconds": 630,
+    "maxGapSeconds": 1050
+  }
 }`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-14">

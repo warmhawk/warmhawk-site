@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "WarmHawk API",
-    "version": "1.16.0",
+    "version": "1.19.0",
     "description": "The real, current shape of warmhawk-core-engine's /v1 API and its one unauthenticated /public endpoint, transcribed field-by-field from https://warmhawk.com/docs/api-reference/*. WarmHawk is self-hosted per customer — there is no single production host, so every server URL below is a placeholder for whatever domain a customer's own install.sh run bound (e.g. api.yourcompany.com). Outbound webhooks (WarmHawk calling a customer's own URL when something happens) are planned, not implemented — poll GET /v1/replies, GET /v1/queue/status, or GET /v1/domains/{id}/placement-sample instead.",
     "contact": {
       "name": "WarmHawk support",
@@ -822,7 +822,15 @@
                   },
                   "template": { "type": "string" },
                   "subject": { "type": "string" },
-                  "aiPromptTemplate": { "type": "string" }
+                  "aiPromptTemplate": { "type": "string" },
+                  "leadId": {
+                    "type": "string",
+                    "description": "One of the campaign's own leads, instead of leadIndex. Needs campaignId. The preview goes from the mailbox that lead is assigned to, and a follow-up keeps the subject the lead's thread really has."
+                  },
+                  "skipAi": {
+                    "type": "boolean",
+                    "description": "Render the campaign's own text even when AI would write this email; no provider call."
+                  }
                 }
               }
             }
@@ -830,7 +838,7 @@
         },
         "responses": {
           "200": {
-            "description": "The rendered email: subject, body, sender, lead and complianceMissing"
+            "description": "The rendered email: subject, body, sender, lead, complianceMissing, and usesAi (whether AI writes this email at send time)"
           },
           "404": {
             "description": "Campaign not found",
@@ -1430,6 +1438,7 @@
                   "properties": {
                     "counts": {
                       "type": "object",
+                      "description": "Job counts by state. waiting, active and delayed count email jobs only, leaving out the nightly daily-reset system job.",
                       "properties": {
                         "waiting": { "type": "integer" },
                         "active": { "type": "integer" },
@@ -1442,13 +1451,154 @@
                     "jobs": {
                       "type": "array",
                       "items": { "type": "object" },
-                      "description": "Up to 50 waiting/active/delayed jobs."
+                      "description": "The first 50 waiting/active/delayed jobs."
                     },
                     "throttling": {
                       "type": "object",
                       "properties": {
                         "cadenceFloorSeconds": { "type": "integer", "example": 480 },
-                        "jitterSeconds": { "type": "integer" }
+                        "jitterSeconds": { "type": "integer", "example": 240 },
+                        "minGapSeconds": {
+                          "type": "integer",
+                          "example": 630,
+                          "description": "Shortest real gap between two sends from one mailbox."
+                        },
+                        "maxGapSeconds": {
+                          "type": "integer",
+                          "example": 1050,
+                          "description": "Longest real gap between two sends from one mailbox."
+                        }
+                      }
+                    },
+                    "sentByDay": {
+                      "type": "array",
+                      "description": "Sends per UTC day for the last 6 days and today, oldest first.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "day": { "type": "string", "example": "2026-10-14" },
+                          "count": { "type": "integer" }
+                        }
+                      }
+                    },
+                    "queuedByDay": {
+                      "type": "array",
+                      "description": "Every pending dispatch job (not only the 50 in jobs) counted by the UTC day it is due; overdue jobs count toward today. Soonest day first, only days with jobs.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "day": { "type": "string", "example": "2026-10-15" },
+                          "count": { "type": "integer" }
+                        }
+                      }
+                    },
+                    "expectedByDay": {
+                      "type": "array",
+                      "description": "Estimated campaign sends for each of the next 7 UTC days, soonest first, every day present. The queue only holds each mailbox's next email, so this plays the send rules forward: each mailbox's cap, each campaign's send days, max new leads per day, follow-ups due and leads left. Recomputed at most once a minute.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "day": { "type": "string", "example": "2026-10-15" },
+                          "count": { "type": "integer" }
+                        }
+                      }
+                    },
+                    "mailboxes": {
+                      "type": "array",
+                      "description": "Per mailbox: its campaigns, and for the 2 UTC days either side of today its sent, warm-up, queued and cap counts. Warm-up sends don't count toward cap.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "campaigns": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": { "type": "string" },
+                                "name": { "type": "string" },
+                                "status": { "type": "string" }
+                              }
+                            }
+                          },
+                          "days": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "day": { "type": "string" },
+                                "sent": { "type": "integer" },
+                                "warmup": { "type": "integer" },
+                                "queued": { "type": "integer" },
+                                "expected": {
+                                  "type": "integer",
+                                  "description": "Estimated campaign sends that day; 0 for today and earlier."
+                                },
+                                "cap": { "type": "integer" }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/queue/jobs": {
+      "get": {
+        "tags": ["Queue"],
+        "summary": "List queued emails",
+        "description": "Every pending send, soonest first, up to 50, with the full match count in total.",
+        "parameters": [
+          {
+            "name": "mailboxId",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Only this mailbox's sends."
+          },
+          {
+            "name": "day",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "example": "2026-10-15" },
+            "description": "UTC YYYY-MM-DD; only sends due that day. Overdue ones count toward today."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": { "type": "integer" },
+                    "jobs": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "state": { "type": "string", "enum": ["waiting", "active", "delayed"] },
+                          "mailboxEmail": { "type": "string" },
+                          "leadEmail": { "type": "string" },
+                          "campaignName": { "type": "string" },
+                          "scheduledFor": { "type": "string", "format": "date-time" },
+                          "attemptsMade": { "type": "integer" },
+                          "leadId": { "type": "string", "nullable": true },
+                          "campaignId": { "type": "string", "nullable": true },
+                          "step": {
+                            "type": "integer",
+                            "nullable": true,
+                            "description": "What this job sends: 0 = the first email, N = follow-up N."
+                          }
+                        }
                       }
                     }
                   }
