@@ -21,7 +21,7 @@ const faqItems = [
   {
     question: 'What happens if the AI reply classifier is unavailable?',
     answer:
-      'It falls back to a keyword-heuristic classifier (checking for phrases like "unsubscribe," "out of office," "not interested") rather than leaving every reply UNCLASSIFIED — so a transient AI-provider outage never silently drops the compliance-sensitive OPT_OUT case.',
+      'It falls back to a keyword-heuristic classifier (checking for phrases like "unsubscribe," "out of office," "not interested") rather than leaving every reply UNCLASSIFIED. The same keyword check runs when no AI key is connected at all, so an install without AI still catches opt-outs. Quoted earlier messages and WarmHawk’s own footer are stripped first, so a reply that only quotes your “Unsubscribe” link isn’t read as an opt-out.',
   },
   {
     question: 'Is team management part of the core-engine API?',
@@ -31,7 +31,7 @@ const faqItems = [
   {
     question: 'Can I filter replies by classification or mailbox?',
     answer:
-      'Yes — GET /v1/replies accepts classification, campaignId, and mailboxId query params, any combination, for exactly this kind of Unified Reply Inbox filtering.',
+      'Yes — GET /v1/replies accepts classification, campaignId, mailboxId and domainId query params, any combination, for exactly this kind of Unified Reply Inbox filtering.',
   },
 ];
 
@@ -59,9 +59,18 @@ export default function RepliesAndTeamPage() {
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         A reply row is created (internally, from the IMAP-polling pipeline) with the raw message
         content, then classified &mdash; by your connected AI key when one is configured, or by a
-        resilient keyword-heuristic fallback when the AI call itself fails, so a provider outage
-        never silently drops a reply to <code className="font-mono">UNCLASSIFIED</code> and misses a
-        compliance-sensitive opt-out.
+        keyword-heuristic classifier when there is no AI key or the AI call fails, so a missing key
+        or a provider outage never silently drops a reply to{' '}
+        <code className="font-mono">UNCLASSIFIED</code> and misses a compliance-sensitive opt-out.
+        Quoted earlier messages and WarmHawk&rsquo;s own footer are stripped before classifying, so
+        a reply that quotes your unsubscribe line isn&rsquo;t read as an opt-out.
+      </p>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        Any reply ends that lead&rsquo;s sequence: no more follow-ups go out once someone has
+        written back, whatever the classification. Filter the list with{' '}
+        <code className="font-mono">classification</code>,{' '}
+        <code className="font-mono">campaignId</code>, <code className="font-mono">mailboxId</code>{' '}
+        or <code className="font-mono">domainId</code>.
       </p>
       <CodeBlock label="GET /v1/replies — filterable, dashboard-facing">
         {`curl "https://app.yourcompany.com/v1/replies?classification=INTERESTED&campaignId=camp_g7h8i9" \\

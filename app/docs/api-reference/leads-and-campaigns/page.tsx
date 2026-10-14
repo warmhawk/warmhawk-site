@@ -7,14 +7,14 @@ import { CodeBlock } from '@/components/CodeBlock';
 export const metadata: Metadata = pageSeo({
   title: 'API reference: Leads & campaigns',
   description:
-    'Full field-by-field reference for every lead-ingest route (single, CSV import, webhook, GDPR erasure) and every campaign lifecycle route on WarmHawk’s real /v1 API.',
+    'Full field-by-field reference for every lead route (single, edit, CSV import, webhook, GDPR erasure, blocked list) and every campaign lifecycle route (schedule, preview, test send, duplicate, launch) on WarmHawk’s real /v1 API.',
   path: '/docs/api-reference/leads-and-campaigns',
 });
 
 const leadRoutes = [
   {
     route: 'GET /v1/leads?campaignId=',
-    desc: 'List leads, optionally scoped to a campaign. Returns { leads, total }.',
+    desc: 'List leads, optionally scoped to a campaign. Also takes status, q (searches email, name and company; % and _ match as plain text), sort (name, email, company, campaign, status, added) and dir. Returns { leads, total, statusCounts }.',
   },
   {
     route: 'POST /v1/leads',
@@ -29,6 +29,10 @@ const leadRoutes = [
     desc: 'Bulk CSV import — multipart/form-data, fields: campaignId, file. Caps: 50,000 rows / 10MB.',
   },
   {
+    route: 'PATCH /v1/leads/:id',
+    desc: 'Edit email, firstName, lastName, company or customFields before the lead is emailed. Only an UNTOUCHED lead changes (409 after that); 409 on a blocked or duplicate address, 422 on bad fields. Keeps its place in the send order.',
+  },
+  {
     route: 'POST /v1/leads/:id/suppress',
     desc: 'Manually suppress a lead (adds to the suppression list, flips status).',
   },
@@ -40,12 +44,28 @@ const leadRoutes = [
     route: 'DELETE /v1/leads/:id',
     desc: 'Hard delete one lead row by id. 204, or 404 if not found.',
   },
+  {
+    route: 'GET /v1/suppression?q=&page=',
+    desc: 'The blocked list, newest first. Returns { entries, total, page, pageSize }.',
+  },
+  {
+    route: 'POST /v1/suppression/import',
+    desc: 'Body: { emails } (up to 10,000). Returns { added, alreadyBlocked, invalid }. 422 when empty.',
+  },
+  {
+    route: 'GET /v1/suppression/export',
+    desc: 'Every blocked address: { entries: [{ email, source, reason, createdAt }] }.',
+  },
+  {
+    route: 'POST /v1/suppression/unblock',
+    desc: 'Body: { email }. Returns { email, unblocked: true }, or 404 if the address isn’t blocked.',
+  },
 ];
 
 const campaignRoutes = [
   {
     route: 'GET /v1/campaigns',
-    desc: 'List campaigns, including mailboxIds, steps, senders (each ticked mailbox and whether its domain has an address), launch { canLaunch, problems }, progress and leadsCount/sentCount/repliesCount/domainsCount/lastActivityAt.',
+    desc: 'List campaigns, including mailboxIds, steps, senders (each ticked mailbox and whether its domain has an address), sendWindow, launch { canLaunch, problems }, progress (with followUpsSent, upcomingFollowUps and nextSendAt), aiWrittenCount/aiFallbackCount and leadsCount/sentCount/repliesCount/domainsCount/lastActivityAt.',
   },
   {
     route: 'GET /v1/campaigns/:id',
@@ -57,15 +77,27 @@ const campaignRoutes = [
   },
   {
     route: 'POST /v1/campaigns',
-    desc: 'Create. Body: name, aiPromptTemplate, template?, subject?, aiProvider?, unsubscribeUrlTemplate?, mailboxIds?, steps?. Returns the row plus contentQuality.',
+    desc: 'Create. Body: name, aiPromptTemplate, template?, subject?, aiProvider?, aiMode? (PERSONALIZE or PROMPT), aiWritesSubject?, unsubscribeUrlTemplate?, mailboxIds?, steps?, and the schedule fields sendTimezone?, sendDays?, sendStartMinute?, sendEndMinute?, useLeadTimezone?, maxNewLeadsPerDay?. Returns the row plus contentQuality.',
   },
   {
     route: 'PATCH /v1/campaigns/:id',
-    desc: 'Update content fields, bounceRateThreshold, pausedForBounceRate, mailboxIds or steps. mailboxIds and steps each replace the whole list. status is refused (422): use launch or pause. Recomputes contentQuality when template or subject changes.',
+    desc: 'Update content and AI fields, the schedule fields, bounceRateThreshold, pausedForBounceRate, mailboxIds or steps. Schedule fields merge with the saved ones; sendTimezone: null clears the schedule. mailboxIds and steps each replace the whole list. status is refused (422): use launch or pause. Recomputes contentQuality when template or subject changes.',
   },
   {
     route: 'POST /v1/campaigns/:id/launch',
-    desc: 'Runs the launch check and sets status: ACTIVE. Otherwise 422 with every problem at once: NO_SENDERS, DOMAIN_NO_ADDRESS (one per domain), NO_UNSUBSCRIBE, BOUNCE_PAUSED, EMAIL_EMPTY, STEP_EMPTY. Warnings never block.',
+    desc: 'Runs the launch check and sets status: ACTIVE. Otherwise 422 with every problem at once: NO_SENDERS, DOMAIN_NO_ADDRESS (one per domain), NO_UNSUBSCRIBE, BOUNCE_PAUSED, EMAIL_EMPTY, STEP_EMPTY, FIELD_UNKNOWN (a {{field}} no lead has), FIELD_BLANK (a field with no fallback that some leads leave blank). Warnings (SENDER_NAME_MISSING, ALL_WARMING, NO_LEADS) never block. A campaign with nothing left to send moves to COMPLETED on its own.',
+  },
+  {
+    route: 'POST /v1/campaigns/preview',
+    desc: 'One email exactly as a lead gets it, footer included. Body: campaignId? plus any draft fields to layer over the saved ones, leadIndex? (0–2), step? (0 = first email, 1–3 = a follow-up). With AI on, makes one call on your key. Nothing is stored.',
+  },
+  {
+    route: 'POST /v1/campaigns/:id/test-send',
+    desc: 'Sends one [Test] email to { to, step?, leadIndex? } from the first ticked mailbox. Returns { status, to, from, messageId, aiOutcome, aiFallbackReason }. Its unsubscribe link blocks nobody. 422 without a mailbox, address or unsubscribe link; 502 with the mail server’s reason.',
+  },
+  {
+    route: 'POST /v1/campaigns/:id/duplicate',
+    desc: 'A new DRAFT named “Copy of …” with the same email, follow-ups, AI settings, unsubscribe link, schedule and senders. Leads, replies and history stay with the original. 201.',
   },
   { route: 'POST /v1/campaigns/:id/pause', desc: 'Sets status: PAUSED.' },
   {
@@ -93,8 +125,11 @@ export default function ApiReferenceLeadsCampaignsPage() {
         aiPromptTemplate (mustache-placeholder AI instructions). Each campaign picks the mailboxes
         it sends from (mailboxIds) and can carry up to three follow-ups (steps).
         unsubscribeUrlTemplate is optional: without it every email links to the built-in unsubscribe
-        page. Launch is gated on picked senders, a mailing address on every sending domain, a
-        working unsubscribe link, non-empty copy and the bounce circuit breaker.
+        page. An optional send schedule limits sending to set days and hours in one time zone (or
+        each lead&rsquo;s). Launch is gated on picked senders, a mailing address on every sending
+        domain, a working unsubscribe link, non-empty copy, merge fields every lead can fill and the
+        bounce circuit breaker. The blocked list (/v1/suppression) can be searched, imported,
+        exported and unblocked.
       </AnswerBlock>
 
       <h2 className="font-display text-2xl font-semibold mb-4">Leads</h2>
@@ -167,12 +202,18 @@ export default function ApiReferenceLeadsCampaignsPage() {
   "template": "Hi there — {quick question|one question} for you today?",
   "aiPromptTemplate": "Write a 2-sentence opener to {{firstName}} at {{company}}.",
   "aiProvider": "GEMINI",
+  "aiMode": "PERSONALIZE",
   "unsubscribeUrlTemplate": "https://yourcompany.com/unsubscribe?email={{email}}",
   "mailboxIds": ["mbx_a1b2c3", "mbx_d4e5f6"],
   "steps": [
     { "waitDays": 3, "body": "Just floating this back up — worth a look?", "aiRewrite": false },
     { "waitDays": 4, "body": "Last note from me on this one.", "aiRewrite": false }
-  ]
+  ],
+  "sendTimezone": "America/Chicago",
+  "sendDays": [1, 2, 3, 4, 5],
+  "sendStartMinute": 540,
+  "sendEndMinute": 1020,
+  "maxNewLeadsPerDay": 50
 }`}
       </CodeBlock>
       <CodeBlock label="POST /v1/campaigns/:id/launch — 422 when it can't launch yet">

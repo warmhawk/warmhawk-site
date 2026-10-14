@@ -93,6 +93,49 @@ export default function SendingSafelyDomainHealthPage() {
   -d '{ "paused": true }'`}
       </CodeBlock>
 
+      <h2 className="font-display text-2xl font-semibold mb-4 mt-10">
+        Send hours and the daily limit
+      </h2>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        Each mailbox has a daily limit (<code className="font-mono">dailyCap</code>), counted over
+        the last 24 hours rather than reset at midnight, so a burst late one evening still counts
+        the next morning. How the queue uses it:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        <li>
+          <strong className="text-ink">Spread, not burst.</strong> With a{' '}
+          <Link
+            href="/docs/guides/campaigns-ai-and-content-quality"
+            className="text-rust font-semibold"
+          >
+            send schedule
+          </Link>{' '}
+          the limit is spread across the open hours, never closer together than the 8-minute floor
+          plus jitter. A mailbox sending 40 a day over an 8-hour window sends about one every 12
+          minutes.
+        </li>
+        <li>
+          <strong className="text-ink">Follow-ups first.</strong> Due follow-ups take the
+          day&rsquo;s capacity before new first emails, so a started sequence keeps its timing.
+        </li>
+        <li>
+          <strong className="text-ink">Closed hours wait.</strong> An email that comes due while the
+          schedule is closed goes at the next opening, not the moment it was due.
+        </li>
+        <li>
+          <strong className="text-ink">A ramp after warm-up.</strong> A mailbox that has just
+          finished{' '}
+          <Link href="/docs/guides/warm-up" className="text-rust font-semibold">
+            warm-up
+          </Link>{' '}
+          starts at 5 campaign emails a day and grows 20% a day until it reaches its daily limit.
+        </li>
+      </ul>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
+        A campaign with no schedule sends at any hour, still one email per mailbox per 8 minutes
+        plus jitter.
+      </p>
+
       <h2 className="font-display text-2xl font-semibold mb-4">The bounce circuit breaker</h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         Evaluated from real <code className="font-mono">ExecutionLog</code> data, not a separate
@@ -135,6 +178,12 @@ export default function SendingSafelyDomainHealthPage() {
         <code className="font-mono">PATCH /v1/domains/:id</code>. Once saved, a missing or revoked
         key there is a Fail. A one-off <code className="font-mono">?selector=</code> on the check
         route overrides it for that call.
+      </p>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
+        <strong>Personal mailboxes.</strong> A domain like gmail.com, yahoo.com or outlook.com is
+        flagged <code className="font-mono">personalProvider: true</code>. Its DNS belongs to the
+        provider, so the checks say so instead of asking you to fix records you can&rsquo;t change,
+        and the dashboard doesn&rsquo;t alert on it.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4">Mailing address per domain</h2>

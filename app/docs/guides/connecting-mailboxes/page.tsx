@@ -97,7 +97,9 @@ export default function ConnectingMailboxesPage() {
       <ul className="list-disc pl-6 mb-10 max-w-2xl text-[15px] leading-relaxed text-ink-muted space-y-1.5">
         <li>
           <strong className="text-ink">Personal @gmail.com?</strong> It can&rsquo;t be trusted by an
-          admin. Use the SMTP/IMAP form with an app password instead.
+          admin. Use the SMTP/IMAP form with an app password instead. Its domain is marked as a
+          personal provider (Gmail, Yahoo, Outlook.com and the like), so the DNS checks don&rsquo;t
+          ask you to change records only the provider controls.
         </li>
         <li>
           <strong className="text-ink">Microsoft 365?</strong> Click Connect with Microsoft. Your
@@ -107,8 +109,9 @@ export default function ConnectingMailboxesPage() {
         </li>
         <li>
           <strong className="text-ink">Rather use your own OAuth app?</strong> Register it under
-          Settings in your dashboard. When one is set, it is used instead of Connect, and nothing
-          passes through warmhawk.com.
+          Settings in your dashboard, which walks through creating it in Google Cloud or Microsoft
+          Entra step by step. When one is set, it is used instead of Connect, and nothing passes
+          through warmhawk.com.
         </li>
       </ul>
 
@@ -239,6 +242,17 @@ export default function ConnectingMailboxesPage() {
         {`curl -X DELETE https://app.yourcompany.com/v1/mailboxes/mbx_a1b2c3 \\
   -H "Authorization: Bearer YOUR_API_KEY"`}
       </CodeBlock>
+
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-6 mb-4">
+        A new mailbox starts in warm-up (
+        <code className="font-mono">status: &quot;WARMUP&quot;</code>) and joins campaigns once it
+        has proven it reaches the inbox; see{' '}
+        <Link href="/docs/guides/warm-up" className="text-rust font-semibold">
+          Warm-up
+        </Link>
+        . A Google mailbox whose sign-in token refresh hits a network blip retries once after 2
+        seconds before the send fails.
+      </p>
 
       <div className="card bg-cream-elevated p-7 max-w-2xl mt-10 mb-4">
         <p className="text-[15px] leading-relaxed text-ink-muted">
