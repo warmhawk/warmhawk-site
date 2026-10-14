@@ -14,7 +14,7 @@ export const metadata: Metadata = pageSeo({
 const queueRoutes = [
   {
     route: 'GET /v1/queue/status',
-    desc: 'Returns { counts, isPaused, jobs, sentByDay, queuedByDay, mailboxes, throttling }. counts.waiting, active and delayed count email jobs only, not the nightly system job. jobs is the first 50 pending jobs. sentByDay is sends per UTC day for the last 6 days and today. queuedByDay counts every pending job, not just those 50, by the UTC day it is due (overdue ones count toward today), soonest day first. mailboxes gives each mailbox its campaigns and, for the 2 days either side of today, sent, warmup, queued and cap. throttling carries cadenceFloorSeconds (480), jitterSeconds, and minGapSeconds / maxGapSeconds, the real gap between two sends from one mailbox.',
+    desc: 'Returns { counts, isPaused, jobs, sentByDay, queuedByDay, expectedByDay, mailboxes, throttling }. counts.waiting, active and delayed count email jobs only, not the nightly system job. jobs is the first 50 pending jobs. sentByDay is sends per UTC day for the last 6 days and today. queuedByDay counts every pending job, not just those 50, by the UTC day it is due (overdue ones count toward today), soonest day first. The queue only holds each mailbox’s next email, so expectedByDay estimates what active campaigns will send on each of the next 7 UTC days, from each mailbox’s cap, each campaign’s send days, max new leads per day, follow-ups due and leads left (recomputed at most once a minute). mailboxes gives each mailbox its campaigns and, for the 2 days either side of today, sent, warmup, queued, expected (0 up to today) and cap. throttling carries cadenceFloorSeconds (480), jitterSeconds, and minGapSeconds / maxGapSeconds, the real gap between two sends from one mailbox.',
   },
   {
     route: 'GET /v1/queue/jobs',
@@ -103,12 +103,13 @@ export default function ApiReferenceQueueDomainsWebhooksPage() {
   "isPaused": false,
   "jobs": [ /* the first 50 waiting/active/delayed jobs */ ],
   "sentByDay": [ { "day": "2026-10-14", "count": 38 } /* 7 days, oldest first */ ],
-  "queuedByDay": [ { "day": "2026-10-15", "count": 184 } /* every pending job, by due day */ ],
+  "queuedByDay": [ { "day": "2026-10-15", "count": 3 } /* every pending job, by due day */ ],
+  "expectedByDay": [ { "day": "2026-10-15", "count": 40 } /* the next 7 days, estimated */ ],
   "mailboxes": [
     {
       "id": "mbx_a1b2c3",
       "campaigns": [ { "id": "cmp_x1", "name": "Q4 agencies", "status": "ACTIVE" } ],
-      "days": [ { "day": "2026-10-14", "sent": 12, "warmup": 4, "queued": 9, "cap": 25 } /* 5 days */ ]
+      "days": [ { "day": "2026-10-14", "sent": 12, "warmup": 4, "queued": 9, "expected": 0, "cap": 25 } /* 5 days */ ]
     }
   ],
   "throttling": {
