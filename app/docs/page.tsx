@@ -134,7 +134,7 @@ export default function DocsIndexPage() {
           <div className="label text-ink-muted mb-2">Operations appendix</div>
           <p className="text-sm text-ink-muted max-w-2xl mb-5">
             Real troubleshooting content that doesn&rsquo;t fit the sections above — still fully
-            documented and linked, just not part of the core 15-page structure.
+            documented and linked, just not part of the core 16-page structure.
           </p>
           <div className="grid sm:grid-cols-2 gap-5">
             {opsAppendix.map((link) => (

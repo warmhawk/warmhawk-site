@@ -38,7 +38,7 @@ const guardrails: { title: string; body: string }[] = [
   },
   {
     title: 'CSV-injection defense',
-    body: 'A cell value starting with =, +, -, or @ is neutralized on ingest (both CSV import and webhook), before it is ever stored — so a malicious lead field can’t turn into a spreadsheet formula when you later export and open the data in Excel or Sheets.',
+    body: 'A lead with a value starting with =, +, -, or @ is rejected on ingest (CSV import lists it under rejected with reason csv_injection_risk; the webhook refuses it), so it is never stored and a malicious lead field can’t turn into a spreadsheet formula when you later export and open the data in Excel or Sheets. A plain @handle or scoped package name like @acme/tools is allowed.',
   },
   {
     title: 'Bounce/complaint circuit breaker',

@@ -30,6 +30,7 @@ const routes: { path: string; expectedStatus: 200 | 404 }[] = [
   { path: '/docs/guides/connecting-mailboxes', expectedStatus: 200 },
   { path: '/docs/guides/leads-and-enrichment', expectedStatus: 200 },
   { path: '/docs/guides/campaigns-ai-and-content-quality', expectedStatus: 200 },
+  { path: '/docs/guides/warm-up', expectedStatus: 200 },
   { path: '/docs/guides/sending-safely-and-domain-health', expectedStatus: 200 },
   { path: '/docs/guides/replies-and-team', expectedStatus: 200 },
   { path: '/docs/self-hosting/architecture', expectedStatus: 200 },

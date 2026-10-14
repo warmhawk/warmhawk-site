@@ -80,7 +80,30 @@ export default function LeadsAndEnrichmentPage() {
         <code className="font-mono">409</code> if the email is on the suppression list or already a
         lead on that campaign. List leads with{' '}
         <code className="font-mono">GET /v1/leads?campaignId=camp_g7h8i9</code>, which returns{' '}
-        <code className="font-mono">{'{ leads, total }'}</code>.
+        <code className="font-mono">{'{ leads, total }'}</code>. Add{' '}
+        <code className="font-mono">q</code> to search email, name and company;{' '}
+        <code className="font-mono">%</code> and <code className="font-mono">_</code> match as plain
+        text, so searching <code className="font-mono">%20</code> finds addresses that really
+        contain it.
+      </p>
+
+      <h2 className="font-display text-2xl font-semibold mb-4 mt-10">Fix a lead before it sends</h2>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        A broken address (say <code className="font-mono">%20info@acme.com</code>), a wrong name or
+        a merge-field value can be fixed in place instead of deleting and re-adding the lead:
+      </p>
+      <CodeBlock label="PATCH /v1/leads/:id">
+        {`curl -X PATCH https://app.yourcompany.com/v1/leads/lead_q1w2e3 \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{ "email": "info@acme.com", "firstName": "Dana" }'`}
+      </CodeBlock>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
+        Only a lead that hasn&rsquo;t been emailed yet (<code className="font-mono">UNTOUCHED</code>
+        ) can change; after that, <code className="font-mono">409</code>, since the thread carries
+        what went out. The same checks as a create apply: a new address on the blocked list or
+        already on the campaign returns <code className="font-mono">409</code>, and bad fields
+        return <code className="font-mono">422</code>. The lead keeps its place in the send order.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4 mt-10">CSV bulk import</h2>
@@ -107,11 +130,26 @@ jane@prospect-co.com,Jane,Doe,Prospect Co,VP Marketing,closed a $12M Series A`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
         Capped at 50,000 rows and 10MB per file (<code className="font-mono">413</code> past
-        either). Every cell is CSV-injection-defended on ingest &mdash; a value starting with{' '}
-        <code className="font-mono">=</code>, <code className="font-mono">+</code>,{' '}
-        <code className="font-mono">-</code>, or <code className="font-mono">@</code> is neutralized
-        before it&rsquo;s stored, so a malicious lead field can&rsquo;t turn into a spreadsheet
-        formula when you later export and open the data.
+        either). Every cell is CSV-injection-checked on ingest &mdash; a row with a value starting
+        with <code className="font-mono">=</code>, <code className="font-mono">+</code>,{' '}
+        <code className="font-mono">-</code>, or <code className="font-mono">@</code> is listed in{' '}
+        <code className="font-mono">rejected</code> instead of stored, so a malicious lead field
+        can&rsquo;t turn into a spreadsheet formula when you later export and open the data. A plain{' '}
+        <code className="font-mono">@</code> handle or scoped package name (
+        <code className="font-mono">@acme</code>,{' '}
+        <code className="font-mono">@supabase/storage-js</code>) imports fine, since it can&rsquo;t
+        run anything.
+      </p>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
+        Columns named Time zone, Country, State or City are kept, and a campaign whose send schedule
+        uses each lead&rsquo;s own time zone reads them (see{' '}
+        <Link
+          href="/docs/guides/campaigns-ai-and-content-quality"
+          className="text-rust font-semibold"
+        >
+          Campaigns
+        </Link>
+        ). Merge fields match column names whatever their capitals and underscores.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4">
@@ -161,6 +199,34 @@ jane@prospect-co.com,Jane,Doe,Prospect Co,VP Marketing,closed a $12M Series A`}
         <code className="font-mono">POST /v1/leads/:id/suppress</code>) &mdash; erasure removes
         data, suppression stops future sends; a lead who wants both needs both calls.
       </p>
+
+      <h2 className="font-display text-2xl font-semibold mb-4">The blocked list</h2>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        Every address WarmHawk will never email &mdash; unsubscribes, opt-out replies, bounces and
+        your own imports &mdash; is on one install-wide list. In the dashboard it&rsquo;s Settings
+        &rarr; Blocked list; over the API:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
+        <li>
+          <code className="font-mono">GET /v1/suppression?q=acme&amp;page=1</code> &mdash; newest
+          first, <code className="font-mono">{'{ entries, total, page, pageSize }'}</code>.
+        </li>
+        <li>
+          <code className="font-mono">POST /v1/suppression/import</code> with{' '}
+          <code className="font-mono">{'{ "emails": [...] }'}</code> &mdash; up to 10,000 at a time;
+          returns <code className="font-mono">{'{ added, alreadyBlocked, invalid }'}</code>. Bad
+          lines are counted, not fatal. Blocking an address also stops any lead that has it.
+        </li>
+        <li>
+          <code className="font-mono">GET /v1/suppression/export</code> &mdash; every entry, oldest
+          first, with its source and reason.
+        </li>
+        <li>
+          <code className="font-mono">POST /v1/suppression/unblock</code> with{' '}
+          <code className="font-mono">{'{ "email": "..." }'}</code> &mdash; removes it from the
+          list; <code className="font-mono">404</code> if it wasn&rsquo;t blocked.
+        </li>
+      </ul>
 
       <div className="border-t border-border pt-10">
         <h2 className="font-display text-2xl font-semibold mb-4">
