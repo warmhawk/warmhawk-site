@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "WarmHawk API",
-    "version": "1.18.0",
+    "version": "1.19.0",
     "description": "The real, current shape of warmhawk-core-engine's /v1 API and its one unauthenticated /public endpoint, transcribed field-by-field from https://warmhawk.com/docs/api-reference/*. WarmHawk is self-hosted per customer — there is no single production host, so every server URL below is a placeholder for whatever domain a customer's own install.sh run bound (e.g. api.yourcompany.com). Outbound webhooks (WarmHawk calling a customer's own URL when something happens) are planned, not implemented — poll GET /v1/replies, GET /v1/queue/status, or GET /v1/domains/{id}/placement-sample instead.",
     "contact": {
       "name": "WarmHawk support",
@@ -1492,6 +1492,17 @@
                         }
                       }
                     },
+                    "expectedByDay": {
+                      "type": "array",
+                      "description": "Estimated campaign sends for each of the next 7 UTC days, soonest first, every day present. The queue only holds each mailbox's next email, so this plays the send rules forward: each mailbox's cap, each campaign's send days, max new leads per day, follow-ups due and leads left. Recomputed at most once a minute.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "day": { "type": "string", "example": "2026-10-15" },
+                          "count": { "type": "integer" }
+                        }
+                      }
+                    },
                     "mailboxes": {
                       "type": "array",
                       "description": "Per mailbox: its campaigns, and for the 2 UTC days either side of today its sent, warm-up, queued and cap counts. Warm-up sends don't count toward cap.",
@@ -1519,6 +1530,10 @@
                                 "sent": { "type": "integer" },
                                 "warmup": { "type": "integer" },
                                 "queued": { "type": "integer" },
+                                "expected": {
+                                  "type": "integer",
+                                  "description": "Estimated campaign sends that day; 0 for today and earlier."
+                                },
                                 "cap": { "type": "integer" }
                               }
                             }
