@@ -395,8 +395,12 @@ export default function CampaignsAiContentQualityPage() {
           either <code className="font-mono">leadId</code> or{' '}
           <code className="font-mono">leadIndex</code> (one of the first three leads). When AI is on
           it makes one real call on your key; <code className="font-mono">skipAi: true</code> shows
-          your own text instead. The response says which mailbox would send it and whether the
-          sender, address or unsubscribe link is missing. Nothing is stored.
+          your own text instead, and <code className="font-mono">usesAi</code> in the response says
+          whether AI writes that email at send time. With a{' '}
+          <code className="font-mono">leadId</code> the preview comes from the mailbox that lead is
+          assigned to, and a follow-up keeps the subject the lead&rsquo;s thread really has. The
+          response says which mailbox would send it and whether the sender, address or unsubscribe
+          link is missing. Nothing is stored.
         </li>
         <li>
           <strong className="text-ink">Test send.</strong>{' '}
@@ -414,6 +418,38 @@ export default function CampaignsAiContentQualityPage() {
           with the original.
         </li>
       </ul>
+
+      <h2 className="font-display text-2xl font-semibold mb-4">Editing in the dashboard</h2>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        The campaign builder saves only when you say so, so a half-finished edit never reaches
+        leads:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        <li>
+          <strong className="text-ink">Save is always on screen.</strong> The header shows Save, or
+          Saved when there&rsquo;s nothing new. Ctrl+S (Cmd+S on a Mac) saves too.
+        </li>
+        <li>
+          <strong className="text-ink">Unsaved edits get a bar</strong> at the bottom of every step
+          with Discard and Save, and Next reads &ldquo;Save &amp; next&rdquo;. Nothing saves when
+          you click away from a field.
+        </li>
+        <li>
+          <strong className="text-ink">Editing a sending campaign.</strong> It keeps sending the
+          saved version until you save. After that, the next email uses the new version, and emails
+          already lined up are checked against new send days and hours first.
+        </li>
+      </ul>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
+        To read exactly what a queued lead will get, open the email from the{' '}
+        <Link
+          href="/docs/guides/sending-safely-and-domain-health"
+          className="text-rust font-semibold"
+        >
+          Live Queue
+        </Link>{' '}
+        side panel.
+      </p>
 
       <FaqSection
         items={faqItems}

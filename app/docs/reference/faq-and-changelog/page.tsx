@@ -62,11 +62,12 @@ const changelog: ChangelogEntry[] = [
     // The open-core half (BSL 1.1, public at go-live) — the one repo whose CHANGELOG.md a reader
     // can open, and only once CORE_ENGINE_REPO_PUBLIC says so.
     repoUrl: coreEngineRepoPublic ? `${coreEngineRepoUrl}/blob/main/CHANGELOG.md` : undefined,
-    release: 'v1.16.0 · Oct 14, 2026',
+    release: 'v1.17.0 · Oct 14, 2026',
     tagged: true,
     summary:
       'The sending/queueing API, worker, and install.sh. Tagged semver releases since v1.0.0; warmhawk update moves an install to the newest one.',
     highlights: [
+      'v1.17.0: GET /v1/queue/jobs lists every queued email, soonest first, by mailbox or day. GET /v1/queue/status adds sends by day, each mailbox’s sent, warm-up, queued and cap counts, and the real gap between sends (minGapSeconds, maxGapSeconds). POST /v1/campaigns/preview takes a leadId and skipAi, and says whether AI writes that email (usesAi).',
       'v1.16.0: a send schedule per campaign (days, hours and a time zone, or each lead’s own time zone, plus an optional cap on new leads per day). The daily limit is spread across the open hours, follow-ups go before new leads, and the daily limit is a rolling 24-hour count. GET /v1/campaigns returns sendWindow and nextSendAt. Existing campaigns keep sending at any hour.',
       'v1.15.0: a campaign with nothing left to send marks itself Completed, and goes back to sending when it gets new leads or follow-ups.',
       'v1.14.0: campaign progress lists the follow-ups sent per step (followUpsSent) and the ones still coming (upcomingFollowUps).',
@@ -86,11 +87,12 @@ const changelog: ChangelogEntry[] = [
   },
   {
     repo: 'warmhawk-enterprise-operator',
-    release: 'v1.28.0 · Oct 14, 2026',
+    release: 'v1.29.0 · Oct 14, 2026',
     tagged: true,
     summary:
       'The licensed Tier 1/2 operator dashboard. Tagged semver releases; its update banner compares your version against the newest one.',
     highlights: [
+      'v1.29.0: Live Queue opens a side panel of every queued email, grouped by day; open one to read that lead’s emails, one tab per step. A per-mailbox table shows sent, queued and cap two days either side of today. The campaign builder has a Save that’s always on screen, with Discard and Ctrl+S, and nothing saves on blur.',
       'v1.28.0: pick when a campaign sends (days, hours and time zone) under Send from; new campaigns start at Monday to Friday, 9 to 5, in your time zone.',
       'v1.25.0–v1.27.0: edit a lead before it is emailed; Sent today is measured against today’s limit; a campaign’s follow-ups split into Sequence, Follow-ups sent and Next follow-ups; Completed campaigns show as done.',
       'v1.23.0–v1.24.0: a step-by-step guide for your own Google or Microsoft OAuth app; the AI modes differ visibly and say when the AI failed; warm-up shows Promotions-tab landings.',
@@ -116,6 +118,7 @@ const changelog: ChangelogEntry[] = [
       'Homepage, all /vs/* comparison pages, /compare/pricing, /tools/domain-check, /status, /security, /legal/*.',
       'Stripe Checkout session, webhook, and Customer Portal routes for Tier 1; sitemap/robots/OG/Twitter/FAQPage schema site-wide.',
       'This docs section, restructured into a 15-page information architecture (16 with the Warm-up guide); a real Tier 2 contact-sales flow and dedicated /checkout route.',
+      'Docs for the v1.17.0 engine: the Live Queue side panel, GET /v1/queue/jobs, the real gap between sends, preview by lead, and saving in the campaign builder.',
       'Docs for the v1.16.0 engine: send schedules, merge-field fallbacks, AI modes, preview and test send, duplicate, the blocked list, lead edits and a new Warm-up guide, with the matching openapi.json.',
       'Docs for the v1.9.0 engine: mailing address per domain, campaign senders and follow-ups, the launch check, and the matching openapi.json.',
     ],
@@ -136,7 +139,7 @@ export default function FaqAndChangelogPage() {
       </p>
       <AnswerBlock>
         This page answers the most common orientation questions about WarmHawk&rsquo;s docs and API,
-        then summarizes what each repo has shipped. The engine (v1.16.0) and the dashboard (v1.28.0)
+        then summarizes what each repo has shipped. The engine (v1.17.0) and the dashboard (v1.29.0)
         ship tagged semver releases; this site deploys continuously without version numbers. Every
         version and date below is a real release.
       </AnswerBlock>

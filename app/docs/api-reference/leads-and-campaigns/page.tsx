@@ -89,7 +89,7 @@ const campaignRoutes = [
   },
   {
     route: 'POST /v1/campaigns/preview',
-    desc: 'One email exactly as a lead gets it, footer included. Body: campaignId? plus any draft fields to layer over the saved ones, leadIndex? (0–2), step? (0 = first email, 1–3 = a follow-up). With AI on, makes one call on your key. Nothing is stored.',
+    desc: 'One email exactly as a lead gets it, footer included. Body: campaignId? plus any draft fields to layer over the saved ones, leadIndex? (0–2) or leadId? (one of the campaign’s leads, sent from its own mailbox), step? (0 = first email, 1–3 = a follow-up), skipAi? (your text, no AI call). With AI on, makes one call on your key; usesAi in the response says whether AI writes it at send time. Nothing is stored.',
   },
   {
     route: 'POST /v1/campaigns/:id/test-send',
