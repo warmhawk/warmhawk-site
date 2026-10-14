@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "WarmHawk API",
-    "version": "1.17.0",
+    "version": "1.18.0",
     "description": "The real, current shape of warmhawk-core-engine's /v1 API and its one unauthenticated /public endpoint, transcribed field-by-field from https://warmhawk.com/docs/api-reference/*. WarmHawk is self-hosted per customer — there is no single production host, so every server URL below is a placeholder for whatever domain a customer's own install.sh run bound (e.g. api.yourcompany.com). Outbound webhooks (WarmHawk calling a customer's own URL when something happens) are planned, not implemented — poll GET /v1/replies, GET /v1/queue/status, or GET /v1/domains/{id}/placement-sample instead.",
     "contact": {
       "name": "WarmHawk support",
