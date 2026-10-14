@@ -75,6 +75,7 @@ export default function SendingSafelyDomainHealthPage() {
     }
   ],
   "sentByDay": [ /* sends per day, last 6 days and today */ ],
+  "queuedByDay": [ /* every queued email, counted by the day it's due */ ],
   "mailboxes": [ /* each mailbox's sent, warm-up, queued and cap, 2 days either side of today */ ],
   "throttling": {
     "cadenceFloorSeconds": 480,
@@ -117,13 +118,15 @@ export default function SendingSafelyDomainHealthPage() {
       <ul className="list-disc pl-6 space-y-2 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         <li>
           <strong className="text-ink">Sends by day.</strong> What went out each day this past week
-          and what&rsquo;s queued for the days ahead.
+          and everything queued for the days ahead, by the day it&rsquo;s due.
         </li>
         <li>
           <strong className="text-ink">Per-mailbox daily caps.</strong> For each mailbox, what it
           sent against each day&rsquo;s cap for the last two days and today, then what&rsquo;s
           queued for the next two. Warm-up emails don&rsquo;t count toward the cap, and a warming
-          mailbox shows which warm-up day it&rsquo;s on.
+          mailbox shows which warm-up day it&rsquo;s on. Each campaign a mailbox sends for gets its
+          own line. Mailboxes with a running campaign come first, then warming mailboxes, the
+          furthest along first.
         </li>
         <li>
           <strong className="text-ink">Throttling.</strong> The real gap between emails from one
