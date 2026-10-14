@@ -16,7 +16,7 @@ const faqItems = [
   {
     question: 'What is the 8-minute cadence floor?',
     answer:
-      'The minimum spacing the send queue enforces between two sends from the same mailbox, before jitter is layered on top — a structural floor, not a suggestion, so a burst of newly-imported leads can never blast a mailbox at machine speed.',
+      'The minimum spacing the send queue enforces between two sends from the same mailbox, before jitter is layered on top — a structural floor, not a suggestion, so a burst of newly-imported leads can never blast a mailbox at machine speed. The jitter only ever adds, so the real gap is 10.5 to 17.5 minutes, about 14 on average.',
   },
   {
     question: 'What triggers the bounce circuit breaker, and what does it do?',
@@ -74,17 +74,32 @@ export default function SendingSafelyDomainHealthPage() {
       "attemptsMade": 0
     }
   ],
-  "throttling": { "cadenceFloorSeconds": 480, "jitterSeconds": 240 }
+  "sentByDay": [ /* sends per day, last 6 days and today */ ],
+  "mailboxes": [ /* each mailbox's sent, warm-up, queued and cap, 2 days either side of today */ ],
+  "throttling": {
+    "cadenceFloorSeconds": 480,
+    "jitterSeconds": 240,
+    "minGapSeconds": 630,
+    "maxGapSeconds": 1050
+  }
 }`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-4">
         <code className="font-mono">cadenceFloorSeconds: 480</code> is the real, structural 8-minute
-        minimum between two sends from the same mailbox;{' '}
-        <code className="font-mono">jitterSeconds</code> is the representative width of the
-        randomized delay layered on top so sends don&rsquo;t land on a suspiciously exact clock
-        tick. <code className="font-mono">jobs</code> lists up to 50 waiting/active/delayed jobs;
-        the queue is BullMQ-backed and real &mdash; pausing it is a genuine Redis-level pause, not a
-        cosmetic flag:
+        minimum between two sends from the same mailbox. On top of it goes a random 4 to 8 minutes
+        and plus or minus 90 seconds of noise, so sends don&rsquo;t land on a suspiciously exact
+        clock tick. The random part only ever adds, so{' '}
+        <code className="font-mono">minGapSeconds</code> and{' '}
+        <code className="font-mono">maxGapSeconds</code> give the real gap: 10.5 to 17.5 minutes.{' '}
+        <code className="font-mono">jobs</code> lists the first 50 waiting/active/delayed jobs;{' '}
+        <Link
+          href="/docs/api-reference/queue-domains-and-webhooks"
+          className="text-rust font-semibold"
+        >
+          GET /v1/queue/jobs
+        </Link>{' '}
+        lists every queued email, filtered by mailbox or day. The queue is BullMQ-backed and real
+        &mdash; pausing it is a genuine Redis-level pause, not a cosmetic flag:
       </p>
       <CodeBlock label="POST /v1/queue/pause">
         {`curl -X POST https://app.yourcompany.com/v1/queue/pause \\
@@ -92,6 +107,42 @@ export default function SendingSafelyDomainHealthPage() {
   -H "Content-Type: application/json" \\
   -d '{ "paused": true }'`}
       </CodeBlock>
+
+      <h2 className="font-display text-2xl font-semibold mb-4 mt-10">
+        Watch it in the dashboard: Live Queue
+      </h2>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        The Live Queue page shows the same queue, refreshed every 5 seconds:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        <li>
+          <strong className="text-ink">Sends by day.</strong> What went out each day this past week
+          and what&rsquo;s queued for the days ahead.
+        </li>
+        <li>
+          <strong className="text-ink">Per-mailbox daily caps.</strong> For each mailbox, what it
+          sent against each day&rsquo;s cap for the last two days and today, then what&rsquo;s
+          queued for the next two. Warm-up emails don&rsquo;t count toward the cap, and a warming
+          mailbox shows which warm-up day it&rsquo;s on.
+        </li>
+        <li>
+          <strong className="text-ink">Throttling.</strong> The real gap between emails from one
+          mailbox, 10.5 to 17.5 minutes.
+        </li>
+      </ul>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        Click a mailbox row, a bar on the chart, or <strong className="text-ink">View queue</strong>{' '}
+        and a side panel lists the queued emails, grouped by day, soonest first. Open one and you
+        see that lead&rsquo;s emails, one tab per step: the ones already sent, the next one with
+        when it goes, and later follow-ups with their wait. Each tab shows the campaign text filled
+        in for that lead. When AI writes an email, the tab shows the text AI starts from;{' '}
+        <strong className="text-ink">Preview with AI</strong> shows a sample of what AI would write.
+      </p>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
+        <strong className="text-ink">Pause queue</strong> on the same page holds every campaign
+        until you resume it; nothing is dropped. To stop just one campaign, use Pause on that
+        campaign instead.
+      </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4 mt-10">
         Send hours and the daily limit
@@ -132,8 +183,8 @@ export default function SendingSafelyDomainHealthPage() {
         </li>
       </ul>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
-        A campaign with no schedule sends at any hour, still one email per mailbox per 8 minutes
-        plus jitter.
+        A campaign with no schedule sends at any hour, still one email per mailbox every 10.5 to
+        17.5 minutes.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4">The bounce circuit breaker</h2>

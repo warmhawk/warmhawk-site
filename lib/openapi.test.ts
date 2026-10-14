@@ -58,6 +58,7 @@ describe('public/openapi.json', () => {
       '/warmup/{mailboxId}/messages',
       '/warmup/{mailboxId}/send-now',
       '/queue/status',
+      '/queue/jobs',
       '/queue/pause',
       '/domains',
       '/domains/{id}',
