@@ -1438,6 +1438,7 @@
                   "properties": {
                     "counts": {
                       "type": "object",
+                      "description": "Job counts by state. waiting, active and delayed count email jobs only, leaving out the nightly daily-reset system job.",
                       "properties": {
                         "waiting": { "type": "integer" },
                         "active": { "type": "integer" },
@@ -1476,6 +1477,17 @@
                         "type": "object",
                         "properties": {
                           "day": { "type": "string", "example": "2026-10-14" },
+                          "count": { "type": "integer" }
+                        }
+                      }
+                    },
+                    "queuedByDay": {
+                      "type": "array",
+                      "description": "Every pending dispatch job (not only the 50 in jobs) counted by the UTC day it is due; overdue jobs count toward today. Soonest day first, only days with jobs.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "day": { "type": "string", "example": "2026-10-15" },
                           "count": { "type": "integer" }
                         }
                       }
