@@ -92,11 +92,12 @@ const changelog: ChangelogEntry[] = [
   },
   {
     repo: 'warmhawk-enterprise-operator',
-    release: 'v1.35.0 · Oct 15, 2026',
+    release: 'v1.35.1 · Oct 15, 2026',
     tagged: true,
     summary:
       'The licensed Tier 1/2 operator dashboard. Tagged semver releases; its update banner compares your version against the newest one.',
     highlights: [
+      'v1.35.1: on the Live Queue chart only today’s bar opens the side panel, once emails are booked; other days show what’s expected on hover. An empty panel names why: queue paused, no campaign running, before send hours (with the opening time), no sends today, send hours over, booking the next emails, or the daily limit. Mailbox day cells move the warm-up count into the hover text.',
       'v1.35.0: Live Queue’s Sent today and Failed today count today’s campaign emails, not the queue’s job records. Today’s bar and each mailbox’s today cell add what’s still expected today, and a day no campaign sends on reads Off (with engine v1.22.0). The Campaigns table’s Sends from adds each sending mailbox’s warm-up stage beside the mailbox count.',
       'v1.34.0: a campaign stopped by its bounce rate shows Stopped: bounces and a Resume button. The dashboard’s alerts open that campaign’s panel or that mailbox’s Edit dialog. A bounced reply has no Suppress lead, so it stays in the bounce rate.',
       'v1.32.0–v1.33.1: Replies shows bounces, the sending mailbox and what happens next, with Mark handled; the sidebar counts replies waiting on you and names the engine version; the Live Queue says why its panel is empty.',
