@@ -21,7 +21,7 @@ const faqItems = [
   {
     question: 'What triggers the bounce circuit breaker, and what does it do?',
     answer:
-      'A rolling bounce rate above 5% on a campaign/mailbox pair, but only once at least 20 sends have happened (so one bounce out of two sends never trips it). Once tripped, the campaign is flagged pausedForBounceRate and further launches are refused with a 422 until it is explicitly resumed.',
+      "Two breakers. A campaign stops once more than 5% of its sends bounce, after at least 20 sends: it is flagged pausedForBounceRate and further launches are refused with a 422 until it is explicitly resumed. A mailbox pauses once more than 3% of its sends in the last 7 days bounce, after at least 50 sends in those 7 days, so an old clean record can't hide a bad week.",
   },
   {
     question: 'Is placement sampling the same thing as a warmup "heat score"?',
@@ -50,7 +50,8 @@ export default function SendingSafelyDomainHealthPage() {
       <AnswerBlock>
         WarmHawk protects domain reputation structurally: the send queue enforces an 8-minute
         cadence floor plus jitter per mailbox, a bounce/complaint circuit breaker auto-pauses a
-        campaign once its rolling bounce rate crosses 5% on at least 20 sends, and GET
+        campaign past 5% bounces on at least 20 sends and a mailbox past 3% over its last 7 days on
+        at least 50, a mailbox that gets a &ldquo;try again later&rdquo; slows to half pace, and GET
         /v1/domains/:id/placement-sample reports real seed-inbox placement results — never a
         self-reported score.
       </AnswerBlock>
@@ -213,9 +214,23 @@ export default function SendingSafelyDomainHealthPage() {
 
       <h2 className="font-display text-2xl font-semibold mb-4">The bounce circuit breaker</h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
-        Evaluated from real <code className="font-mono">ExecutionLog</code> data, not a separate
-        monitoring system: once a campaign/mailbox pair has at least 20 sends and its bounce rate
-        exceeds 5% (both configurable via a campaign&rsquo;s{' '}
+        Evaluated from real <code className="font-mono">ExecutionLog</code> data after every bounce,
+        not a separate monitoring system. There are two breakers, one per campaign and one per
+        mailbox.
+      </p>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        <strong className="text-ink">Mailbox: 3% over the last 7 days.</strong> Once a mailbox has
+        sent at least 50 emails in the last 7 days and more than 3% of them bounced, it pauses (
+        <code className="font-mono">status: PAUSED</code>, with{' '}
+        <code className="font-mono">autoFlaggedAt</code> set) for every campaign it sends for.
+        Mailbox providers judge a sender on its recent mail, so the window rolls: an old clean
+        record can&rsquo;t hide a bad week. A provider&rsquo;s sending limit (Gmail&rsquo;s{' '}
+        <code className="font-mono">550 5.4.5</code>) isn&rsquo;t a bounce and doesn&rsquo;t count.
+        Live Queue shows each mailbox&rsquo;s 7-day rate, amber from 2% and red past 3%.
+      </p>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        <strong className="text-ink">Campaign: 5% overall.</strong> Once a campaign has at least 20
+        sends and its bounce rate exceeds 5% (configurable via the campaign&rsquo;s{' '}
         <code className="font-mono">bounceRateThreshold</code>), it flips{' '}
         <code className="font-mono">pausedForBounceRate: true</code>. From that point,{' '}
         <code className="font-mono">POST /v1/campaigns/:id/launch</code> refuses with{' '}
@@ -228,6 +243,14 @@ export default function SendingSafelyDomainHealthPage() {
         bounces, and its Resume button clears the flag after a confirm. A bounced lead has no
         Suppress action: it&rsquo;s never emailed again anyway, and suppressing it would take it out
         of the bounce rate.
+      </p>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
+        <strong className="text-ink">Slowing down after a &ldquo;try again later&rdquo;.</strong>{' '}
+        When a send fails with a temporary refusal (a 4xx reply, a rate limit or a daily sending
+        limit), that mailbox runs at half pace for the next 24 hours: half its daily limit, and
+        twice the gap between its emails. Nothing is dropped; its leads just go more slowly.
+        That&rsquo;s what Google&rsquo;s sender guidelines ask: when messages start being deferred,
+        reduce the sending volume.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4">
@@ -248,9 +271,27 @@ export default function SendingSafelyDomainHealthPage() {
           next lead is timed from its last real send, not held back by the dead one.
         </li>
         <li>
-          <strong className="text-ink">Anything less clear sends as before</strong>: a timeout, a
-          greylist, a block aimed at your server, or a server that accepts every address (which the
-          made-up address shows).
+          <strong className="text-ink">A placeholder address</strong> such as{' '}
+          <code className="font-mono">name@example.com</code>,{' '}
+          <code className="font-mono">you@yourdomain.com</code> or an image file name scraped off a
+          web page (<code className="font-mono">logo@2x.png</code>) stops the same way, without
+          asking any server.
+        </li>
+        <li>
+          <strong className="text-ink">&ldquo;Try again later&rdquo; (greylisting)</strong> puts the
+          lead back for 30 to 60 minutes and asks again, up to three times, since greylisting
+          servers take the second try. After the third it sends. It&rsquo;s a delay, never a block.
+        </li>
+        <li>
+          <strong className="text-ink">Anything else that isn&rsquo;t clear sends as before</strong>
+          : a timeout, a block aimed at your server, or a server that accepts every address (which
+          the made-up address shows).
+        </li>
+        <li>
+          <strong className="text-ink">Risky leads are spread out, not held.</strong> A server that
+          accepts every address, and Yahoo and AOL addresses (they accept every address when asked
+          and bounce later), are still sent. Where a campaign has a confirmed address ready too, a
+          mailbox doesn&rsquo;t get two risky leads in a row.
         </li>
         <li>
           <strong className="text-ink">Follow-ups skip it.</strong> A lead that got its first email
@@ -270,8 +311,8 @@ export default function SendingSafelyDomainHealthPage() {
 ADDRESS_CHECK_MAIL_FROM=`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
-        Each check usually adds a few seconds before that lead&rsquo;s first email, well inside the
-        10.5 minute gap between sends.
+        The worker checks the next few leads due a little before their turn, every minute, and keeps
+        each answer for a day, so the send itself rarely waits on a check.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4">

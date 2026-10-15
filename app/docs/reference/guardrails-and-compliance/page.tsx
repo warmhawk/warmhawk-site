@@ -42,7 +42,7 @@ const guardrails: { title: string; body: string }[] = [
   },
   {
     title: 'Bounce/complaint circuit breaker',
-    body: 'A campaign/mailbox pair auto-pauses (pausedForBounceRate: true) once its rolling bounce rate exceeds 5%, but only after at least 20 sends — enough to be a real signal, not one unlucky bounce. Catches a bad list before it damages a domain’s reputation, not after.',
+    body: 'A campaign auto-pauses (pausedForBounceRate: true) once its bounce rate exceeds 5%, after at least 20 sends. A mailbox pauses once more than 3% of its last 7 days of sends bounce, after at least 50 sends in that window — enough to be a real signal, not one unlucky bounce. A mailbox that gets a temporary refusal runs at half pace for a day. Catches a bad list before it damages a domain’s reputation, not after.',
   },
   {
     title: 'Login brute-force throttle',
@@ -75,7 +75,7 @@ const faqItems = [
   {
     question: 'Can I raise the bounce circuit breaker’s 5% threshold?',
     answer:
-      'Yes — it’s configurable per campaign via bounceRateThreshold on PATCH /v1/campaigns/:id. The 20-send minimum sample size before it can trip at all is not currently configurable.',
+      'The campaign’s, yes — it’s configurable per campaign via bounceRateThreshold on PATCH /v1/campaigns/:id. The 20-send minimum sample size is not currently configurable, and neither is the mailbox breaker (3% of the last 7 days, 50-send minimum), since one mailbox sends for every campaign it’s on.',
   },
   {
     question: 'What happens to a lead’s data if I never call the erasure endpoint?',
@@ -103,9 +103,10 @@ export default function GuardrailsCompliancePage() {
       <AnswerBlock>
         WarmHawk enforces CAN-SPAM (a mailing address per sending domain + unsubscribe), RFC 8058
         one-click unsubscribe, an EU AI Act disclosure marker, GDPR erasure, CSV-injection defense,
-        a bounce/complaint circuit breaker (auto-pause past 5% with a 20-send minimum sample), login
-        brute-force throttling, continuous blocklist monitoring, and AES-256-GCM credential
-        encryption — all structurally, in the API itself, not as optional dashboard settings.
+        a bounce/complaint circuit breaker (a campaign pauses past 5% on 20 sends, a mailbox past 3%
+        of its last 7 days on 50), login brute-force throttling, continuous blocklist monitoring,
+        and AES-256-GCM credential encryption — all structurally, in the API itself, not as optional
+        dashboard settings.
       </AnswerBlock>
 
       <div className="grid sm:grid-cols-2 gap-5 mb-14">
