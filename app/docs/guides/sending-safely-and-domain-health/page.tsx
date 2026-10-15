@@ -75,8 +75,10 @@ export default function SendingSafelyDomainHealthPage() {
     }
   ],
   "sentByDay": [ /* sends per day, last 6 days and today */ ],
+  "failedToday": 0,
   "queuedByDay": [ /* every queued email, counted by the day it's due */ ],
-  "expectedByDay": [ /* what active campaigns are expected to send each of the next 7 days */ ],
+  "expectedByDay": [ /* what active campaigns are expected to send for the rest of today, then each of the next 7 days */ ],
+  "offDays": [ /* days no active campaign sends on, such as a weekend */ ],
   "mailboxes": [ /* each mailbox's sent, warm-up, queued and cap, 2 days either side of today */ ],
   "throttling": {
     "cadenceFloorSeconds": 480,
@@ -118,19 +120,28 @@ export default function SendingSafelyDomainHealthPage() {
       </p>
       <ul className="list-disc pl-6 space-y-2 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         <li>
+          <strong className="text-ink">Queued, Sending now, Sent today, Failed today.</strong>{' '}
+          Emails waiting to go, going now, and the campaign emails that went out or failed since
+          midnight UTC. Warm-up emails aren&rsquo;t counted.
+        </li>
+        <li>
           <strong className="text-ink">Sends by day.</strong> What went out each day this past week,
-          then for each day ahead what&rsquo;s queued and what your active campaigns are expected to
-          send. Each mailbox only books its next email, so the expected count is an estimate from
-          its cap, each campaign&rsquo;s send days, follow-ups due and leads left. Replies, bounces
-          and unsubscribes end sequences early, so it&rsquo;s usually a little high.
+          then for today and each day ahead what&rsquo;s queued and what your active campaigns are
+          expected to send. Today&rsquo;s bar stacks what&rsquo;s still to come on top of what
+          already went out, so it isn&rsquo;t empty before your send hours open. Each mailbox only
+          books its next email, so the expected count is an estimate from its cap, each
+          campaign&rsquo;s send days and hours, follow-ups due and leads left. Replies, bounces and
+          unsubscribes end sequences early, so it&rsquo;s usually a little high. A day none of your
+          active campaigns sends on, such as a weekend, reads{' '}
+          <strong className="text-ink">Off</strong>.
         </li>
         <li>
           <strong className="text-ink">Per-mailbox daily caps.</strong> For each mailbox, what it
-          sent against each day&rsquo;s cap for the last two days and today, then what&rsquo;s
-          queued and expected for the next two. Warm-up emails don&rsquo;t count toward the cap, and
-          a warming mailbox shows which warm-up day it&rsquo;s on. Each campaign a mailbox sends for
-          gets its own line. Mailboxes with a running campaign come first, then warming mailboxes,
-          the furthest along first.
+          sent against each day&rsquo;s cap for the last two days and today (with what&rsquo;s still
+          queued and expected today), then what&rsquo;s queued and expected for the next two.
+          Warm-up emails don&rsquo;t count toward the cap, and a warming mailbox shows which warm-up
+          day it&rsquo;s on. Each campaign a mailbox sends for gets its own line. Mailboxes with a
+          running campaign come first, then warming mailboxes, the furthest along first.
         </li>
         <li>
           <strong className="text-ink">Throttling.</strong> The real gap between emails from one
