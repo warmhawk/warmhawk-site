@@ -62,11 +62,13 @@ const changelog: ChangelogEntry[] = [
     // The open-core half (BSL 1.1, public at go-live) — the one repo whose CHANGELOG.md a reader
     // can open, and only once CORE_ENGINE_REPO_PUBLIC says so.
     repoUrl: coreEngineRepoPublic ? `${coreEngineRepoUrl}/blob/main/CHANGELOG.md` : undefined,
-    release: 'v1.19.0 · Oct 14, 2026',
+    release: 'v1.21.0 · Oct 14, 2026',
     tagged: true,
     summary:
       'The sending/queueing API, worker, and install.sh. Tagged semver releases since v1.0.0; warmhawk update moves an install to the newest one.',
     highlights: [
+      'v1.21.0: an optional check before a lead’s first email (ADDRESS_CHECK_HELO). The worker asks the lead’s mail server whether the mailbox exists, without sending anything, and stops a dead address as FAILED before it can bounce. The mailbox gets that slot back for its next lead.',
+      'v1.20.0: delivery-failure reports are recorded as BOUNCED replies. GET /v1/replies/waiting-count counts replies still waiting on you, PATCH /v1/replies/:id marks one handled, and GET /v1/version reports the engine’s release.',
       'v1.19.0: GET /v1/queue/status adds expectedByDay, what active campaigns are expected to send on each of the next 7 days, and an expected count on each mailbox day ahead. The queue only holds each mailbox’s next email, so queued alone read 0 for days ahead.',
       'v1.18.0: GET /v1/queue/status adds queuedByDay, every queued email counted by the day it is due, not only the first 50. Its waiting, active and delayed counts leave out the nightly system job, so an empty queue reads 0.',
       'v1.17.0: GET /v1/queue/jobs lists every queued email, soonest first, by mailbox or day. GET /v1/queue/status adds sends by day, each mailbox’s sent, warm-up, queued and cap counts, and the real gap between sends (minGapSeconds, maxGapSeconds). POST /v1/campaigns/preview takes a leadId and skipAi, and says whether AI writes that email (usesAi).',
@@ -89,11 +91,13 @@ const changelog: ChangelogEntry[] = [
   },
   {
     repo: 'warmhawk-enterprise-operator',
-    release: 'v1.31.0 · Oct 14, 2026',
+    release: 'v1.34.0 · Oct 14, 2026',
     tagged: true,
     summary:
       'The licensed Tier 1/2 operator dashboard. Tagged semver releases; its update banner compares your version against the newest one.',
     highlights: [
+      'v1.34.0: a campaign stopped by its bounce rate shows Stopped: bounces and a Resume button. The dashboard’s alerts open that campaign’s panel or that mailbox’s Edit dialog. A bounced reply has no Suppress lead, so it stays in the bounce rate.',
+      'v1.32.0–v1.33.1: Replies shows bounces, the sending mailbox and what happens next, with Mark handled; the sidebar counts replies waiting on you and names the engine version; the Live Queue says why its panel is empty.',
       'v1.31.0: Live Queue shows what each day ahead is expected to send, in the chart and the per-mailbox table (with engine v1.19.0). Sent is green, queued rust and expected a dashed amber.',
       'v1.30.0: Live Queue lists each mailbox’s campaigns one per line, puts mailboxes with a running campaign first and then warming ones by warm-up day, and charts every queued email by day (with engine v1.18.0).',
       'v1.29.0: Live Queue opens a side panel of every queued email, grouped by day; open one to read that lead’s emails, one tab per step. A per-mailbox table shows sent, queued and cap two days either side of today. The campaign builder has a Save that’s always on screen, with Discard and Ctrl+S, and nothing saves on blur.',
@@ -122,6 +126,7 @@ const changelog: ChangelogEntry[] = [
       'Homepage, all /vs/* comparison pages, /compare/pricing, /tools/domain-check, /status, /security, /legal/*.',
       'Stripe Checkout session, webhook, and Customer Portal routes for Tier 1; sitemap/robots/OG/Twitter/FAQPage schema site-wide.',
       'This docs section, restructured into a 15-page information architecture (16 with the Warm-up guide); a real Tier 2 contact-sales flow and dedicated /checkout route.',
+      'Docs for the v1.21.0 engine: checking an address before the first email, in Sending safely.',
       'Docs for the v1.19.0 engine: expectedByDay and the expected sends on the Live Queue.',
       'Docs for the v1.18.0 engine: queuedByDay, queue counts without the nightly system job, and the Live Queue table order.',
       'Docs for the v1.17.0 engine: the Live Queue side panel, GET /v1/queue/jobs, the real gap between sends, preview by lead, and saving in the campaign builder.',
