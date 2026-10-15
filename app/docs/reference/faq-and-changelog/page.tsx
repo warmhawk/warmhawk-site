@@ -62,11 +62,12 @@ const changelog: ChangelogEntry[] = [
     // The open-core half (BSL 1.1, public at go-live) — the one repo whose CHANGELOG.md a reader
     // can open, and only once CORE_ENGINE_REPO_PUBLIC says so.
     repoUrl: coreEngineRepoPublic ? `${coreEngineRepoUrl}/blob/main/CHANGELOG.md` : undefined,
-    release: 'v1.24.0 · Oct 15, 2026',
+    release: 'v1.25.0 · Oct 15, 2026',
     tagged: true,
     summary:
       'The sending/queueing API, worker, and install.sh. Tagged semver releases since v1.0.0; warmhawk update moves an install to the newest one.',
     highlights: [
+      'v1.25.0: a server name (MAIL_SERVER_NAME, set with warmhawk server-name set mail.yourcompany.com) that the install introduces itself with to mail servers, used only once its A record and the IP’s reverse DNS match each other. It is the connection name for sending domains without a link domain, and the address check turns on with it when ADDRESS_CHECK_HELO is blank. GET /v1/instance-settings reports it; POST /v1/instance-settings/server-name/check re-checks it.',
       'v1.24.0: a link domain per sending domain (link.yourbrand.com), so each brand’s unsubscribe link, List-Unsubscribe header and connection name stop naming your install. It is used only once POST /v1/domains/:domain/link-domain/check reaches this install through it, and re-checked hourly. warmhawk link-domain add sets up the host’s nginx block and certificate. Fixed: a mailbox server dropping the connection mid-search no longer stops the API, and nginx finds the API again after it restarts instead of answering 502.',
       'v1.23.0: a mailbox pauses once more than 3% of its last 7 days of sends bounce (after 50 sends in that window), and a provider’s sending limit no longer counts as a bounce. A mailbox that gets a temporary refusal runs at half pace for a day. The address check stops placeholder addresses (example.com, yourdomain.com, image file names), asks a greylisting server again up to three times 30 to 60 minutes apart before sending, checks upcoming leads ahead of their turn, and spreads catch-all, Yahoo and AOL leads between confirmed ones. All of them are still sent.',
       'v1.22.0: GET /v1/queue/status adds today to expectedByDay (what is still to come, from each mailbox’s cap less what it sent or booked, inside each campaign’s send hours), offDays (days no active campaign sends on) and failedToday (campaign emails that failed since midnight UTC). Setting a mailbox back to Active clears its bounce-limit flag.',
@@ -94,11 +95,12 @@ const changelog: ChangelogEntry[] = [
   },
   {
     repo: 'warmhawk-enterprise-operator',
-    release: 'v1.37.0 · Oct 15, 2026',
+    release: 'v1.38.0 · Oct 15, 2026',
     tagged: true,
     summary:
       'The licensed Tier 1/2 operator dashboard. Tagged semver releases; its update banner compares your version against the newest one.',
     highlights: [
+      'v1.38.0: Domain Health shows the server name, its reverse-DNS check (with what to change when it fails), the setup steps and Check now (with engine v1.25.0). On Live Queue, a warming mailbox on track to graduate within 3 days reads “Graduates in 2 days” instead of its warm-up day.',
       'v1.37.0: Domain Health sets a link domain per sending domain, with the DNS record and command to add, Check now and a status chip (with engine v1.24.0). The campaign preview names the host its unsubscribe link goes to.',
       'v1.36.0: the Workspace menu reads Overview, Live Queue, Campaigns, Replies, Domain Health, Leads.',
       'v1.35.2: Live Queue colours a mailbox’s bounce rate by the engine’s new mailbox pause (with engine v1.23.0): amber from 2%, red past 3% of its last 7 days.',

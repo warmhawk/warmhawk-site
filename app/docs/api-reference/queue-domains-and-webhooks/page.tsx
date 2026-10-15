@@ -48,6 +48,10 @@ const domainRoutes = [
     desc: 'Keyed by domain NAME. Opens https://<linkDomain>/unsubscribe/ping and saves linkDomainStatus (PASS or FAIL), linkDomainError and linkDomainCheckedAt. Emails use the link domain only while it is PASS. 422 if the domain has no link domain.',
   },
   {
+    route: 'POST /v1/instance-settings/server-name/check',
+    desc: "Checks MAIL_SERVER_NAME both ways (its A/AAAA records point at this server, each IP's reverse DNS names it back) and returns serverName { name, status, error, checkedAt }. Used as the connection name and address-check name only while PASS. GET /v1/instance-settings returns the same serverName plus addressCheckName. 404 while MAIL_SERVER_NAME is blank.",
+  },
+  {
     route: 'GET /v1/domains/:id/placement-sample',
     desc: 'Keyed by id. Seed-inbox placement sampling rollup — explicitly labeled as sampling, not exhaustive testing.',
   },

@@ -38,6 +38,11 @@ const faqItems = [
     answer:
       "Yes. Give each sending domain a link domain such as link.yourbrand.com: point it at your server, run warmhawk link-domain add, and press Check now under Domain Health. Once the check passes, that brand's footer link, List-Unsubscribe header and connection name use it instead of your install's own domain. Until it passes, emails keep the default link.",
   },
+  {
+    question: "Why does my hosting company's name show up in the headers of emails I send?",
+    answer:
+      "Gmail, Outlook.com, Yahoo and most other mail servers record your server's reverse DNS in every email's Received: header, and a new server's reverse DNS is its host's default name. Set a server name such as mail.yourcompany.com: an A record to your server, the same name as the IP's reverse DNS in your host's control panel, then warmhawk server-name set mail.yourcompany.com. Once both directions match, WarmHawk uses it as its connection name and for the address check.",
+  },
 ];
 
 export default function SendingSafelyDomainHealthPage() {
@@ -304,15 +309,21 @@ export default function SendingSafelyDomainHealthPage() {
         </li>
       </ul>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
-        Your server needs outbound port 25 (many hosts block it until you ask) and a host name whose
-        A record is the server&rsquo;s IPv4 address, with reverse DNS (PTR) set back to that name.
-        Give the name an SPF record such as <code className="font-mono">v=spf1 a -all</code>. Then
-        set it in core&rsquo;s <code className="font-mono">.env/.env</code> and run{' '}
-        <code className="font-mono">warmhawk update</code>:
+        Your server needs outbound port 25 (many hosts block it until you ask) and a{' '}
+        <a href="#server-name" className="text-rust font-semibold">
+          server name
+        </a>{' '}
+        whose A record and reverse DNS match: mail servers refuse to talk to one whose name and
+        reverse DNS disagree. Give the name an SPF record such as{' '}
+        <code className="font-mono">v=spf1 a -all</code>. Once the server name checks out, the
+        address check turns on with it, as <code className="font-mono">check@</code> that name. To
+        use a different name for the check, set it in core&rsquo;s{' '}
+        <code className="font-mono">.env/.env</code> and run{' '}
+        <code className="font-mono">warmhawk update</code>; it wins over the server name:
       </p>
-      <CodeBlock label=".env/.env">
+      <CodeBlock label=".env/.env (optional)">
         {`ADDRESS_CHECK_HELO=mail-check.yourcompany.com
-# optional, defaults to check@<ADDRESS_CHECK_HELO>
+# optional, defaults to check@<the name above>
 ADDRESS_CHECK_MAIL_FROM=`}
       </CodeBlock>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
@@ -387,7 +398,9 @@ ADDRESS_CHECK_MAIL_FROM=`}
         now answers <code className="font-mono">410 Gone</code>.
       </p>
 
-      <h2 className="font-display text-2xl font-semibold mb-4">Link domain per brand</h2>
+      <h2 id="link-domain" className="font-display text-2xl font-semibold mb-4">
+        Link domain per brand
+      </h2>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
         Every campaign email names your server three times: in the footer&rsquo;s unsubscribe link,
         in the <code className="font-mono">List-Unsubscribe</code> header behind Gmail&rsquo;s
@@ -453,6 +466,73 @@ curl -X POST https://app.yourcompany.com/v1/domains/yourbrand.com/link-domain/ch
         Changing the host puts it back to <code className="font-mono">PENDING</code>; sending{' '}
         <code className="font-mono">null</code> or <code className="font-mono">&quot;&quot;</code>{' '}
         removes it.
+      </p>
+
+      <h2 id="server-name" className="font-display text-2xl font-semibold mb-4">
+        Server name
+      </h2>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        Gmail, Outlook.com, Yahoo and most other mail servers write your server&rsquo;s reverse DNS
+        (PTR) into every email&rsquo;s <code className="font-mono">Received:</code> header. A new
+        server&rsquo;s reverse DNS is its host&rsquo;s default, something like{' '}
+        <code className="font-mono">static.7.113.0.203.clients.your-server.de</code>, so every email
+        names your hosting company. A server name is the one host name your install introduces
+        itself with instead. Set it once per server:
+      </p>
+      <ol className="list-decimal pl-6 space-y-2 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        <li>
+          <strong className="text-ink">DNS.</strong> An A record for{' '}
+          <code className="font-mono">mail.yourcompany.com</code> to the server&rsquo;s IP, and an
+          AAAA record if it has IPv6. Not proxied.
+        </li>
+        <li>
+          <strong className="text-ink">Reverse DNS.</strong> In your server host&rsquo;s control
+          panel (usually Networking or Reverse DNS), set each IP&rsquo;s reverse DNS to the same
+          name, IPv6 included.
+        </li>
+        <li>
+          <strong className="text-ink">Your server.</strong> Run the command below. It saves the
+          name in core&rsquo;s <code className="font-mono">.env/.env</code>, restarts the API and
+          worker, and checks both directions.
+        </li>
+      </ol>
+      <CodeBlock label="CLI">
+        {`warmhawk server-name set mail.yourcompany.com
+warmhawk server-name check     # after changing DNS or reverse DNS
+warmhawk server-name clear`}
+      </CodeBlock>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-4">
+        <strong className="text-ink">Used only once it checks out.</strong> Every address the name
+        points at must have reverse DNS naming it back. Until it does, nothing changes. Domain
+        Health shows the name, its status and, when it fails, what to change (&ldquo;The reverse DNS
+        of 203.0.113.7 is &hellip;, not mail.yourcompany.com&rdquo;), with a Check now button. It
+        re-checks at startup and every hour while in use.
+      </p>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        Once it passes, it is the connection name for every sending domain without a checked{' '}
+        <a href="#link-domain" className="text-rust font-semibold">
+          link domain
+        </a>{' '}
+        (a link domain still wins for its own brand), and the{' '}
+        <strong className="text-ink">address check</strong> turns on with it unless{' '}
+        <code className="font-mono">ADDRESS_CHECK_HELO</code> names another. Unsubscribe links
+        don&rsquo;t change.
+      </p>
+      <CodeBlock label="GET /v1/instance-settings · POST /v1/instance-settings/server-name/check">
+        {`{
+  "publicHost": "app.yourcompany.com",
+  "serverName": {
+    "name": "mail.yourcompany.com",
+    "status": "PASS",            // PENDING | PASS | FAIL
+    "error": null,               // the reason in plain words on FAIL
+    "checkedAt": "2026-10-15T20:00:00.000Z"
+  },
+  "addressCheckName": "mail.yourcompany.com"   // null while the check is off
+}`}
+      </CodeBlock>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
+        The check route returns the new <code className="font-mono">serverName</code>, or{' '}
+        <code className="font-mono">404</code> while no name is set.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4">Seed-inbox placement sampling</h2>
