@@ -207,7 +207,54 @@ export default function SendingSafelyDomainHealthPage() {
           PATCH /v1/campaigns/:id {'{ "pausedForBounceRate": false }'}
         </code>{' '}
         &mdash; deliberately not an automatic reset, since the underlying list-quality problem needs
-        addressing first, not just waiting out.
+        addressing first, not just waiting out. In the dashboard the campaign shows Stopped:
+        bounces, and its Resume button clears the flag after a confirm. A bounced lead has no
+        Suppress action: it&rsquo;s never emailed again anyway, and suppressing it would take it out
+        of the bounce rate.
+      </p>
+
+      <h2 className="font-display text-2xl font-semibold mb-4">
+        Checking an address before the first email
+      </h2>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        Optional, and off until you turn it on. Before a lead&rsquo;s first email, the worker asks
+        the lead&rsquo;s mail server whether the mailbox exists: it connects on port 25, names the
+        lead&rsquo;s address and a made-up one on the same domain, then hangs up. Nothing is sent.
+      </p>
+      <ul className="list-disc pl-6 space-y-2 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        <li>
+          <strong className="text-ink">A clear &ldquo;no such mailbox&rdquo;</strong>, or a domain
+          with no mail server at all, stops the lead as <code className="font-mono">FAILED</code>{' '}
+          with the reason in its log (&ldquo;Not sent: &hellip; Checked before sending, so nothing
+          went out.&rdquo;). It never bounces off your mailbox and doesn&rsquo;t count toward the
+          bounce rate or the mailbox&rsquo;s daily sends. The mailbox gets its slot back, so its
+          next lead is timed from its last real send, not held back by the dead one.
+        </li>
+        <li>
+          <strong className="text-ink">Anything less clear sends as before</strong>: a timeout, a
+          greylist, a block aimed at your server, or a server that accepts every address (which the
+          made-up address shows).
+        </li>
+        <li>
+          <strong className="text-ink">Follow-ups skip it.</strong> A lead that got its first email
+          already passed.
+        </li>
+      </ul>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        Your server needs outbound port 25 (many hosts block it until you ask) and a host name whose
+        A record is the server&rsquo;s IPv4 address, with reverse DNS (PTR) set back to that name.
+        Give the name an SPF record such as <code className="font-mono">v=spf1 a -all</code>. Then
+        set it in core&rsquo;s <code className="font-mono">.env/.env</code> and run{' '}
+        <code className="font-mono">warmhawk update</code>:
+      </p>
+      <CodeBlock label=".env/.env">
+        {`ADDRESS_CHECK_HELO=mail-check.yourcompany.com
+# optional, defaults to check@<ADDRESS_CHECK_HELO>
+ADDRESS_CHECK_MAIL_FROM=`}
+      </CodeBlock>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
+        Each check usually adds a few seconds before that lead&rsquo;s first email, well inside the
+        10.5 minute gap between sends.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4">
