@@ -14,7 +14,7 @@ export const metadata: Metadata = pageSeo({
 const queueRoutes = [
   {
     route: 'GET /v1/queue/status',
-    desc: 'Returns { counts, isPaused, jobs, sentByDay, queuedByDay, expectedByDay, mailboxes, throttling }. counts.waiting, active and delayed count email jobs only, not the nightly system job. jobs is the first 50 pending jobs. sentByDay is sends per UTC day for the last 6 days and today. queuedByDay counts every pending job, not just those 50, by the UTC day it is due (overdue ones count toward today), soonest day first. The queue only holds each mailbox’s next email, so expectedByDay estimates what active campaigns will send on each of the next 7 UTC days, from each mailbox’s cap, each campaign’s send days, max new leads per day, follow-ups due and leads left (recomputed at most once a minute). mailboxes gives each mailbox its campaigns and, for the 2 days either side of today, sent, warmup, queued, expected (0 up to today) and cap. throttling carries cadenceFloorSeconds (480), jitterSeconds, and minGapSeconds / maxGapSeconds, the real gap between two sends from one mailbox.',
+    desc: 'Returns { counts, isPaused, jobs, sentByDay, failedToday, queuedByDay, expectedByDay, offDays, mailboxes, throttling }. counts.waiting, active and delayed count email jobs only, not the nightly system job. counts.completed and counts.failed are BullMQ’s own records (finished jobs kept 24 hours, skipped slots included; crashed jobs kept 7 days), not emails sent or failed: for those, read sentByDay’s today and failedToday, the campaign emails that failed since midnight UTC. jobs is the first 50 pending jobs. sentByDay is sends per UTC day for the last 6 days and today. queuedByDay counts every pending job, not just those 50, by the UTC day it is due (overdue ones count toward today), soonest day first. The queue only holds each mailbox’s next email, so expectedByDay estimates what active campaigns will send for the rest of today and on each of the next 7 UTC days, from each mailbox’s cap (less what it already sent or has booked today), each campaign’s send days and hours, max new leads per day, follow-ups due and leads left (recomputed at most once a minute). offDays lists the UTC days, from 6 days back to 7 ahead, on which no active campaign sends, such as a Monday-to-Friday campaign’s weekend. mailboxes gives each mailbox its campaigns and, for the 2 days either side of today, sent, warmup, queued, expected (0 before today; today, what’s still to come) and cap. throttling carries cadenceFloorSeconds (480), jitterSeconds, and minGapSeconds / maxGapSeconds, the real gap between two sends from one mailbox.',
   },
   {
     route: 'GET /v1/queue/jobs',
@@ -103,8 +103,10 @@ export default function ApiReferenceQueueDomainsWebhooksPage() {
   "isPaused": false,
   "jobs": [ /* the first 50 waiting/active/delayed jobs */ ],
   "sentByDay": [ { "day": "2026-10-14", "count": 38 } /* 7 days, oldest first */ ],
+  "failedToday": 0,
   "queuedByDay": [ { "day": "2026-10-15", "count": 3 } /* every pending job, by due day */ ],
-  "expectedByDay": [ { "day": "2026-10-15", "count": 40 } /* the next 7 days, estimated */ ],
+  "expectedByDay": [ { "day": "2026-10-14", "count": 12 } /* the rest of today, then 7 days */ ],
+  "offDays": [ "2026-10-17", "2026-10-18" ],
   "mailboxes": [
     {
       "id": "mbx_a1b2c3",
