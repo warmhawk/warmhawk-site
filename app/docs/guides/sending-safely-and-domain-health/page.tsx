@@ -33,6 +33,11 @@ const faqItems = [
     answer:
       "POST /v1/domains/:domain/check is keyed by the domain NAME (e.g. yourcompany.com), unlike this API's other domain routes which use the internal id — it's the shape a customer actually thinks in when re-checking a domain.",
   },
+  {
+    question: 'Can each brand I send for have its own unsubscribe link?',
+    answer:
+      "Yes. Give each sending domain a link domain such as link.yourbrand.com: point it at your server, run warmhawk link-domain add, and press Check now under Domain Health. Once the check passes, that brand's footer link, List-Unsubscribe header and connection name use it instead of your install's own domain. Until it passes, emails keep the default link.",
+  },
 ];
 
 export default function SendingSafelyDomainHealthPage() {
@@ -380,6 +385,74 @@ ADDRESS_CHECK_MAIL_FROM=`}
         <code className="font-mono">confirm: true</code> to clear it anyway.{' '}
         <code className="font-mono">PUT /v1/instance-settings</code>, the old install-wide address,
         now answers <code className="font-mono">410 Gone</code>.
+      </p>
+
+      <h2 className="font-display text-2xl font-semibold mb-4">Link domain per brand</h2>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        Every campaign email names your server three times: in the footer&rsquo;s unsubscribe link,
+        in the <code className="font-mono">List-Unsubscribe</code> header behind Gmail&rsquo;s
+        Unsubscribe button, and in the name your server gives when it connects to send, which the
+        recipient sees in the <code className="font-mono">Received:</code> header. By default
+        that&rsquo;s the install&rsquo;s own domain (
+        <code className="font-mono">WARMHAWK_DOMAIN</code>). If you send for several brands from one
+        server, that ties them all to one name, and to each other. A link domain such as{' '}
+        <code className="font-mono">link.yourbrand.com</code> gives each sending domain its own.
+      </p>
+      <ol className="list-decimal pl-6 space-y-2 text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        <li>
+          <strong className="text-ink">DNS.</strong> In the brand&rsquo;s zone, point{' '}
+          <code className="font-mono">link</code> at your server: an A record to its IP, or a CNAME
+          to your <code className="font-mono">WARMHAWK_DOMAIN</code>.
+        </li>
+        <li>
+          <strong className="text-ink">Your server.</strong> Run{' '}
+          <code className="font-mono">warmhawk link-domain add link.yourbrand.com</code>. It adds an
+          nginx block for the host and gets it a Let&rsquo;s Encrypt certificate. Behind your own
+          TLS proxy, add <code className="font-mono">--no-tls</code> and have the proxy forward the
+          host to WarmHawk&rsquo;s nginx.
+        </li>
+        <li>
+          <strong className="text-ink">The dashboard.</strong> Domain Health &rarr; the sending
+          domain &rarr; <strong className="text-ink">Link domain</strong>, enter the host, then{' '}
+          <strong className="text-ink">Check now</strong>.
+        </li>
+      </ol>
+      <CodeBlock label="CLI">
+        {`warmhawk link-domain add link.yourbrand.com   # nginx block + certificate
+warmhawk link-domain list
+warmhawk link-domain remove link.yourbrand.com`}
+      </CodeBlock>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-4">
+        <strong className="text-ink">Used only once it answers.</strong> An unsubscribe link that
+        doesn&rsquo;t open breaks CAN-SPAM, so a new link domain starts unchecked and emails keep
+        the default link until a check passes. The check opens{' '}
+        <code className="font-mono">https://link.yourbrand.com/unsubscribe/ping</code> and expects
+        an answer only your install can give, so a page on another server never passes. It re-runs
+        every hour with the domain&rsquo;s other checks. If the host stops answering (DNS moved, a
+        certificate lapsed), emails go back to the default link within the hour.
+      </p>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
+        The link host serves the unsubscribe page and nothing else. Every other path, the API and
+        the dashboard included, is a 404 there. Links in emails already sent keep working, since the
+        default host still answers them.
+      </p>
+      <CodeBlock label="PATCH /v1/domains/:id, then check by NAME">
+        {`curl -X PATCH https://app.yourcompany.com/v1/domains/dom_a1b2c3 \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{ "linkDomain": "link.yourbrand.com" }'
+
+curl -X POST https://app.yourcompany.com/v1/domains/yourbrand.com/link-domain/check \\
+  -H "Authorization: Bearer YOUR_API_KEY"`}
+      </CodeBlock>
+      <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mt-4 mb-10">
+        The domain then carries <code className="font-mono">linkDomainStatus</code> (
+        <code className="font-mono">PENDING</code>, <code className="font-mono">PASS</code> or{' '}
+        <code className="font-mono">FAIL</code>), <code className="font-mono">linkDomainError</code>{' '}
+        with the reason in plain words, and <code className="font-mono">linkDomainCheckedAt</code>.
+        Changing the host puts it back to <code className="font-mono">PENDING</code>; sending{' '}
+        <code className="font-mono">null</code> or <code className="font-mono">&quot;&quot;</code>{' '}
+        removes it.
       </p>
 
       <h2 className="font-display text-2xl font-semibold mb-4">Seed-inbox placement sampling</h2>

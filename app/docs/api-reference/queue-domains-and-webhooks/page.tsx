@@ -37,11 +37,15 @@ const domainRoutes = [
   },
   {
     route: 'PATCH /v1/domains/:id',
-    desc: 'Update redirectUrl, dkimSelector, label or the mailing address. Only fields present change; dkimSelector null or "" clears it. Clearing an address that campaigns send with returns 409 ADDRESS_IN_USE unless confirm: true.',
+    desc: 'Update redirectUrl, dkimSelector, label, linkDomain or the mailing address. Only fields present change; dkimSelector or linkDomain null or "" clears it, and a new linkDomain starts PENDING. Clearing an address that campaigns send with returns 409 ADDRESS_IN_USE unless confirm: true.',
   },
   {
     route: 'POST /v1/domains/:domain/check',
-    desc: 'Keyed by domain NAME, not id. Unified SPF/DKIM/DMARC + blocklist check. DKIM uses ?selector= if given, else the saved dkimSelector, else tries common provider selectors (a miss is PENDING). Also runs hourly on its own.',
+    desc: 'Keyed by domain NAME, not id. Unified SPF/DKIM/DMARC + blocklist check, plus the link domain if one is set. DKIM uses ?selector= if given, else the saved dkimSelector, else tries common provider selectors (a miss is PENDING). Also runs hourly on its own.',
+  },
+  {
+    route: 'POST /v1/domains/:domain/link-domain/check',
+    desc: 'Keyed by domain NAME. Opens https://<linkDomain>/unsubscribe/ping and saves linkDomainStatus (PASS or FAIL), linkDomainError and linkDomainCheckedAt. Emails use the link domain only while it is PASS. 422 if the domain has no link domain.',
   },
   {
     route: 'GET /v1/domains/:id/placement-sample',
