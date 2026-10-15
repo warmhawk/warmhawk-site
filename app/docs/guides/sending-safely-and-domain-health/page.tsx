@@ -139,9 +139,10 @@ export default function SendingSafelyDomainHealthPage() {
           <strong className="text-ink">Per-mailbox daily caps.</strong> For each mailbox, what it
           sent against each day&rsquo;s cap for the last two days and today (with what&rsquo;s still
           queued and expected today), then what&rsquo;s queued and expected for the next two.
-          Warm-up emails don&rsquo;t count toward the cap, and a warming mailbox shows which warm-up
-          day it&rsquo;s on. Each campaign a mailbox sends for gets its own line. Mailboxes with a
-          running campaign come first, then warming mailboxes, the furthest along first.
+          Warm-up emails don&rsquo;t count toward the cap, so their count is only in each
+          cell&rsquo;s hover text, and a warming mailbox shows which warm-up day it&rsquo;s on. Each
+          campaign a mailbox sends for gets its own line. Mailboxes with a running campaign come
+          first, then warming mailboxes, the furthest along first.
         </li>
         <li>
           <strong className="text-ink">Throttling.</strong> The real gap between emails from one
@@ -149,12 +150,17 @@ export default function SendingSafelyDomainHealthPage() {
         </li>
       </ul>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-4">
-        Click a mailbox row, a bar on the chart, or <strong className="text-ink">View queue</strong>{' '}
-        and a side panel lists the queued emails, grouped by day, soonest first. Open one and you
-        see that lead&rsquo;s emails, one tab per step: the ones already sent, the next one with
-        when it goes, and later follow-ups with their wait. Each tab shows the campaign text filled
-        in for that lead. When AI writes an email, the tab shows the text AI starts from;{' '}
-        <strong className="text-ink">Preview with AI</strong> shows a sample of what AI would write.
+        Click a mailbox row, today&rsquo;s bar on the chart (once emails are booked), or{' '}
+        <strong className="text-ink">View queue</strong> and a side panel lists the queued emails,
+        grouped by day, soonest first. Other days on the chart show what&rsquo;s expected when you
+        hover them. When the list is empty, the panel says why: the queue is paused, no campaign is
+        running, send hours haven&rsquo;t started (with the time they open), today isn&rsquo;t a
+        send day, send hours are over, the next emails are being booked, or the mailbox hit its
+        daily limit. Open an email and you see that lead&rsquo;s emails, one tab per step: the ones
+        already sent, the next one with when it goes, and later follow-ups with their wait. Each tab
+        shows the campaign text filled in for that lead. When AI writes an email, the tab shows the
+        text AI starts from; <strong className="text-ink">Preview with AI</strong> shows a sample of
+        what AI would write.
       </p>
       <p className="text-[15px] leading-relaxed text-ink-muted max-w-2xl mb-10">
         <strong className="text-ink">Pause queue</strong> on the same page holds every campaign
