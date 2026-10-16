@@ -62,10 +62,10 @@ export default function ConnectingMailboxesPage() {
       <div className="card bg-rust-tint border-rust px-6 py-5 mb-10 max-w-2xl">
         <p className="text-[14px] leading-relaxed text-ink">
           <span className="font-semibold text-rust">On Tier 1 or Tier 2?</span> Skip the API steps.
-          In your dashboard, open Mailboxes, enter the address, and click{' '}
-          <strong>Connect with Google</strong> or <strong>Connect with Microsoft</strong>. WarmHawk
-          Connect handles the sign-in, so there is no OAuth app to build. The one step your company
-          does once is below.
+          In your dashboard, open Mailboxes, click <strong>Add mailbox</strong>, pick the Google or
+          Microsoft tab, enter the address, and click <strong>Connect with Google</strong> or{' '}
+          <strong>Connect with Microsoft</strong>. WarmHawk Connect handles the sign-in, so there is
+          no OAuth app to build. The one step your company does once is below.
         </p>
       </div>
 
@@ -78,8 +78,8 @@ export default function ConnectingMailboxesPage() {
       </p>
       <ol className="list-decimal pl-6 mb-4 max-w-2xl text-[15px] leading-relaxed text-ink-muted space-y-1.5">
         <li>
-          In your WarmHawk dashboard, open Mailboxes and copy the client ID shown under{' '}
-          <strong>Google Workspace: trust WarmHawk once</strong>.
+          In your WarmHawk dashboard, open Mailboxes, click Add mailbox, and copy the client ID
+          shown on the Google tab under <strong>Google Workspace: trust WarmHawk once</strong>.
         </li>
         <li>Open admin.google.com as a super admin.</li>
         <li>
@@ -97,15 +97,15 @@ export default function ConnectingMailboxesPage() {
       <ul className="list-disc pl-6 mb-10 max-w-2xl text-[15px] leading-relaxed text-ink-muted space-y-1.5">
         <li>
           <strong className="text-ink">Personal @gmail.com?</strong> It can&rsquo;t be trusted by an
-          admin. Use the SMTP/IMAP form with an app password instead. Its domain is marked as a
-          personal provider (Gmail, Yahoo, Outlook.com and the like), so the DNS checks don&rsquo;t
-          ask you to change records only the provider controls.
+          admin. Use the Other mail server (SMTP/IMAP) tab with an app password instead. Its domain
+          is marked as a personal provider (Gmail, Yahoo, Outlook.com and the like), so the DNS
+          checks don&rsquo;t ask you to change records only the provider controls.
         </li>
         <li>
           <strong className="text-ink">Microsoft 365?</strong> Click Connect with Microsoft. Your
           Microsoft 365 admin approves WarmHawk once for the whole company. If you aren&rsquo;t the
           admin, Microsoft shows &ldquo;Need admin approval&rdquo;: copy the approval link from the
-          Mailboxes page and send it to them.
+          Microsoft tab under Add mailbox and send it to them.
         </li>
         <li>
           <strong className="text-ink">Rather use your own OAuth app?</strong> Register it under
