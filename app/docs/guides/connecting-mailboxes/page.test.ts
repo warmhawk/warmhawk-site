@@ -17,7 +17,7 @@ describe('ConnectingMailboxesPage (app/docs/guides/connecting-mailboxes/page.tsx
     expect(text).not.toMatch(/coming/i);
     expect(text).toContain('click Connect with Google or Connect with Microsoft');
     expect(text).toContain('Click Connect with Microsoft.');
-    expect(text).toContain('copy the approval link from the Mailboxes page');
+    expect(text).toContain('copy the approval link from the Microsoft tab under Add mailbox');
   });
 
   it('says a password is checked before saving and links to the status reference', () => {
